@@ -1,0 +1,56 @@
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0px 0px 10px 0px rgba(120, 120, 120, 0.25);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+}
+
+.logo span {
+    font-family: Poppins;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    text-transform: uppercase;
+}
+
+.group>span {
+    color: #575757;
+    font-family: Poppins;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 300;
+    line-height: 21px;
+}
+
+.group ul li {
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    cursor: pointer;
+    gap: 15px;
+    border-radius: 5px;
+    color: #575757;
+    font-family: Poppins;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
+
+.group ul li:hover,
+.group ul li.active {
+    background-color: #4CE3C533;
+    color: #19B394;
+}

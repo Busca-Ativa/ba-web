@@ -1,7 +1,9 @@
+import Login from "@/components/Login";
+
 const Home = () => {
   return (
-    <div>
-      <h1>Busca Ativa</h1>
+    <div className="flex justify-center items-center w-full h-[100vh]">
+      <Login />
     </div>
   );
 };

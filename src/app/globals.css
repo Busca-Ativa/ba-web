@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url(./fonts.css);
+@import url('./fonts.css');
+
 
 :root {
     --primary: #19B394;
@@ -21,6 +22,12 @@
     --black: #161616;
     --gray: #8A8A8A;
     --white: #FEFEFE;
+    --bg-white: #F7FAF9;
     --white-100: #FFFFFF;
+}
 
+body {
+    font-family: "Poppins", sans-serif;
+    background-color: var(--bg-white);
+    color: var(--black);
 }
