@@ -13,7 +13,7 @@ import "./style.css";
 import Image from "next/image";
 import { useState } from "react";
 
-const SideBar = ({ user, activePage }) => {
+const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
   const [expanded, setExpanded] = useState(false);
 
   return (
