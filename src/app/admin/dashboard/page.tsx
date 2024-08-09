@@ -3,7 +3,7 @@ import SideBar from "@/components/Sidebar";
 const Dashboard = () => {
   return (
     <div>
-      <SideBar activePage={"dashboard"} />
+      <SideBar user={""} activePage={"dashboard"} />
     </div>
   );
 };
