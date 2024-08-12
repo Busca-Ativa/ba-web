@@ -31,3 +31,22 @@ body {
     background-color: var(--bg-white);
     color: var(--black);
 }
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+}
+
+h1 {
+    color: var(--Neutral-Neutral-7, #0F1113);
+    font-family: Poppins;
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 50px;
+}
