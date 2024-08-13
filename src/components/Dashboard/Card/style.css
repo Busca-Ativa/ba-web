@@ -1,0 +1,25 @@
+.Card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: start;
+    padding: 20px;
+    border-radius: 15px;
+    flex: 1;
+}
+
+.Card span {
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    gap: 10px;
+
+}
+
+.Card p {
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 32px;
+}
