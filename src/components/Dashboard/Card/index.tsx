@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import "./style.css";
 
 type CardProps = {
@@ -10,10 +11,19 @@ type CardProps = {
 };
 
 const Card = ({ bgColor, textColor, title, content }: CardProps) => {
+  const [style, setStyle] = useState({});
+
+  useEffect(() => {
+    setStyle({
+      backgroundColor: `var(${bgColor})`,
+      color: `var(${textColor})`,
+      gap: "5px",
+      padding: "20px",
+    });
+  }, [bgColor, textColor]);
+
   return (
-    <div
-      className={`Card bg-[${bgColor}] text-[${textColor}] gap-[5px] 2xl:gap-[10px]`}
-    >
+    <div style={style} className="Card">
       <span className="text-md 2xl:text-xl">{title}</span>
       <p className="text-xl 2xl:text-2xl">{content}</p>
     </div>

@@ -1,8 +1,8 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { BarChart } from "@mui/x-charts/BarChart";
+import { LineChart } from "@mui/x-charts/LineChart";
+import { useEffect, useRef, useState } from "react";
 
-export default function WeekChart() {
+export default function MonthChart() {
   const chartContainerRef = useRef(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
@@ -19,28 +19,23 @@ export default function WeekChart() {
     return () => window.removeEventListener("resize", updateWidth);
   }, []);
 
+  useEffect(() => {
+    console.log(containerWidth);
+  }, [containerWidth]);
+
   return (
     <div ref={chartContainerRef} style={{ width: "100%" }}>
-      <BarChart
-        xAxis={[{ scaleType: "band", data: ["Contagem"] }]}
+      <LineChart
+        xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
         series={[
-          { data: [40] },
-          { data: [30] },
-          { data: [50] },
-          { data: [20] },
-          { data: [60] },
-          { data: [10] },
-          { data: [100] },
+          {
+            data: [2, 5.5, 2, 8.5, 1.5, 5],
+            curve: "linear",
+            showMark: true,
+          },
         ]}
-        colors={[
-          "#B070F0",
-          "#EF4838",
-          "#62ACED",
-          "#F99C34",
-          "#B3E6F5",
-          "#40C156",
-          "#CDA6FF",
-        ]}
+        skipAnimation={true}
+        colors={["#FFBC66"]}
         sx={{ height: 300 }}
         width={containerWidth}
         height={(320 * containerWidth) / 582}
