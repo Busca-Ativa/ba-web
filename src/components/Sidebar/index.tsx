@@ -12,6 +12,7 @@ import {
 import "./style.css";
 import Image from "next/image";
 import { useState } from "react";
+import Link from "next/link";
 
 const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
   const [expanded, setExpanded] = useState(false);
@@ -20,9 +21,9 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
     <div
       onMouseOver={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
-      className="sidebar w-[243px] h-[100vh] py-[25px] pl-[13px] pr-[17px]  rounded-tl-none rounded-tr-lg rounded-br-lg rounded-bl-none bg-[#FEFEFE]"
+      className="sidebar w-[243px] h-[100vh] py-[25px] pl-[13px] pr-[17px] rounded-tl-none rounded-tr-lg rounded-br-lg rounded-bl-none bg-[#FEFEFE]"
     >
-      <div className="logo">
+      <div className="logo flex items-center">
         <Image src="/next.svg" alt="Logo" width={40} height={40} />
         <span className="text-[#19B394] mr-1">Busca</span>
         <span className="text-[#FF9814]">Ativa!</span>
@@ -30,44 +31,72 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
       <div>
         <div className="group flex flex-col gap-[10px] mt-[69.5px]">
           <span>Administrativo</span>
-          <ul>
+          <ul className="flex flex-col gap-2">
             <li className={activePage === "dashboard" ? "active" : ""}>
-              <DashboardOutlined />
-              <span>Dashboard</span>
+              <Link href="/admin/dashboard">
+                <div className="flex items-center gap-2">
+                  <DashboardOutlined />
+                  <span>Dashboard</span>
+                </div>
+              </Link>
             </li>
             <li className={activePage === "instituicoes" ? "active" : ""}>
-              <DomainRounded />
-              <span>Instituições</span>
+              <Link href="/admin/instituicoes">
+                <div className="flex items-center gap-2">
+                  <DomainRounded />
+                  <span>Instituições</span>
+                </div>
+              </Link>
             </li>
             <li className={activePage === "usuarios" ? "active" : ""}>
-              <Groups2Outlined />
-              <span>Usuários</span>
+              <Link href="/admin/usuarios">
+                <div className="flex items-center gap-2">
+                  <Groups2Outlined />
+                  <span>Usuários</span>
+                </div>
+              </Link>
             </li>
           </ul>
         </div>
         <div className="group flex flex-col gap-[10px] mt-[28px]">
           <span>Pesquisas</span>
-          <ul>
+          <ul className="flex flex-col gap-2">
             <li className={activePage === "formularios" ? "active" : ""}>
-              <ContentPasteSearchOutlined />
-              <span>Formulários</span>
+              <Link href="/admin/formularios">
+                <div className="flex items-center gap-2">
+                  <ContentPasteSearchOutlined />
+                  <span>Formulários</span>
+                </div>
+              </Link>
             </li>
             <li className={activePage === "eventos" ? "active" : ""}>
-              <EventNoteOutlined />
-              <span>Eventos</span>
+              <Link href="/admin/eventos">
+                <div className="flex items-center gap-2">
+                  <EventNoteOutlined />
+                  <span>Eventos</span>
+                </div>
+              </Link>
             </li>
           </ul>
         </div>
       </div>
       <div className="group absolute bottom-[25px]">
-        <ul>
+        <ul className="flex flex-col gap-2">
           <li>
-            <SettingsOutlined />
-            <span>Configurações</span>
+            <Link href="/admin/configuracoes">
+              <div className="flex items-center gap-2">
+                <SettingsOutlined />
+                <span>Configurações</span>
+              </div>
+            </Link>
           </li>
           <li>
-            <LogoutOutlined />
-            <span>Configurações</span>
+            <Link href="/logout">
+              <div className="flex items-center gap-2">
+                <LogoutOutlined />
+                <span>Sair</span>
+              </div>
+            </Link>
           </li>
         </ul>
       </div>

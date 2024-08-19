@@ -55,10 +55,9 @@ const Dashboard = () => {
   }, [router]);
 
   return (
-    <div className="flex">
+    <>
       {pass && (
         <>
-          <SideBar user={""} activePage={"dashboard"} />
           <div className="dashboard w-[100%] h-[100vh px-[40px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
             <h1 className="text-3xl 2xl:text-4xl">Painel de Monitoramento</h1>
             <div className="cards w-[100%] flex justify-stretch gap-[20px]">
@@ -110,7 +109,7 @@ const Dashboard = () => {
           </div>
         </>
       )}
-    </div>
+    </>
   );
 };
 
