@@ -34,7 +34,6 @@ export default function MonthChart() {
             showMark: true,
           },
         ]}
-        skipAnimation={true}
         colors={["#FFBC66"]}
         sx={{ height: 300 }}
         width={containerWidth}
