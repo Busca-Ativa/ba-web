@@ -26,9 +26,9 @@ export const AuthService = {
   },
 
   async register(userData: {
-    email: string;
     name: string;
     last_name: string;
+    email: string;
     id_institution: string;
     password: string;
   }, ctx?: GetServerSidePropsContext) {
