@@ -11,7 +11,7 @@ const RegisterForm = () => {
     name: "",
     last_name: "",
     email: "",
-    id_institution: "",
+    code: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
@@ -119,10 +119,10 @@ const RegisterForm = () => {
           </label>
           <input
             type="text"
-            id="id_institution"
+            id="code"
             placeholder="Código da Instituição"
             className="border border-neutral-light rounded-md px-[16px] py-[10px] text-[14px]"
-            value={formData.id_institution}
+            value={formData.code}
             onChange={handleChange}
             required
           />

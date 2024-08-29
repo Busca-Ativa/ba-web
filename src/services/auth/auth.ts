@@ -29,7 +29,7 @@ export const AuthService = {
     name: string;
     last_name: string;
     email: string;
-    id_institution: string;
+    code: string;
     password: string;
   }, ctx?: GetServerSidePropsContext) {
     try {
