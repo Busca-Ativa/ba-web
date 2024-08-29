@@ -1,0 +1,15 @@
+/* styles.css */
+.form-input {
+    border: 2px solid transparent;
+}
+
+.form-input:hover,
+.form-input:focus {
+    border: 2px solid #575757;
+    border-radius: 4px;
+}
+
+.custom-placeholder::placeholder {
+    color: #13866f;
+    opacity: 1;
+}

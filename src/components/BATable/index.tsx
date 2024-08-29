@@ -15,7 +15,14 @@ import {
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import React, { useState } from "react";
-import { DeleteOutline, Edit, EditOutlined } from "@mui/icons-material";
+import {
+  DeleteOutline,
+  Edit,
+  EditOutlined,
+  FileCopy,
+  FileCopyOutlined,
+} from "@mui/icons-material";
+import Status from "../Status";
 
 interface Column {
   id: string;
@@ -23,20 +30,26 @@ interface Column {
   numeric: boolean;
 }
 
+interface Config {
+  editable?: boolean;
+  deletable?: boolean;
+  duplicable?: boolean;
+}
+
 interface BATableProps {
   columns: Column[];
   initialRows: Record<string, string | number>[];
-  editable?: boolean;
+  configRows?: Config[];
   onEdit?: (row: Record<string, string | number>) => void;
-  deletable?: boolean;
   onDelete?: (row: Record<string, string | number>) => void;
+  onDuplicate?: (row: Record<string, string | number>) => void;
 }
 
 // Customização do tema
 const theme = createTheme({
   typography: {
     fontFamily: "Poppins, sans-serif",
-    fontSize: 16,
+    fontSize: 14,
     allVariants: {
       color: "#0e1113",
     },
@@ -46,7 +59,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           "&:nth-of-type(even)": {
-            backgroundColor: "#f0f3f8",
+            backgroundColor: "#F8F9FC",
           },
           "&:nth-of-type(odd)": {
             backgroundColor: "#ffffff",
@@ -57,12 +70,13 @@ const theme = createTheme({
     MuiTableCell: {
       styleOverrides: {
         root: {
-          padding: "20px",
+          padding: "16px",
           borderBottom: "none", // Remove as bordas
         },
         head: {
+          color: "#0F1113",
           fontWeight: "bold",
-          backgroundColor: "#f0f3f8",
+          backgroundColor: "#F1F3F9",
           borderBottom: "none", // Remove as bordas no cabeçalho
         },
       },
@@ -90,10 +104,10 @@ type Order = "asc" | "desc" | undefined;
 const BATable: React.FC<BATableProps> = ({
   columns,
   initialRows,
-  editable = true,
-  deletable = true,
   onEdit,
   onDelete,
+  configRows,
+  onDuplicate,
 }) => {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<string | undefined>(columns[0]?.id);
@@ -155,39 +169,80 @@ const BATable: React.FC<BATableProps> = ({
                   </TableSortLabel>
                 </TableCell>
               ))}
-              {editable && <TableCell></TableCell>}
-              {deletable && <TableCell></TableCell>}
+              {configRows && <TableCell sx={{ padding: 0 }}></TableCell>}
+              {configRows && <TableCell sx={{ padding: 0 }}></TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
             {paginatedRows.map((row, rowIndex) => (
               <TableRow key={rowIndex}>
                 {columns.map((column) => (
-                  <TableCell key={column.id}>{row[column.id]}</TableCell>
-                ))}
-                {editable && (
-                  <TableCell sx={{ width: 10 }}>
-                    <button
-                      onClick={() => onEdit && onEdit(row)}
-                      style={{
-                        backgroundColor: "#FFF",
-                        color: "#1D2432",
-                        padding: "8px 16px",
-                        borderRadius: "4px",
-                        border: "1px solid #CACDD5",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      <EditOutlined fontSize="small" />
-                      <span>Editar</span>
-                    </button>
+                  <TableCell key={column.id}>
+                    {column.id === "status" ? (
+                      <Status
+                        status={row[column.id]}
+                        bgColor={
+                          row[column.id] == "Em Edição"
+                            ? "#FFE9A6"
+                            : row[column.id] == "Pronto"
+                            ? "#ADDBBA"
+                            : "#BBBEC3"
+                        }
+                        color={
+                          row[column.id] == "Em Edição"
+                            ? "#BE9007"
+                            : row[column.id] == "Pronto"
+                            ? "#008E20"
+                            : "#43494E"
+                        }
+                      />
+                    ) : (
+                      row[column.id]
+                    )}
                   </TableCell>
-                )}
-                {deletable && (
-                  <TableCell sx={{ width: 10 }}>
+                ))}
+                {configRows?.[rowIndex]?.editable == true ? (
+                  <>
+                    <TableCell sx={{ width: 10, paddingRight: "4px" }}>
+                      <button
+                        onClick={() => onEdit && onEdit(row)}
+                        style={{
+                          backgroundColor: "#FFF",
+                          color: "#1D2432",
+                          padding: "8px 16px",
+                          borderRadius: "4px",
+                          border: "1px solid #CACDD5",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <EditOutlined fontSize="small" />
+                        <span>Editar</span>
+                      </button>
+                    </TableCell>
+                    {configRows?.[rowIndex]?.deletable && (
+                      <TableCell sx={{ width: 10, paddingLeft: "4px" }}>
+                        <button
+                          onClick={() => onDelete && onDelete(row)}
+                          style={{
+                            backgroundColor: "#FFF",
+                            color: "#1D2432",
+                            padding: "8px 16px",
+                            borderRadius: "4px",
+                            border: "1px solid #CACDD5",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <DeleteOutline fontSize="small" />
+                        </button>
+                      </TableCell>
+                    )}
+                  </>
+                ) : (
+                  <TableCell colSpan={2} sx={{ width: 20 }}>
                     <button
-                      onClick={() => onDelete && onDelete(row)}
+                      onClick={() => onDuplicate && onDuplicate(row)}
                       style={{
                         backgroundColor: "#FFF",
                         color: "#1D2432",
@@ -196,9 +251,13 @@ const BATable: React.FC<BATableProps> = ({
                         border: "1px solid #CACDD5",
                         display: "flex",
                         alignItems: "center",
+                        justifyContent: "center",
+                        gap: "12px",
+                        width: "100%",
                       }}
                     >
-                      <DeleteOutline fontSize="small" />
+                      <FileCopyOutlined fontSize="small" />
+                      <span>Duplicar</span>
                     </button>
                   </TableCell>
                 )}
