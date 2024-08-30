@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   DeleteOutline,
   Edit,
@@ -115,6 +115,9 @@ const BATable: React.FC<BATableProps> = ({
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
 
+  useEffect(() => {
+    setRows(initialRows);
+  }, [initialRows]);
   const handleRequestSort = (property: string) => {
     const isAsc = order === "asc";
     const newOrder = orderBy === property ? (isAsc ? "desc" : "asc") : "asc";
