@@ -5,6 +5,8 @@ import Status from "@/components/Status";
 import { Model, Survey } from "survey-react-ui";
 import "survey-core/defaultV2.min.css";
 import ShortQuestion from "@/components/FormCreator/ShortQuestion";
+import LongQuestion from "@/components/FormCreator/LongQuestion";
+import UniqueSelection from "@/components/FormCreator/UniqueSelection";
 import BaseComponent from "@/components/FormCreator/BaseComponent"
 import { AuthService } from "@/services/auth/auth"
 import DropDownButton  from "@/components/Buttons/DropdownButton"
@@ -26,7 +28,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import { UndoOutlined, DonutLargeOutlined, LabelOutlined } from "@mui/icons-material";
 
-
+import {surveyElements, surveyPageExample} from "../../utils/SurveyJS";
 
 
 const Editor = () => {
@@ -66,74 +68,7 @@ const Editor = () => {
       ]
     }
   ];
-  const [surveyJson, setSurveyJson] = useState({
-        elements: [
-          {
-            type: 'radiogroup',
-            name: 'question1',
-            title: 'First question',
-            choices: ['Option 1', 'Option 2', 'Option 3'],
-          },
-          {
-            type: 'dropdown',
-            name: 'question2',
-            title: 'Second question',
-            choices: ['Option A', 'Option B', 'Option C'],
-            showNoneItem: true,
-            showOtherItem: true,
-            choices: [ "Ford", "Vauxhall", "Volkswagen", "Nissan", "Audi", "Mercedes-Benz", "BMW", "Peugeot", "Toyota", "Citroen" ]
-          },
-          {
-            type: "tagbox",
-            isRequired: true,
-            choicesByUrl: {
-              url: "https://surveyjs.io/api/CountriesExample"
-            },
-            name: "countries",
-            title: "Which countries have you visited within the last three years?",
-            description: "Please select all that apply."
-          },
-          {
-            type: "checkbox",
-            name: "car",
-            title: "Which is the brand of your car?",
-            description: "If you own cars from multiple brands, please select all of them.",
-            choices: [ "Ford", "Vauxhall", "Volkswagen", "Nissan", "Audi", "Mercedes-Benz", "BMW", "Peugeot", "Toyota", "Citroen" ],
-            isRequired: true,
-            colCount: 2,
-            showNoneItem: true,
-            showOtherItem: true,
-            showSelectAllItem: true,
-            separateSpecialChoices: true
-          },
-          {
-            type: "boolean",
-            name: "slider",
-            title: "Are you 21 or older?",
-            description: "Display mode = Default (Slider)",
-            valueTrue: "Yes",
-            valueFalse: "No"
-          },
-          {
-          type: "boolean",
-          name: "radiobutton",
-          title: "Are you 21 or older?",
-          description: "Display mode = Radio",
-          valueTrue: "Yes",
-          valueFalse: "No",
-          renderAs: "radio"
-          },
-          {
-          type: "boolean",
-          name: "checkbox",
-          label: "I am 21 or older",
-          titleLocation: "hidden",
-          valueTrue: "Yes",
-          valueFalse: "No",
-          renderAs: "checkbox"
-          }
-        ],
-  })
+  const [surveyJson, setSurveyJson] = useState(surveyElements)
 
 
   const addElement = (element) => {
@@ -153,6 +88,33 @@ const Editor = () => {
     const temp = obj.elements[olderIdx];
     obj.elements[olderIdx] = obj.elements[newIdx];
     obj.elements[newIdx] = temp;
+  }
+  const types = {
+  "boolean":null,
+  "checkbox":null,
+  "comment":LongQuestion,
+  "dropdown":null,
+  "tagbox":null,
+  "expression":null,
+  "file":null,
+  "html":null,
+  "image":null,
+  "imagepicker":null,
+  "matrix":null,
+  "matrixdropdow":null,
+  "matrixdynamic":null,
+  "multipletext":null,
+  "panel":null,
+  "paneldynamic":null,
+  "radiogroup":UniqueSelection,
+  "rating":null,
+  "ranking":null,
+  "signaturepad":null,
+  "text":ShortQuestion,
+  }
+
+  const getType = (type:string) => {
+   return types[type] || null;
   }
 
 
@@ -271,9 +233,11 @@ const Editor = () => {
             </div> */}
           {
             surveyJson?.elements.map( (value, idx) => {
+              const Component = getType(value.type)
+              console.log(value.type)
               return (
                 <div key={idx} className="flex flex-col flex-1 justify-center items-center">
-                  <BaseComponent key={idx}/>
+                {Component && <Component key={idx}/>}
                 </div>
                 )
             } )

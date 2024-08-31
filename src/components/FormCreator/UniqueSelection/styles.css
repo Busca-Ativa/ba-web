@@ -1,0 +1,39 @@
+.custom-checkbox {
+  width: 24px;
+  height: 24px;
+  background: #FFFFFF;
+  box-shadow: inset 0px 1px 2px rgba(103, 103, 103, 0.25);
+  border-radius: 100px;
+  appearance: none;
+  -webkit-appearance: none; /* For WebKit-based browsers (e.g., Safari) */
+  -moz-appearance: none; /* For Firefox */
+  cursor: pointer;
+  display: inline-block;
+  margin-right: 8px;
+}
+.custom-checkbox-enabled{
+  background: #F5F5F5;
+  width: 24px;
+  height: 24px;
+  box-shadow: inset 0px 1px 2px rgba(103, 103, 103, 0.25);
+  border-radius: 100px;
+  appearance: none;
+  -webkit-appearance: none; /* For WebKit-based browsers (e.g., Safari) */
+  -moz-appearance: none; /* For Firefox */
+  cursor: pointer;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.custom-checkbox:checked {
+  background-color: #F5F5F5; /* Or any color to indicate the checked state */
+}
+
+.custom-checkbox:checked::after {
+  content: '\\2713'; /* Unicode checkmark */
+  color: white;
+  font-size: 16px;
+  position: relative;
+  left: 4px;
+  top: 2px;
+}
