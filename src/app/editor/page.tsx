@@ -1,55 +1,81 @@
 "use client";
-import { useState } from "react";
 import "./styles.css";
-import Status from "@/components/Status";
-import { Model, Survey } from "survey-react-ui";
 import "survey-core/defaultV2.min.css";
+import 'react-toastify/dist/ReactToastify.css';
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { Model, Survey } from "survey-react-ui";
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Typography from '@mui/material/Typography';
+import Link from '@mui/material/Link';
+import { toast, ToastContainer } from "react-toastify";
+
+import { CheckBoxOutlined, RadioButtonChecked, ShortTextOutlined, SubjectOutlined, ToggleOnOutlined, UploadFileOutlined, } from "@mui/icons-material";
+import SaveIcon from '@mui/icons-material/Save';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+import { UndoOutlined, DonutLargeOutlined, LabelOutlined } from "@mui/icons-material";
+import EditFormIcon from "@/components/Icons/EditFormIcon";
+
+import Status from "@/components/Status";
 import ShortQuestion from "@/components/FormCreator/ShortQuestion";
 import LongQuestion from "@/components/FormCreator/LongQuestion";
 import UniqueSelection from "@/components/FormCreator/UniqueSelection";
 import BaseComponent from "@/components/FormCreator/BaseComponent"
 import { AuthService } from "@/services/auth/auth"
 import DropDownButton  from "@/components/Buttons/DropdownButton"
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
-
-import {
-  Add,
-  CheckBoxOutlined,
-  RadioButtonChecked,
-  ShortTextOutlined,
-  SubjectOutlined,
-  ToggleOnOutlined,
-  UploadFileOutlined,
-} from "@mui/icons-material";
-import EditFormIcon from "@/components/Icons/EditFormIcon";
-import SaveIcon from '@mui/icons-material/Save';
-import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { UndoOutlined, DonutLargeOutlined, LabelOutlined } from "@mui/icons-material";
-
+import api from "@/services/api";
 import {surveyElements, surveyPageExample} from "../../utils/SurveyJS";
 
 
+
+
 const Editor = () => {
+  // const [surveyJson, setSurveyJson] = useState(surveyElements);
+  const [tags, setTags] = useState([]);
+  const [surveyJson, setSurveyJson] = useState({});
   const [formName, setFormName] = useState("");
-  const [formDiscription, setFormDiscription] = useState("");
+  const [formDescription, setFormDescription] = useState("");
   const [tabSelected, setTabSelected] = useState(0);
-  const [user, setUser] = useState(AuthService.getUser())
+  const [user, setUser] = useState(AuthService.getUser());
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const formId = searchParams.get("id");
+
+  useEffect(() => {
+    const fetchForm = async () => {
+      if (formId) {
+        try {
+          const response = await api.get(`/editor/form/${formId}`, {withCredentials:true});
+          const formData = response.data;
+          console.log(formData)
+          setSurveyJson(formData.data.survey_schema || {});
+          setTags(formData.data.tags || []);
+          setFormName(formData.data.survey_schema?.title || "");
+          setFormDescription(formData.data.survey_schema?.description || "");
+        } catch (error) {
+          toast.error("Erro ao carregar o formulário: " + (error.response?.data || error.message));
+        }
+      }
+    };
+
+    fetchForm();
+  }, [formId]);
+
 
   const breadcrumbs = [
-    <Link underline="hover" key="1" color="inherit" href="/">
+    <Link underline="hover" key="1" color="inherit" href="/editor/formularios">
       Formulários
     </Link>,
     <Typography key="3" sx={{ color: 'text.primary' }}>
-      Novo Formulário
+      {formId ? "Editar Formulário" : "Novo Formulário"}
     </Typography>,
   ];
 
   const saveOptionsGroups: OptionGroups[] = [{
     groupLabel: '',
     options: [
-      { label: "Salvar e Sair", onClick: () => console.log("Salvar"), icon: <SaveIcon/> },
+      { label: "Salvar e Sair", onClick: () => handleSave(), icon: <SaveIcon/> },
       { label: "Salvar como Cópia", onClick: () => console.log("Salvou como Cópia"), icon: <FileCopyIcon/> },
     ]
   },
@@ -59,7 +85,8 @@ const Editor = () => {
       { label: "Descartar Mudanças", onClick: () => console.log("Descartado"), icon: <UndoOutlined/> },
     ]
   }];
-  const modifyOptionsGroups = [
+
+  const modifyOptionsGroups: OptionGroups = [
     {
       groupLabel:'',
       options: [
@@ -68,13 +95,12 @@ const Editor = () => {
       ]
     }
   ];
-  const [surveyJson, setSurveyJson] = useState(surveyElements)
 
 
   const addElement = (element) => {
     setSurveyJson( ( prev ) => ({
           ...prev,
-          elements: [...prev.elements, element] // Create a new array
+          elements: prev.elements?[...prev.elements, element]:[element] // Create a new array
         })
     )
   }
@@ -89,34 +115,75 @@ const Editor = () => {
     obj.elements[olderIdx] = obj.elements[newIdx];
     obj.elements[newIdx] = temp;
   }
+
   const types = {
-  "boolean":null,
-  "checkbox":null,
-  "comment":LongQuestion,
-  "dropdown":null,
-  "tagbox":null,
-  "expression":null,
-  "file":null,
-  "html":null,
-  "image":null,
-  "imagepicker":null,
-  "matrix":null,
-  "matrixdropdow":null,
-  "matrixdynamic":null,
-  "multipletext":null,
-  "panel":null,
-  "paneldynamic":null,
-  "radiogroup":UniqueSelection,
-  "rating":null,
-  "ranking":null,
-  "signaturepad":null,
-  "text":ShortQuestion,
+    "boolean":null,
+    "checkbox":null,
+    "comment":LongQuestion,
+    "dropdown":null,
+    "tagbox":null,
+    "expression":null,
+    "file":null,
+    "html":null,
+    "image":null,
+    "imagepicker":null,
+    "matrix":null,
+    "matrixdropdow":null,
+    "matrixdynamic":null,
+    "multipletext":null,
+    "panel":null,
+    "paneldynamic":null,
+    "radiogroup":UniqueSelection,
+    "rating":null,
+    "ranking":null,
+    "signaturepad":null,
+    "text":ShortQuestion,
   }
 
   const getType = (type:string) => {
    return types[type] || null;
   }
 
+  const handleSave = async () => {
+    const toastId = toast.loading("Salvando...");
+    let response;
+    try {
+      surveyJson.title = formName;
+      surveyJson.description = formDescription;
+      if ( formId ){
+
+        const sendData = {
+          tags : tags,
+          schema: surveyJson
+        }
+        console.log(tags)
+        // TODO: Criar no backend modificar formulário
+        // DONE: CRIADO no backend modificar formulário
+        response = await api.patch(`/editor/form/${formId}`,
+          sendData, {
+            withCredentials:true,
+        })
+
+      } else {
+        const sendData = {
+          schema: surveyJson
+        }
+        response = await api.post('/editor/form',
+          surveyJson, {
+            withCredentials:true,
+        })
+      }
+      if ( response.data?.data  ){
+        toast.dismiss(toastId);
+        toast.success("Formulário salvo com sucesso!");
+        router.push("/editor/formularios")
+      }
+    } catch (error: any) {
+      toast.dismiss(toastId);
+      toast.error("Erro ao salvar formulário: " + (error.response?.data || error.message));
+      throw error;
+    }
+  }
 
   return (
     <div className="w-[100%] h-[100vh] px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
@@ -150,8 +217,8 @@ const Editor = () => {
           />
           <input
             type="text"
-            value={formDiscription}
-            onChange={(e) => setFormDiscription(e.target.value)}
+            value={formDescription}
+            onChange={(e) => setFormDescription(e.target.value)}
             placeholder="Descrição"
             className="form-input text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px] border-none outline-none bg-transparent"
             style={{
@@ -198,7 +265,7 @@ const Editor = () => {
       {tabSelected == 0 && (
         <div className="flex">
           <div className="flex flex-col px-[7px] gap-[12px] text-[#575757]">
-            <button onClick={ () => { addElement({ name: "FirstName", title: "Enter your first name:", type: "text" }) } }>
+            <button onClick={ () => { addElement({ name: "FirstName", title: "Enter your first name:", type: "radiogroup" }) } }>
       , <RadioButtonChecked />
             </button>
             <button>
@@ -207,10 +274,10 @@ const Editor = () => {
             <button>
               <ToggleOnOutlined />
             </button>
-            <button>
+            <button onClick={ () => { addElement({ name: "FirstName", title: "Enter your first name:", type: "text" }) } }>
               <ShortTextOutlined />
             </button>
-            <button>
+            <button onClick={ () => { addElement({ name: "FirstName", title: "Enter your first name:", type: "comment" }) } }>
               <SubjectOutlined />
             </button>
             <button className="mt-[38px]">
@@ -232,7 +299,7 @@ const Editor = () => {
               </button>
             </div> */}
           {
-            surveyJson?.elements.map( (value, idx) => {
+            surveyJson?.elements?.map( (value, idx) => {
               const Component = getType(value.type)
               console.log(value.type)
               return (
@@ -246,6 +313,7 @@ const Editor = () => {
         </div>
       )}
       {tabSelected == 1 && <Survey model={new Model(surveyJson)} />}
+      <ToastContainer/>
     </div>
   );
 };

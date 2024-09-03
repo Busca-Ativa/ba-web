@@ -41,8 +41,8 @@ interface BATableProps {
   initialRows: Record<string, string | number>[];
   configRows?: Config[];
   onEdit?: (row: Record<string, string | number>) => void;
-  onDelete?: (row: Record<string, string | number>) => void;
-  onDuplicate?: (row: Record<string, string | number>) => void;
+  onDelete?: (row: Record<string, string | number>, rowIndex: number) => void;
+  onDuplicate?: (row: Record<string, string | number>, rowIndex: number) => void;
 }
 
 // Customização do tema
@@ -226,7 +226,7 @@ const BATable: React.FC<BATableProps> = ({
                     {configRows?.[rowIndex]?.deletable && (
                       <TableCell sx={{ width: 10, paddingLeft: "4px" }}>
                         <button
-                          onClick={() => onDelete && onDelete(row)}
+                          onClick={() => onDelete && onDelete(row,rowIndex)}
                           style={{
                             backgroundColor: "#FFF",
                             color: "#1D2432",
@@ -245,7 +245,7 @@ const BATable: React.FC<BATableProps> = ({
                 ) : (
                   <TableCell colSpan={2} sx={{ width: 20 }}>
                     <button
-                      onClick={() => onDuplicate && onDuplicate(row)}
+                      onClick={() => onDuplicate && onDuplicate(row,rowIndex)}
                       style={{
                         backgroundColor: "#FFF",
                         color: "#1D2432",

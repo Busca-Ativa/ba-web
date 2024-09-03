@@ -1,5 +1,7 @@
 
 const surveyElements = {
+  title: "Survey de Teste",
+  description: "Descrição do Survey de teste",
   elements: [
     {
       type: 'radiogroup',
