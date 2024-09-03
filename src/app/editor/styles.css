@@ -13,3 +13,9 @@
     color: #13866f;
     opacity: 1;
 }
+
+.form-controls:hover,
+.form-controls:focus {
+    border: 2px solid #575757;
+    border-radius: 4px;
+}

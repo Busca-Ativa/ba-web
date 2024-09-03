@@ -16,12 +16,13 @@ const Login = () => {
   const handleLogin = async () => {
     setLoading(true);
     setError(null);
-    toast.loading("Entrando...");
+    const toastId = toast.loading("Entrando...");
     try {
       await AuthService.login(email, password);
+      toast.dismiss(toastId);
       router.push("/admin/dashboard");
     } catch (err) {
-      toast.dismiss();
+      toast.dismiss(toastId);
       setError(
         "Erro ao realizar login. Verifique suas credenciais e tente novamente."
       );

@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   DeleteOutline,
   Edit,
@@ -41,8 +41,8 @@ interface BATableProps {
   initialRows: Record<string, string | number>[];
   configRows?: Config[];
   onEdit?: (row: Record<string, string | number>) => void;
-  onDelete?: (row: Record<string, string | number>) => void;
-  onDuplicate?: (row: Record<string, string | number>) => void;
+  onDelete?: (row: Record<string, string | number>, rowIndex: number) => void;
+  onDuplicate?: (row: Record<string, string | number>, rowIndex: number) => void;
 }
 
 // Customização do tema
@@ -115,6 +115,9 @@ const BATable: React.FC<BATableProps> = ({
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
 
+  useEffect(() => {
+    setRows(initialRows);
+  }, [initialRows]);
   const handleRequestSort = (property: string) => {
     const isAsc = order === "asc";
     const newOrder = orderBy === property ? (isAsc ? "desc" : "asc") : "asc";
@@ -223,7 +226,7 @@ const BATable: React.FC<BATableProps> = ({
                     {configRows?.[rowIndex]?.deletable && (
                       <TableCell sx={{ width: 10, paddingLeft: "4px" }}>
                         <button
-                          onClick={() => onDelete && onDelete(row)}
+                          onClick={() => onDelete && onDelete(row,rowIndex)}
                           style={{
                             backgroundColor: "#FFF",
                             color: "#1D2432",
@@ -242,7 +245,7 @@ const BATable: React.FC<BATableProps> = ({
                 ) : (
                   <TableCell colSpan={2} sx={{ width: 20 }}>
                     <button
-                      onClick={() => onDuplicate && onDuplicate(row)}
+                      onClick={() => onDuplicate && onDuplicate(row,rowIndex)}
                       style={{
                         backgroundColor: "#FFF",
                         color: "#1D2432",

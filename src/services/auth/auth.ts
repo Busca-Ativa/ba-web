@@ -1,5 +1,6 @@
 import api from '../api';
 import nookies from 'nookies';
+import { jwtDecode } from 'jwt-decode'
 import { GetServerSidePropsContext } from 'next';
 
 export const AuthService = {
@@ -10,11 +11,11 @@ export const AuthService = {
       if (response.data.data) {
         nookies.set(ctx, 'access_token', response.data.data.access_token, {
           path: '/',
-          maxAge: 30 * 24 * 60 * 60, 
+          maxAge: 30 * 24 * 60 * 60,
         });
         nookies.set(ctx, 'refresh_token', response.data.data.refresh_token, {
           path: '/',
-          maxAge: 30 * 24 * 60 * 60, 
+          maxAge: 30 * 24 * 60 * 60,
         });
       }
 
@@ -23,6 +24,11 @@ export const AuthService = {
       console.error('Erro ao fazer login:', error.response?.data || error.message);
       throw error;
     }
+  },
+
+  getUser(ctx?: GetServerSidePropsContext){
+    const token = nookies.get(ctx).access_token
+    return jwtDecode(token).sub
   },
 
   async register(userData: {
@@ -54,11 +60,11 @@ export const AuthService = {
         // Atualizar os tokens nos cookies
         nookies.set(ctx, 'access_token', response.data.data.access_token, {
           path: '/',
-          maxAge: 30 * 24 * 60 * 60, 
+          maxAge: 30 * 24 * 60 * 60,
         });
         nookies.set(ctx, 'refresh_token', response.data.data.refresh_token, {
           path: '/',
-          maxAge: 30 * 24 * 60 * 60, 
+          maxAge: 30 * 24 * 60 * 60,
         });
       }
 
@@ -68,7 +74,7 @@ export const AuthService = {
       throw error;
     }
   },
-  
+
   logout(ctx?: GetServerSidePropsContext) {
     // Remover os tokens dos cookies
     nookies.destroy(ctx, 'access_token');
