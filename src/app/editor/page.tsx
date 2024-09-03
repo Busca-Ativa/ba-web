@@ -37,6 +37,8 @@ import { AuthService } from "@/services/auth/auth";
 import DropDownButton from "@/components/Buttons/DropdownButton";
 import api from "@/services/api";
 import { surveyElements, surveyPageExample } from "../../utils/SurveyJS";
+import MultipleSelection from "@/components/FormCreator/MultipleSelection";
+import YesNotQuestion from "@/components/FormCreator/YesNotQuestion";
 
 const Editor = () => {
   // const [surveyJson, setSurveyJson] = useState(surveyElements);
@@ -155,8 +157,8 @@ const Editor = () => {
   };
 
   const types = {
-    boolean: null,
-    checkbox: null,
+    boolean: YesNotQuestion,
+    checkbox: MultipleSelection,
     comment: LongQuestion,
     dropdown: null,
     tagbox: null,
@@ -343,6 +345,13 @@ const Editor = () => {
               className="h-[34px] pl-[7px] pr-[15px] py-[5px] hover:bg-white rounded-[100px] hover:shadow justify-start items-center gap-2.5 inline-flex hover:text-[#19b394]"
               onMouseOver={() => handleTagsHover(1)}
               onMouseLeave={handleTagsLeave}
+              onClick={() => {
+                addElement({
+                  name: "FirstName",
+                  title: "Enter your first name:",
+                  type: "checkbox",
+                });
+              }}
             >
               <CheckBoxOutlined />
               {tagHover === 1 && (
@@ -353,6 +362,13 @@ const Editor = () => {
               className="h-[34px] pl-[7px] pr-[15px] py-[5px] hover:bg-white rounded-[100px] hover:shadow justify-start items-center gap-2.5 inline-flex hover:text-[#19b394]"
               onMouseOver={() => handleTagsHover(3)}
               onMouseLeave={handleTagsLeave}
+              onClick={() => {
+                addElement({
+                  name: "FirstName",
+                  title: "Enter your first name:",
+                  type: "boolean",
+                });
+              }}
             >
               <ToggleOnOutlined />
               {tagHover === 3 && (
@@ -384,7 +400,7 @@ const Editor = () => {
                 addElement({
                   name: "FirstName",
                   title: "Enter your first name:",
-                  type: "text",
+                  type: "comment",
                 });
               }}
             >
