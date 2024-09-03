@@ -321,7 +321,7 @@ const Editor = () => {
       </div>
       {tabSelected == 0 && (
         <div className="flex">
-          <div className="flex items-start flex-col w-[20%] 2xl:w-[28%] px-[7px] gap-[12px] text-[#575757]">
+          <div className="flex items-start flex-col w-[23%] 2xl:w-[28%] px-[7px] gap-[12px] text-[#575757]">
             <button
               className="h-[34px] pl-[7px] pr-[15px] py-[5px] hover:bg-white rounded-[100px] hover:shadow justify-start items-center gap-2.5 inline-flex hover:text-[#19b394]"
               onMouseOver={() => handleTagsHover(0)}
@@ -336,7 +336,7 @@ const Editor = () => {
             >
               <RadioButtonChecked />
               {tagHover === 0 && (
-                <span className="text-[#575757]">Seleção Única</span>
+                <span className="text-[#0f1113]">Seleção Única</span>
               )}
             </button>
             <button
@@ -346,7 +346,7 @@ const Editor = () => {
             >
               <CheckBoxOutlined />
               {tagHover === 1 && (
-                <span className="text-[#575757]">Seleção Múltipla</span>
+                <span className="text-[#0f1113]">Seleção Múltipla</span>
               )}
             </button>
             <button
@@ -356,7 +356,7 @@ const Editor = () => {
             >
               <ToggleOnOutlined />
               {tagHover === 3 && (
-                <span className="text-[#575757]">Sim/Não</span>
+                <span className="text-[#0f1113]">Sim/Não</span>
               )}
             </button>
             <button
@@ -373,7 +373,7 @@ const Editor = () => {
             >
               <ShortTextOutlined />
               {tagHover === 4 && (
-                <span className="text-[#575757]">Resposta Curta</span>
+                <span className="text-[#0f1113]">Resposta Curta</span>
               )}
             </button>
             <button
@@ -390,7 +390,7 @@ const Editor = () => {
             >
               <SubjectOutlined />
               {tagHover === 5 && (
-                <span className="text-[#575757]">Resposta Longa</span>
+                <span className="text-[#0f1113]">Resposta Longa</span>
               )}
             </button>
             <button
@@ -400,24 +400,26 @@ const Editor = () => {
             >
               <UploadFileOutlined />
               {tagHover === 6 && (
-                <span className="text-[#575757]">Importar Seção/Questão</span>
+                <span className="text-[#0f1113]">Importar Seção/Questão</span>
               )}
             </button>
           </div>
           <div className="flex flex-col ml-12 flex-6 justify-center items-center">
-            {/* <div className="flex flex-col flex-1 justify-center items-center gap-[45px]">
-              <div className="text-center text-black text-sm font-normal font-['Poppins'] leading-[21px]">
-                O formulário está vazio.
-                <br />
-                Adicione um elemento das opções ao lado ou clique no botão
-                abaixo.
-              </div>
-              <button className="h-[41px] px-[25px] py-2 bg-[#d2f9f1] rounded justify-center items-center gap-3 inline-flex">
-                <div className="grow shrink basis-0 text-center text-[#19b394] text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
-                  Adicionar Questão
+            {Object.keys(surveyJson).length === 0 && (
+              <div className="flex flex-col flex-1 justify-center items-center gap-[45px]">
+                <div className="text-center text-black text-sm font-normal font-['Poppins'] leading-[21px]">
+                  O formulário está vazio.
+                  <br />
+                  Adicione um elemento das opções ao lado ou clique no botão
+                  abaixo.
                 </div>
-              </button>
-            </div> */}
+                <button className="h-[41px] px-[25px] py-2 bg-[#d2f9f1] rounded justify-center items-center gap-3 inline-flex">
+                  <div className="grow shrink basis-0 text-center text-[#19b394] text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
+                    Adicionar Questão
+                  </div>
+                </button>
+              </div>
+            )}
             {surveyJson?.elements?.map((value, idx) => {
               const Component = getType(value.type);
               console.log(value.type);
