@@ -75,7 +75,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     const newOptions = [...options];
     const [movedOption] = newOptions.splice(index, 1);
     if (direction === 'down') {
-      if (index+1 <= newOptions.length && newOptions[index+1].enabled){
+      if (index <= newOptions.length && newOptions[index].enabled){
         newOptions.splice(index + 1, 0, movedOption);
       } else {
         return
