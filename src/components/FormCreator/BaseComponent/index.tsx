@@ -10,14 +10,16 @@ interface BaseComponentProps {
   header?: React.ReactNode;
   content?: React.ReactNode;
   footer?:  React.ReactNode;
-  onMove: (to: number,from: number) => void;
+  onMove: (direction: string) => void;
+  index: number;
 }
 
 const BaseComponent: React.FC<BaseComponentProps> = ({
   header,
   content,
   footer,
-  onMove
+  index,
+  onMove,
 }) => {
 
   const [titleValue, setTitleValue] = useState("")

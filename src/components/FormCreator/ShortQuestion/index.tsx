@@ -33,6 +33,7 @@ const ShortQuestion: React.FC<ShortQuestionProps> = ({
   onCopy,
   onDelete,
   onMove,
+  index,
 }) => {
   const [question, setQuestion] = useState();
   const [anwser, setAnswer] = useState();
@@ -48,7 +49,7 @@ const ShortQuestion: React.FC<ShortQuestionProps> = ({
   const footer = <BaseFooter left={<LeftDropdown/>} onRequire={handleRequired} />
 
   return (
-    <BaseComponent header={header} content={content} footer={footer}/>
+    <BaseComponent header={header} content={content} footer={footer} index={index} onMove={onMove}/>
   );
 };
 
