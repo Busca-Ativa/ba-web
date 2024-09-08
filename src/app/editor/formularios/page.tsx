@@ -95,7 +95,7 @@ const Formularios = () => {
 
   const handleDuplicate = async (row, rowIndex) => {
     try{
-      let response = await api.post(`/editor/form/${row.id}`);
+      let response = await api.post(`/editor/form/${row.id}`,{}, {withCredentials:true});
       if (response.status === 200){
         const data = response.data.data;
         const status = getStatus(data.tags[1]);
