@@ -4,7 +4,7 @@ import "survey-core/defaultV2.min.css";
 import "react-toastify/dist/ReactToastify.css";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Model, Survey } from "survey-react-ui";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Typography from "@mui/material/Typography";
@@ -37,9 +37,12 @@ import { AuthService } from "@/services/auth/auth";
 import DropDownButton from "@/components/Buttons/DropdownButton";
 import api from "@/services/api";
 import { surveyElements, surveyPageExample } from "../../utils/SurveyJS";
+import { FormContext } from "@/contexts/FormContext";
+import { Question } from "@/types/Question";
+import { getTime } from "@/utils";
 
 const Editor = () => {
-  // const [surveyJson, setSurveyJson] = useState(surveyElements);
+  const { formData, updateFormData, updateQuestionOrder } = useContext(FormContext);
   const [tags, setTags] = useState([]);
   const [surveyJson, setSurveyJson] = useState({});
   const [formName, setFormName] = useState("");
@@ -59,11 +62,12 @@ const Editor = () => {
             withCredentials: true,
           });
           const formData = response.data;
-          console.log(formData);
-          setSurveyJson(formData.data.survey_schema || {});
-          setTags(formData.data.tags || []);
-          setFormName(formData.data.survey_schema?.title || "");
-          setFormDescription(formData.data.survey_schema?.description || "");
+          updateFormData('survey', formData.data.survey_schema || {});
+          updateFormData('tags', formData.data.tags || []);
+          updateFormData('name', formData.data.survey_schema?.title || "");
+          updateFormData('created_at', formData.data.created_at || "");
+          updateFormData('updated_at', formData.data.created_at || "");
+          updateFormData('description', formData.data.survey_schema?.description || "");
         } catch (error) {
           toast.error(
             "Erro ao carregar o formulário: " +
@@ -75,6 +79,10 @@ const Editor = () => {
 
     fetchForm();
   }, [formId]);
+
+  useEffect( () => {
+    console.log(formData)
+  }, [formData] )
 
   const breadcrumbs = [
     <Link underline="hover" key="1" color="inherit" href="/editor/formularios">
@@ -138,22 +146,6 @@ const Editor = () => {
     }));
   };
 
-  const swapElement = (obj, olderIdx, newIdx) => {
-    if (
-      olderIdx >= obj.elements.length ||
-      newIdx >= arr.length ||
-      olderIdx < 0 ||
-      newIdx < 0
-    ) {
-      console.error("Indices fora da lista");
-      return;
-    }
-
-    const temp = obj.elements[olderIdx];
-    obj.elements[olderIdx] = obj.elements[newIdx];
-    obj.elements[newIdx] = temp;
-  };
-
   const types = {
     boolean: null,
     checkbox: null,
@@ -186,24 +178,22 @@ const Editor = () => {
     const toastId = toast.loading("Salvando...");
     let response;
     try {
-      surveyJson.title = formName;
-      surveyJson.description = formDescription;
       if (formId) {
+        formData.tags[1] = "done"
         const sendData = {
-          tags: tags,
-          schema: surveyJson,
+          tags: formData.tags,
+          schema: formData.survey,
         };
-        console.log(tags);
-        // TODO: Criar no backend modificar formulário
-        // DONE: CRIADO no backend modificar formulário
-        response = await api.patch(`/editor/form/${formId}`, sendData, {
+        response = await api.patch(`/editor/form/${formId}`, sendData,
+        {
           withCredentials: true,
         });
       } else {
         const sendData = {
-          schema: surveyJson,
+          title: formData.name,
+          schema: formData.survey,
         };
-        response = await api.post("/editor/form", surveyJson, {
+        response = await api.post("/editor/form", sendData, {
           withCredentials: true,
         });
       }
@@ -259,8 +249,8 @@ const Editor = () => {
         <div className="flex flex-col gap-[5px] h-fit">
           <input
             type="text"
-            value={formName}
-            onChange={(e) => setFormName(e.target.value)}
+            value={formData.survey.title}
+            onChange={(e) => {updateFormData('name',e.target.value); updateFormData('survey.title', e.target.value)}}
             placeholder="Nome do Formulário"
             className="custom-placeholder form-input text-[#13866f] text-[28px] font-bold font-['Poppins'] leading-[35px] border-none outline-none bg-transparent"
             style={{
@@ -274,8 +264,8 @@ const Editor = () => {
           />
           <input
             type="text"
-            value={formDescription}
-            onChange={(e) => setFormDescription(e.target.value)}
+            value={formData.survey.description}
+            onChange={(e) => {updateFormData('description',e.target.value); updateFormData('survey.description', e.target.value)}}
             placeholder="Descrição"
             className="form-input text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px] border-none outline-none bg-transparent"
             style={{
@@ -293,7 +283,7 @@ const Editor = () => {
             Criado por: {`${user.name}`}
           </div>
           <div className="text-right text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            Última edição: 25/08/24 às 03:35
+            Última edição: {formData.updated_at ? getTime(formData.updated_at): getTime(Date().toString())}
           </div>
         </div>
       </div>
