@@ -26,6 +26,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   onCopy,
   onDelete,
   onMove,
+  index,
 }) => {
   const [question, setQuestion] = useState<string>("");
   const [type, setType] = useState<string>("text");
@@ -41,7 +42,6 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   useEffect(() => {
-    // Automatically add a disabled option if all options are enabled
     if (options.every(option => option.enabled)) {
       setOptions([...options, { id: Date.now().toString(), label: `Option ${options.length + 1}`, enabled: false }]);
     }
@@ -156,6 +156,8 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
       question={question}
       type={type}
       onChange={setQuestion}
+      onMove={onMove}
+      index={index}
     />
   );
 

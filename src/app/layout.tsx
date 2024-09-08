@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import SideBar from "@/components/Sidebar";
 import "./globals.css";
 import { Inter } from "next/font/google";
-import { FormProvider  } from "@/contexts/FormContext";
+import { FormProvider } from "@/contexts/FormContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,7 +25,7 @@ export default function RootLayout({
           {pathname !== "/" && pathname !== "/register" && (
             <SideBar user={""} activePage={activePage || "dashboard"} />
           )}
-          <FormProvider >
+          <FormProvider>
             {children}
           </FormProvider>
         </div>

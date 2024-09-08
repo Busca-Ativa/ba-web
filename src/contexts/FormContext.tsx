@@ -33,10 +33,8 @@ const initialFormData: FormData = {
 
 
 
-// Create the context with default values (which will be overridden by the provider)
 export const FormContext = createContext<FormContextType | undefined>(undefined);
 
-// Define the provider props
 interface FormProviderProps {
   children: ReactNode;
 }
@@ -46,16 +44,15 @@ export const FormProvider = ({ children }: FormProviderProps) => {
 
   const updateFormData = (key: string, value: string) => {
     setFormData((prev) => {
-      const keys = key.split('.'); // Split the key by dots to access nested properties
-      let updatedFormData: any = { ...prev }; // Copy the current form data
+      const keys = key.split('.');
+      let updatedFormData: any = { ...prev };
 
-      // Traverse the object to the second last key
       keys.slice(0, -1).reduce((acc, curr) => {
         if (!acc[curr]) {
-          acc[curr] = {}; // Initialize the nested object if it doesn't exist
+          acc[curr] = {};
         }
         return acc[curr];
-      }, updatedFormData)[keys[keys.length - 1]] = value; // Set the final key to the new value
+      }, updatedFormData)[keys[keys.length - 1]] = value;
 
       return updatedFormData;
     });

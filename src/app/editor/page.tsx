@@ -41,15 +41,13 @@ import { FormContext } from "@/contexts/FormContext";
 import { Question } from "@/types/Question";
 import { getTime } from "@/utils";
 
+
 const Editor = () => {
-  const { formData, updateFormData, updateQuestionOrder } = useContext(FormContext);
-  const [tags, setTags] = useState([]);
-  const [surveyJson, setSurveyJson] = useState({});
-  const [formName, setFormName] = useState("");
-  const [formDescription, setFormDescription] = useState("");
+  const { formData, updateFormData, updateQuestionOrder, getQuestionByIndex } = useContext(FormContext);
   const [tabSelected, setTabSelected] = useState(0);
   const [tagHover, setTagHover] = useState<null | number>(null);
   const [user, setUser] = useState(AuthService.getUser());
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const formId = searchParams.get("id");
@@ -395,35 +393,23 @@ const Editor = () => {
             </button>
           </div>
           <div className="flex flex-col ml-12 flex-6 justify-center items-center">
-            {/* <div className="flex flex-col flex-1 justify-center items-center gap-[45px]">
-              <div className="text-center text-black text-sm font-normal font-['Poppins'] leading-[21px]">
-                O formulário está vazio.
-                <br />
-                Adicione um elemento das opções ao lado ou clique no botão
-                abaixo.
-              </div>
-              <button className="h-[41px] px-[25px] py-2 bg-[#d2f9f1] rounded justify-center items-center gap-3 inline-flex">
-                <div className="grow shrink basis-0 text-center text-[#19b394] text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
-                  Adicionar Questão
-                </div>
-              </button>
-            </div> */}
-            {surveyJson?.elements?.map((value, idx) => {
-              const Component = getType(value.type);
-              console.log(value.type);
-              return (
-                <div
-                  key={idx}
-                  className="flex flex-col flex-1 justify-center items-center"
-                >
-                  {Component && <Component key={idx} />}
-                </div>
-              );
+            {formData?.survey?.pages?.map((page, pageIndex: number) => {
+              return page.elements.map( (question: Question, questionIndex: number) => {
+                const Component = getType(question.type);
+                return (
+                  <div
+                    key={questionIndex}
+                    className="flex flex-col flex-1 justify-center items-center"
+                  >
+                    {Component && <Component onMove={(direction) => updateQuestionOrder(pageIndex,questionIndex,direction)} index={questionIndex} pageIndex={pageIndex} data={getQuestionByIndex(pageIndex,questionIndex)}/>}
+                  </div>
+                );
+              } )
             })}
           </div>
         </div>
       )}
-      {tabSelected == 1 && <Survey model={new Model(surveyJson)} />}
+      {tabSelected == 1 && <Survey model={new Model(formData?.survey)} />}
       <ToastContainer />
     </div>
   );
