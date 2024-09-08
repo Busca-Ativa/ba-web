@@ -8,6 +8,8 @@ import BATable from "@/components/BATable";
 import api from '../../../services/api'
 import nookies from 'nookies';
 import { GetServerSidePropsContext } from 'next';
+import { AuthService } from "@/services/auth/auth";
+import { getStatus, StatusObject } from "@/utils";
 
 const Formularios = () => {
   const router = useRouter();
@@ -20,6 +22,8 @@ const Formularios = () => {
 
   const [forms, setForms] = useState([]);
   const [rows, setRows] = useState([]);
+  const [rowsConfig, setRowsConfig] = useState([]);
+  const user = AuthService.getUser();
 
   useEffect( () =>{
     const getForms = async () =>{
@@ -49,54 +53,23 @@ const Formularios = () => {
   }, [] )
 
 
-  // const rows = forms?.map( (value) => {
-  //   return {
-  //     id: value.id,
-  //     title: value.name,
-  //     creator: value.editor.name + " " + value.editor.lastName,
-  //     status: value.tags[0],
-  //     origin: value.tags[0] === 'institution'? value.institution.name : value.unit.name
-  //   }
-  // } )
-
   // TODO: Quando deletar apagar a linha da tabela e refresh do component
   useEffect( () => {
   setRows(forms?.map( (value) => {
+    const name: string = value.editor.name + " " + value.editor.lastName;
+    const status: StatusObject = getStatus(value.tags[1]);
     return {
       id: value.id,
       title: value.name,
-      creator: value.editor.name + " " + value.editor.lastName,
-      status: value.tags[0],
+      creator: name,
+      status: status.name,
+      // WARN: Apenas se for o mesmo criado pode deletar e editar.
+      config: value.editor.id !== user.id ? {editable: false, deletable: false} : status.config,
       origin: value.tags[0] === 'institution'? value.institution.name : value.unit.name
     }
   } ));
 
   }, [forms] )
-
-
-  const configRows = [
-    {
-      editable: true,
-      deletable: true,
-    },
-    {
-      editable: false,
-    },
-    {
-      editable: true,
-      deletable: true,
-    },
-    {
-      editable: false,
-    },
-    {
-      editable: false,
-    },
-    {
-      editable: true,
-      deletable: true,
-    },
-  ];
 
   const pushEditor = () => {
     router.push("/editor");
@@ -121,16 +94,17 @@ const Formularios = () => {
   }
 
   const handleDuplicate = async (row, rowIndex) => {
-    console.log("Duplicate")
     try{
-      let response = await api.post(`/editor/form/${row.id}`);
+      let response = await api.post(`/editor/form/${row.id}`,{}, {withCredentials:true});
       if (response.status === 200){
         const data = response.data.data;
+        const status = getStatus(data.tags[1]);
         const duplicatedRow = {
           id: data.id,
           title: data.name,
           creator: data.editor.name + " " + data.editor.lastName,
-          status: data.tags[0],
+          status: status.name,
+          config: data.editor.id !== user.id ? {editable: false, deletable: false} : status.config,
           origin: data.tags[0] === 'institution'? data.institution.name : data.unit.name
         }
         const updatedRows = [
@@ -168,7 +142,7 @@ const Formularios = () => {
           </div>
         </button>
       </div>
-      <BATable columns={columns} initialRows={rows} configRows={configRows} onDuplicate={handleDuplicate} onDelete={handleDelete} onEdit={handleEdit} />
+      <BATable columns={columns} initialRows={rows} onDuplicate={handleDuplicate} onDelete={handleDelete} onEdit={handleEdit} />
     </div>
   );
 };

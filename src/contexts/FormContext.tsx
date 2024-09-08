@@ -5,6 +5,8 @@ import { SurveySchema } from "@/types/Survey";
 interface FormData {
   name: string;
   description: string;
+  created_at: string;
+  updated_at: string;
   tags: string[];
   survey: SurveySchema;
 }
@@ -19,6 +21,8 @@ interface FormContextType {
 const initialFormData: FormData = {
   name: '',
   description: '',
+  created_at: '',
+  updated_at: '',
   tags: [],
   survey: {
     title: "",
@@ -29,10 +33,8 @@ const initialFormData: FormData = {
 
 
 
-// Create the context with default values (which will be overridden by the provider)
 export const FormContext = createContext<FormContextType | undefined>(undefined);
 
-// Define the provider props
 interface FormProviderProps {
   children: ReactNode;
 }
@@ -40,11 +42,20 @@ interface FormProviderProps {
 export const FormProvider = ({ children }: FormProviderProps) => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
 
-  const updateFormData = (key: keyof FormData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+  const updateFormData = (key: string, value: string) => {
+    setFormData((prev) => {
+      const keys = key.split('.');
+      let updatedFormData: any = { ...prev };
+
+      keys.slice(0, -1).reduce((acc, curr) => {
+        if (!acc[curr]) {
+          acc[curr] = {};
+        }
+        return acc[curr];
+      }, updatedFormData)[keys[keys.length - 1]] = value;
+
+      return updatedFormData;
+    });
   };
 
   const getQuestionByIndex = (pageIndex: number, questionIndex:number): Question | undefined => {

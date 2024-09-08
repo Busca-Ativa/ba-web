@@ -39,7 +39,7 @@ interface Config {
 interface BATableProps {
   columns: Column[];
   initialRows: Record<string, string | number>[];
-  configRows?: Config[];
+  // configRows?: Config[];
   onEdit?: (row: Record<string, string | number>) => void;
   onDelete?: (row: Record<string, string | number>, rowIndex: number) => void;
   onDuplicate?: (row: Record<string, string | number>, rowIndex: number) => void;
@@ -106,7 +106,7 @@ const BATable: React.FC<BATableProps> = ({
   initialRows,
   onEdit,
   onDelete,
-  configRows,
+  // configRows,
   onDuplicate,
 }) => {
   const [order, setOrder] = useState<Order>("asc");
@@ -172,8 +172,8 @@ const BATable: React.FC<BATableProps> = ({
                   </TableSortLabel>
                 </TableCell>
               ))}
-              {configRows && <TableCell sx={{ padding: 0 }}></TableCell>}
-              {configRows && <TableCell sx={{ padding: 0 }}></TableCell>}
+              <TableCell sx={{ padding: 0 }}></TableCell>
+              <TableCell sx={{ padding: 0 }}></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -204,7 +204,7 @@ const BATable: React.FC<BATableProps> = ({
                     )}
                   </TableCell>
                 ))}
-                {configRows?.[rowIndex]?.editable == true ? (
+                {rows[rowIndex]?.config?.editable == true ? (
                   <>
                     <TableCell sx={{ width: 10, paddingRight: "4px" }}>
                       <button
@@ -223,7 +223,7 @@ const BATable: React.FC<BATableProps> = ({
                         <span>Editar</span>
                       </button>
                     </TableCell>
-                    {configRows?.[rowIndex]?.deletable && (
+                    {rows[rowIndex]?.config?.deletable && (
                       <TableCell sx={{ width: 10, paddingLeft: "4px" }}>
                         <button
                           onClick={() => onDelete && onDelete(row,rowIndex)}
