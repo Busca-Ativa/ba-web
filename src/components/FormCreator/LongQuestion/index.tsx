@@ -42,6 +42,7 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
   onCopy,
   onDelete,
   onMove,
+  index,
 }) => {
   const [question, setQuestion] = useState<string>("");
   const [anwser, setAnswer] = useState<string>("");
@@ -61,7 +62,7 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
   const footer = <BaseFooter onRequire={handleRequired}/>
 
   return (
-    <BaseComponent header={header} content={content} footer={footer}/>
+    <BaseComponent onMove={onMove} index={index} header={header} content={content} footer={footer}/>
   );
 };
 

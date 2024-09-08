@@ -4,7 +4,7 @@ import "survey-core/defaultV2.min.css";
 import "react-toastify/dist/ReactToastify.css";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Model, Survey } from "survey-react-ui";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Typography from "@mui/material/Typography";
@@ -37,19 +37,39 @@ import { AuthService } from "@/services/auth/auth";
 import DropDownButton from "@/components/Buttons/DropdownButton";
 import api from "@/services/api";
 import { surveyElements, surveyPageExample } from "../../utils/SurveyJS";
+import { FormContext } from "@/contexts/FormContext";
+import { Question } from "@/types/Question";
 
 const Editor = () => {
-  // const [surveyJson, setSurveyJson] = useState(surveyElements);
-  const [tags, setTags] = useState([]);
-  const [surveyJson, setSurveyJson] = useState({});
-  const [formName, setFormName] = useState("");
-  const [formDescription, setFormDescription] = useState("");
+  const { formData, updateFormData, updateQuestionOrder, getQuestionByIndex } = useContext(FormContext);
   const [tabSelected, setTabSelected] = useState(0);
   const [tagHover, setTagHover] = useState<null | number>(null);
   const [user, setUser] = useState(AuthService.getUser());
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const formId = searchParams.get("id");
+
+  const moveQuestion = (index: number, direction: 'up' | 'down') => {
+    const newPositions = [...surveyJson.elements];
+    const [movedOption] = newPositions.splice(index, 1);
+    if (direction === 'down') {
+      if (index <= newPositions.length){
+        newPositions.splice(index + 1, 0, movedOption);
+      } else {
+        return
+      }
+    } else if (direction === 'up') {
+      if (index-1 >= 0){
+        newPositions.splice(index - 1, 0, movedOption);
+      }
+    }
+    setSurveyJson((prev) => ({
+      ...prev,
+      elements: newPositions
+    }));
+    // setOptions(newPositions);
+  };
 
   useEffect(() => {
     const fetchForm = async () => {
@@ -59,11 +79,10 @@ const Editor = () => {
             withCredentials: true,
           });
           const formData = response.data;
-          console.log(formData);
-          setSurveyJson(formData.data.survey_schema || {});
-          setTags(formData.data.tags || []);
-          setFormName(formData.data.survey_schema?.title || "");
-          setFormDescription(formData.data.survey_schema?.description || "");
+          updateFormData('survey', formData.data.survey_schema || {});
+          updateFormData('tags', formData.data.tags || []);
+          updateFormData('name', formData.data.survey_schema?.title || "");
+          updateFormData('description', formData.data.survey_schema?.description || "");
         } catch (error) {
           toast.error(
             "Erro ao carregar o formulário: " +
@@ -259,8 +278,8 @@ const Editor = () => {
         <div className="flex flex-col gap-[5px] h-fit">
           <input
             type="text"
-            value={formName}
-            onChange={(e) => setFormName(e.target.value)}
+            value={formData.name}
+            onChange={(e) => updateFormData('name',e.target.value)}
             placeholder="Nome do Formulário"
             className="custom-placeholder form-input text-[#13866f] text-[28px] font-bold font-['Poppins'] leading-[35px] border-none outline-none bg-transparent"
             style={{
@@ -274,8 +293,8 @@ const Editor = () => {
           />
           <input
             type="text"
-            value={formDescription}
-            onChange={(e) => setFormDescription(e.target.value)}
+            value={formData.description}
+            onChange={(e) => updateFormData('description',e.target.value)}
             placeholder="Descrição"
             className="form-input text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px] border-none outline-none bg-transparent"
             style={{
@@ -405,35 +424,23 @@ const Editor = () => {
             </button>
           </div>
           <div className="flex flex-col ml-12 flex-6 justify-center items-center">
-            {/* <div className="flex flex-col flex-1 justify-center items-center gap-[45px]">
-              <div className="text-center text-black text-sm font-normal font-['Poppins'] leading-[21px]">
-                O formulário está vazio.
-                <br />
-                Adicione um elemento das opções ao lado ou clique no botão
-                abaixo.
-              </div>
-              <button className="h-[41px] px-[25px] py-2 bg-[#d2f9f1] rounded justify-center items-center gap-3 inline-flex">
-                <div className="grow shrink basis-0 text-center text-[#19b394] text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
-                  Adicionar Questão
-                </div>
-              </button>
-            </div> */}
-            {surveyJson?.elements?.map((value, idx) => {
-              const Component = getType(value.type);
-              console.log(value.type);
-              return (
-                <div
-                  key={idx}
-                  className="flex flex-col flex-1 justify-center items-center"
-                >
-                  {Component && <Component key={idx} />}
-                </div>
-              );
+            {formData?.survey?.pages?.map((page, pageIndex: number) => {
+              return page.elements.map( (question: Question, questionIndex: number) => {
+                const Component = getType(question.type);
+                return (
+                  <div
+                    key={questionIndex}
+                    className="flex flex-col flex-1 justify-center items-center"
+                  >
+                    {Component && <Component onMove={(direction) => updateQuestionOrder(pageIndex,questionIndex,direction)} index={questionIndex} pageIndex={pageIndex} data={getQuestionByIndex(pageIndex,questionIndex)}/>}
+                  </div>
+                );
+              } )
             })}
           </div>
         </div>
       )}
-      {tabSelected == 1 && <Survey model={new Model(surveyJson)} />}
+      {tabSelected == 1 && <Survey model={new Model(formData?.survey)} />}
       <ToastContainer />
     </div>
   );
