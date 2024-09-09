@@ -5,7 +5,7 @@ import MenuItem from '@mui/material/MenuItem';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { SxProps, Theme } from '@mui/system';
 import { ListItemIcon, ListItemText, Divider } from '@mui/material';
-import { darken } from '@mui/system';
+import { darken } from '@mui/system'; // Import darken utility
 
 interface Option {
   label: string;
@@ -23,19 +23,24 @@ interface DropdownButtonProps {
   color?: string;
   startIcon?: ReactNode;
   optionGroups?: OptionGroup[];
+  onClick?: () => void;
   sx?: SxProps<Theme>; // Estilos gerais para texto e ícones
 }
 
-const DropdownButton: React.FC<DropdownButtonProps> = ({
+const ClickOrDropdownButton: React.FC<DropdownButtonProps> = ({
   children = "Salvar",
   color = "green",
   startIcon,
   optionGroups = [],
   sx,
+  onClick = () => {},
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    onClick();
+  };
+  const handleArrowClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -48,11 +53,18 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
       <Button
         variant="contained"
         startIcon={startIcon}
+        onClick={handleClick}
         endIcon={
           <ExpandMoreIcon
+            onClick={(event) => {
+              event.stopPropagation(); // Prevent triggering the main button click
+              handleArrowClick(event);
+            }}
             sx={{
+              padding: 0,
+              margin: 0,
               '&:hover': {
-                color: sx?.color || 'darkgreen'
+                backgroundColor:darken(color, 0.1),
               },
             }}
           />
@@ -60,12 +72,11 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
         sx={{
           backgroundColor: color,
           '&:hover': {
-            backgroundColor: darken(color, 0.2),
+            backgroundColor: color,
           },
           color: sx?.color,
           ...sx,
         }}
-        onClick={handleClick}
       >
         {children}
       </Button>
@@ -113,4 +124,4 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
   );
 };
 
-export default DropdownButton;
+export default ClickOrDropdownButton;

@@ -8,9 +8,9 @@ import { useState, useEffect, useContext } from "react";
 import { Model, Survey } from "survey-react-ui";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Typography from "@mui/material/Typography";
+import { Button } from "@mui/material";
 import Link from "@mui/material/Link";
 import { toast, ToastContainer } from "react-toastify";
-
 import {
   CheckBoxOutlined,
   RadioButtonChecked,
@@ -35,6 +35,7 @@ import UniqueSelection from "@/components/FormCreator/UniqueSelection";
 import BaseComponent from "@/components/FormCreator/BaseComponent";
 import { AuthService } from "@/services/auth/auth";
 import DropDownButton from "@/components/Buttons/DropdownButton";
+import ClickOrDropDownButton from "@/components/Buttons/ClickOrDropdownButton";
 import api from "@/services/api";
 import { surveyElements, surveyPageExample } from "../../utils/SurveyJS";
 import { FormContext } from "@/contexts/FormContext";
@@ -227,13 +228,14 @@ const Editor = () => {
           >
             Modificar
           </DropDownButton>
-          <DropDownButton
+          <ClickOrDropDownButton
             optionGroups={saveOptionsGroups}
             color="#40C156"
-            startIcon={<SaveIcon />}
+            startIcon={<SaveIcon/>}
+            onClick={handleSave}
           >
-            Salvar
-          </DropDownButton>
+          Salvar
+          </ClickOrDropDownButton>
         </div>
       </div>
       <div className="flex justify-between">
