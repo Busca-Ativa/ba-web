@@ -9,6 +9,7 @@ interface LongQuestionProps {
   onCopy: () => void;
   onDelete: () => void;
   onMove: () => void;
+  index: number;
 }
 interface TextAreaProps {
   placeholder: string;

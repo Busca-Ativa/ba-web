@@ -20,6 +20,7 @@ interface UniqueSelectionProps {
   onCopy: () => void;
   onDelete: () => void;
   onMove: () => void;
+  index: number;
 }
 
 const UniqueSelection: React.FC<UniqueSelectionProps> = ({
@@ -169,7 +170,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   );
 
   return (
-    <BaseComponent header={header} content={content} footer={footer} />
+    <BaseComponent onMove={onMove} index={index} header={header} content={content} footer={footer} />
   );
 };
 
