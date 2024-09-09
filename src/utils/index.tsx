@@ -9,7 +9,7 @@ export type StatusObject = {
 export function getStatus(status: string) : StatusObject | string {
   switch (status) {
     case "done":
-      return {name:"Pronto",config:{editable: false, deletable: true}};
+      return {name:"Pronto",config:{editable: true, deletable: true}};
     case "undone":
       return {name:"Em Edição",config:{editable: true, deletable: true}};
     case "used":
