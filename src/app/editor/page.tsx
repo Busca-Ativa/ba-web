@@ -43,7 +43,7 @@ import { getTime } from "@/utils";
 
 
 const Editor = () => {
-  const { formData, updateFormData, updateQuestionOrder, getQuestionByIndex } = useContext(FormContext);
+  const { formData, updateFormData, updateQuestionOrder, getQuestionByIndex, addQuestionToPage } = useContext(FormContext);
   const [tabSelected, setTabSelected] = useState(0);
   const [tagHover, setTagHover] = useState<null | number>(null);
   const [user, setUser] = useState(AuthService.getUser());
@@ -136,13 +136,6 @@ const Editor = () => {
       ],
     },
   ];
-
-  const addElement = (element) => {
-    setSurveyJson((prev) => ({
-      ...prev,
-      elements: prev.elements ? [...prev.elements, element] : [element], // Create a new array
-    }));
-  };
 
   const types = {
     boolean: null,
@@ -315,7 +308,7 @@ const Editor = () => {
               onMouseOver={() => handleTagsHover(0)}
               onMouseLeave={handleTagsLeave}
               onClick={() => {
-                addElement({
+                addQuestionToPage(0,{
                   name: "FirstName",
                   title: "Enter your first name:",
                   type: "radiogroup",
@@ -352,7 +345,7 @@ const Editor = () => {
               onMouseOver={() => handleTagsHover(4)}
               onMouseLeave={handleTagsLeave}
               onClick={() => {
-                addElement({
+                addQuestionToPage(0,{
                   name: "FirstName",
                   title: "Enter your first name:",
                   type: "text",
@@ -369,10 +362,10 @@ const Editor = () => {
               onMouseOver={() => handleTagsHover(5)}
               onMouseLeave={handleTagsLeave}
               onClick={() => {
-                addElement({
+                addQuestionToPage(0,{
                   name: "FirstName",
                   title: "Enter your first name:",
-                  type: "text",
+                  type: "comment",
                 });
               }}
             >

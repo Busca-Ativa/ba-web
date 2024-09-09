@@ -97,8 +97,32 @@ export const FormProvider = ({ children }: FormProviderProps) => {
     });
   };
 
+  const addQuestionToPage = (
+    pageIndex: number,
+    question: Question
+  ): void => {
+    // Ensure the page exists
+    if (pageIndex >= 0 && pageIndex < formData.survey.pages.length) {
+      const page = formData.survey.pages[pageIndex];
+
+      // Ensure the 'elements' array exists on the page
+      if (!page.elements) {
+        page.elements = [];
+      }
+
+      // Add the question to the elements array
+      page.elements.push(question);
+      updateFormData(`survey.pages[${pageIndex}].elements`, page.elements || {});
+
+      // Optionally log the result to verify
+      console.log(`Questão adicionada para a pagina ${pageIndex}:`, question);
+    } else {
+      console.error('Indice de página inválido', pageIndex);
+    }
+  }
+
   return (
-    <FormContext.Provider value={{ formData, updateFormData, updateQuestionOrder, getQuestionByIndex }}>
+    <FormContext.Provider value={{ formData, updateFormData, updateQuestionOrder, getQuestionByIndex, addQuestionToPage }}>
       {children}
     </FormContext.Provider>
   );
