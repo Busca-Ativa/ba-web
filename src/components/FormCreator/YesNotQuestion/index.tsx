@@ -29,7 +29,6 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
   );
 
   const [question, setQuestion] = useState(element?.name || "");
-  const [answer, setAnswer] = useState("");
   const [type, setType] = useState(element?.type || "boolean");
   const [required, setRequired] = useState(element?.required || false);
   const [labelYes, setLabelYes] = useState(element?.labelTrue || "Sim");
@@ -39,20 +38,11 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
     setRequired(!required);
   };
 
-  const header = (
-    <BaseTitle
-      question={question}
-      kind={type}
-      onChange={setQuestion}
-      required={required}
-    />
-  );
-
   const handleLabel = (label, value) => {
-    if (value) {
-      setLabelYes(label);
+    if (label) {
+      setLabelYes(value);
     } else {
-      setLabelNo(label);
+      setLabelNo(value);
     }
     dispatch(
       updateElement({
@@ -67,8 +57,8 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
     );
   };
 
-  const handleAnswer = (value) => {
-    setAnswer(value);
+  const handleQuestion = (value) => {
+    setQuestion(value);
     dispatch(
       updateElement({
         pageIndex,
@@ -80,6 +70,15 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
       })
     );
   };
+
+  const header = (
+    <BaseTitle
+      question={question}
+      kind={type}
+      onChange={handleQuestion}
+      required={required}
+    />
+  );
 
   const content = (
     <div className="flex h-[49px] w-fit p-1 bg-neutral-100 rounded-[100px] shadow-inner justify-start items-start">
@@ -108,14 +107,7 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
 
   const footer = <BaseFooter onRequire={handleRequired} />;
 
-  return (
-    <BaseComponent
-      header={header}
-      content={content}
-      footer={footer}
-      handleAnswer={handleAnswer}
-    />
-  );
+  return <BaseComponent header={header} content={content} footer={footer} />;
 };
 
 export default YesNotQuestion;

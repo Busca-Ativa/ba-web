@@ -11,7 +11,6 @@ interface BaseComponentProps {
   content?: React.ReactNode;
   footer?: React.ReactNode;
   onMove: (to: number, from: number) => void;
-  handleAnswer: (answer: string) => void;
 }
 
 const BaseComponent: React.FC<BaseComponentProps> = ({
@@ -19,7 +18,6 @@ const BaseComponent: React.FC<BaseComponentProps> = ({
   content,
   footer,
   onMove,
-  handleAnswer,
 }) => {
   const [titleValue, setTitleValue] = useState("");
   const [contentValue, setContentValue] = useState("");
@@ -27,7 +25,7 @@ const BaseComponent: React.FC<BaseComponentProps> = ({
 
   return (
     <div
-      className="flex flex-col p-[20px] w-[576px] h-full bg-white rounded-[5px] shadow-md gap-[25px] mb-3.5 relative "
+      className="flex flex-col p-[20px] w-[576px] h-fit bg-white rounded-[5px] shadow-md gap-[25px] mb-3.5 relative "
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -49,7 +47,7 @@ const BaseComponent: React.FC<BaseComponentProps> = ({
       {content ? (
         content
       ) : (
-        <BaseContent text={contentValue} onChange={handleAnswer} />
+        <BaseContent text={contentValue} onChange={setContentValue} />
       )}
       {footer ? footer : <BaseFooter />}
     </div>

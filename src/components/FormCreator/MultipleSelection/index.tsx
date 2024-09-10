@@ -9,6 +9,8 @@ import BaseTitle from "../BaseTitle";
 import BaseFooter from "../BaseFooter";
 
 import "./styles.css";
+import { useDispatch, useSelector } from "react-redux";
+import { updateElement } from "../../../../redux/surveySlice";
 
 interface EditableCheckbox {
   id: string;
@@ -17,19 +19,30 @@ interface EditableCheckbox {
 }
 
 interface MultipleSelectionProps {
+  pageIndex: number;
+  elementIndex: number;
   onCopy: () => void;
   onDelete: () => void;
   onMove: () => void;
 }
 
 const MultipleSelection: React.FC<MultipleSelectionProps> = ({
+  pageIndex,
+  elementIndex,
   onCopy,
   onDelete,
   onMove,
 }) => {
-  const [question, setQuestion] = useState<string>("");
-  const [type, setType] = useState<string>("text");
-  const [required, setRequired] = useState<boolean>(false);
+  const dispatch = useDispatch();
+
+  const element = useSelector(
+    (state: any) =>
+      state.survey.surveyJson.pages[pageIndex]?.elements[elementIndex]
+  );
+
+  const [question, setQuestion] = useState<string>(element?.name || "");
+  const [type, setType] = useState<string>(element?.type || "text");
+  const [required, setRequired] = useState<boolean>(element?.required || false);
   const [options, setOptions] = useState<EditableCheckbox[]>([
     { id: "1", label: "Item 1", enabled: true },
     { id: "2", label: "Item 2", enabled: true },
@@ -39,60 +52,104 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   ]);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
-  useEffect(() => {
-    // Automatically add a disabled option if all options are enabled
-    if (options.every((option) => option.enabled)) {
-      setOptions([
-        ...options,
-        {
-          id: Date.now().toString(),
-          label: `Option ${options.length + 1}`,
-          enabled: false,
-        },
-      ]);
-    }
-  }, [options]);
+  const updateElementChoices = () => {
+    console.log("updateElementChoices", options);
 
-  const toggleOption = (id: string) => {
-    setOptions(
-      options.map((option) =>
-        option.id === id ? { ...option, enabled: !option.enabled } : option
-      )
+    const updatedElement = {
+      ...element,
+      choices: options
+        .filter((option) => option.enabled)
+        .map((option) => option.label),
+    };
+
+    dispatch(
+      updateElement({
+        pageIndex,
+        elementIndex,
+        updatedElement,
+      })
     );
   };
 
+  useEffect(() => {
+    if (element) {
+      setQuestion(element.name);
+      setType(element.type);
+      setRequired(element.required);
+      console.log(element.choices);
+
+      const choices = element.choices || [];
+
+      const existingOptions = options.filter(
+        (option) =>
+          option.label !== "Nenhum" && option.label !== "Outro (Descreva)"
+      );
+
+      const updatedOptions = [
+        ...existingOptions,
+        { id: "5", label: "Nenhum", enabled: false },
+        { id: "6", label: "Outro (Descreva)", enabled: false },
+      ];
+      updateElementChoices();
+      setOptions(updatedOptions);
+      updateElementChoices();
+    }
+  }, []);
+
+  const toggleOption = (id: string) => {
+    setOptions(
+      options?.map((option) =>
+        option.id === id ? { ...option, enabled: true } : option
+      )
+    );
+    updateElementChoices();
+  };
+
   const handleSelect = (id: string) => {
-    setSelectedOptions((prevSelectedOptions) =>
-      prevSelectedOptions.includes(id)
-        ? prevSelectedOptions.filter((optionId) => optionId !== id)
-        : [...prevSelectedOptions, id]
+    setSelectedOption(id);
+  };
+
+  const handleChangeQuestion = (newQuestion: string) => {
+    setQuestion(newQuestion);
+    dispatch(
+      updateElement({
+        pageIndex,
+        elementIndex,
+        updatedElement: { ...element, name: newQuestion },
+      })
     );
   };
 
   const handleRequired = () => {
     setRequired(!required);
+    dispatch(
+      updateElement({
+        pageIndex,
+        elementIndex,
+        updatedElement: { ...element, required: !required },
+      })
+    );
   };
 
   const handleLabelChange = (id: string, newLabel: string) => {
     setOptions(
-      options.map((option) =>
+      options?.map((option) =>
         option.id === id ? { ...option, label: newLabel } : option
       )
     );
+    updateElementChoices();
   };
 
   const handleRemove = (id: string) => {
-    setOptions(options.filter((option) => option.id !== id));
-    setSelectedOptions((prevSelectedOptions) =>
-      prevSelectedOptions.filter((optionId) => optionId !== id)
-    );
+    setOptions(options?.filter((option) => option.id !== id));
+    updateElementChoices();
   };
 
   const moveOption = (index: number, direction: "up" | "down") => {
     const newOptions = [...options];
     const [movedOption] = newOptions.splice(index, 1);
     if (direction === "down") {
-      if (index + 1 < newOptions.length && newOptions[index + 1].enabled) {
+      if (index + 1 <= newOptions.length && newOptions[index + 1].enabled) {
         newOptions.splice(index + 1, 0, movedOption);
       } else {
         return;
@@ -103,6 +160,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
       }
     }
     setOptions(newOptions);
+    updateElementChoices();
   };
 
   const content = (
@@ -165,8 +223,8 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
     <BaseTitle
       required={required}
       question={question}
-      type={type}
-      onChange={setQuestion}
+      type={"text"}
+      onChange={handleChangeQuestion}
     />
   );
 
