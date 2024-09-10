@@ -10,7 +10,15 @@ import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import { toast, ToastContainer } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
 
+import {
+  setSurveyJson,
+  setFormName,
+  setFormDescription,
+  setTags,
+  addElement,
+} from "../../../redux/surveySlice";
 import {
   CheckBoxOutlined,
   RadioButtonChecked,
@@ -27,7 +35,6 @@ import {
   LabelOutlined,
 } from "@mui/icons-material";
 import EditFormIcon from "@/components/Icons/EditFormIcon";
-
 import Status from "@/components/Status";
 import ShortQuestion from "@/components/FormCreator/ShortQuestion";
 import LongQuestion from "@/components/FormCreator/LongQuestion";
@@ -41,17 +48,25 @@ import MultipleSelection from "@/components/FormCreator/MultipleSelection";
 import YesNotQuestion from "@/components/FormCreator/YesNotQuestion";
 
 const Editor = () => {
-  // const [surveyJson, setSurveyJson] = useState(surveyElements);
-  const [tags, setTags] = useState([]);
-  const [surveyJson, setSurveyJson] = useState({});
-  const [formName, setFormName] = useState("");
-  const [formDescription, setFormDescription] = useState("");
+  const dispatch = useDispatch();
+
+  const surveyJson = useSelector((state: any) => state.survey.surveyJson);
+  const formName = useSelector((state: any) => state.survey.formName);
+  const formDescription = useSelector(
+    (state: any) => state.survey.formDescription
+  );
+  const tags = useSelector((state: any) => state.survey.tags);
+
   const [tabSelected, setTabSelected] = useState(0);
   const [tagHover, setTagHover] = useState<null | number>(null);
-  const [user, setUser] = useState(AuthService.getUser());
+  const [user, setUser] = useState(AuthService.getUser() || {});
   const router = useRouter();
   const searchParams = useSearchParams();
   const formId = searchParams.get("id");
+
+  useEffect(() => {
+    console.log(surveyJson);
+  }, [surveyJson]);
 
   useEffect(() => {
     const fetchForm = async () => {
@@ -62,11 +77,14 @@ const Editor = () => {
           });
           const formData = response.data;
           console.log(formData);
-          setSurveyJson(formData.data.survey_schema || {});
-          setTags(formData.data.tags || []);
-          setFormName(formData.data.survey_schema?.title || "");
-          setFormDescription(formData.data.survey_schema?.description || "");
-        } catch (error) {
+
+          dispatch(setSurveyJson(formData.data.survey_schema || {}));
+          dispatch(setTags(formData.data.tags || []));
+          dispatch(setFormName(formData.data.survey_schema?.title || ""));
+          dispatch(
+            setFormDescription(formData.data.survey_schema?.description || "")
+          );
+        } catch (error: any) {
           toast.error(
             "Erro ao carregar o formulário: " +
               (error.response?.data || error.message)
@@ -133,11 +151,8 @@ const Editor = () => {
     },
   ];
 
-  const addElement = (element) => {
-    setSurveyJson((prev) => ({
-      ...prev,
-      elements: prev.elements ? [...prev.elements, element] : [element], // Create a new array
-    }));
+  const handleAddElement = (element: any): UnknownAction => {
+    return dispatch(addElement({ pageIndex: 0, element }));
   };
 
   const swapElement = (obj, olderIdx, newIdx) => {
@@ -262,7 +277,7 @@ const Editor = () => {
           <input
             type="text"
             value={formName}
-            onChange={(e) => setFormName(e.target.value)}
+            onChange={(e) => dispatch(setFormName(e.target.value))}
             placeholder="Nome do Formulário"
             className="custom-placeholder form-input text-[#13866f] text-[28px] font-bold font-['Poppins'] leading-[35px] border-none outline-none bg-transparent"
             style={{
@@ -277,7 +292,7 @@ const Editor = () => {
           <input
             type="text"
             value={formDescription}
-            onChange={(e) => setFormDescription(e.target.value)}
+            onChange={(e) => dispatch(setFormDescription(e.target.value))}
             placeholder="Descrição"
             className="form-input text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px] border-none outline-none bg-transparent"
             style={{
@@ -292,7 +307,7 @@ const Editor = () => {
         <div className="flex flex-col gap-2 items-end">
           <Status status="Em Edição" bgColor="#FFE9A6" color="#BE9007" />
           <div className="text-right text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            Criado por: {`${user.name}`}
+            Criado por: {`${user?.name}`}
           </div>
           <div className="text-right text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
             Última edição: 25/08/24 às 03:35
@@ -329,10 +344,9 @@ const Editor = () => {
               onMouseOver={() => handleTagsHover(0)}
               onMouseLeave={handleTagsLeave}
               onClick={() => {
-                addElement({
-                  name: "FirstName",
-                  title: "Enter your first name:",
+                handleAddElement({
                   type: "radiogroup",
+                  name: "",
                 });
               }}
             >
@@ -346,10 +360,9 @@ const Editor = () => {
               onMouseOver={() => handleTagsHover(1)}
               onMouseLeave={handleTagsLeave}
               onClick={() => {
-                addElement({
-                  name: "FirstName",
-                  title: "Enter your first name:",
+                handleAddElement({
                   type: "checkbox",
+                  name: "",
                 });
               }}
             >
@@ -363,10 +376,11 @@ const Editor = () => {
               onMouseOver={() => handleTagsHover(3)}
               onMouseLeave={handleTagsLeave}
               onClick={() => {
-                addElement({
-                  name: "FirstName",
-                  title: "Enter your first name:",
+                handleAddElement({
+                  name: "",
                   type: "boolean",
+                  labelFalse: "Não",
+                  labelTrue: "Sim",
                 });
               }}
             >
@@ -380,9 +394,9 @@ const Editor = () => {
               onMouseOver={() => handleTagsHover(4)}
               onMouseLeave={handleTagsLeave}
               onClick={() => {
-                addElement({
-                  name: "FirstName",
-                  title: "Enter your first name:",
+                handleAddElement({
+                  name: "",
+                  title: "",
                   type: "text",
                 });
               }}
@@ -397,9 +411,9 @@ const Editor = () => {
               onMouseOver={() => handleTagsHover(5)}
               onMouseLeave={handleTagsLeave}
               onClick={() => {
-                addElement({
-                  name: "FirstName",
-                  title: "Enter your first name:",
+                handleAddElement({
+                  name: "",
+                  title: "",
                   type: "comment",
                 });
               }}
@@ -436,18 +450,22 @@ const Editor = () => {
                 </button>
               </div>
             )}
-            {surveyJson?.elements?.map((value, idx) => {
-              const Component = getType(value.type);
-              console.log(value.type);
-              return (
-                <div
-                  key={idx}
-                  className="flex flex-col flex-1 justify-center items-center"
-                >
-                  {Component && <Component key={idx} />}
-                </div>
-              );
-            })}
+            {surveyJson?.pages[0].elements?.map(
+              (value: { type: string }, idx: number) => {
+                const Component = getType(value.type);
+                console.log(value.type);
+                return (
+                  <div
+                    key={idx}
+                    className="flex flex-col flex-1 justify-center items-center"
+                  >
+                    {Component && (
+                      <Component key={idx} pageIndex={0} elementIndex={idx} />
+                    )}
+                  </div>
+                );
+              }
+            )}
           </div>
         </div>
       )}

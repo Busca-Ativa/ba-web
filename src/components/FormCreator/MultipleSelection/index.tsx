@@ -128,7 +128,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
             checked={selectedOptions.includes(option.id)}
             onChange={() => handleSelect(option.id)}
             disabled={!option.enabled}
-            className={`custom-checkbox${option.enabled ? "-enabled" : ""}`}
+            className={`m-custom-checkbox${option.enabled ? "-enabled" : ""}`}
           />
           <input
             type="text"

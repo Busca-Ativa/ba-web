@@ -1,4 +1,4 @@
-.custom-checkbox {
+.m-custom-checkbox {
   width: 24px;
   height: 24px;
   background: #FFFFFF;
@@ -14,7 +14,7 @@
   margin-right: 8px;
 }
 
-.custom-checkbox-enabled {
+.m-custom-checkbox-enabled {
   background: #F5F5F5;
   width: 24px;
   height: 24px;
@@ -30,12 +30,12 @@
   margin-right: 8px;
 }
 
-.custom-checkbox:checked {
+.m-custom-checkbox:checked {
   background-color: #F5F5F5;
   /* Or any color to indicate the checked state */
 }
 
-.custom-checkbox:checked::after {
+.m-custom-checkbox:checked::after {
   content: '\\2713';
   /* Unicode checkmark */
   color: white;
