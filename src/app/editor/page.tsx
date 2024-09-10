@@ -27,6 +27,7 @@ import {
   LabelOutlined,
 } from "@mui/icons-material";
 import EditFormIcon from "@/components/Icons/EditFormIcon";
+import { motion, AnimatePresence } from 'framer-motion';
 
 import Status from "@/components/Status";
 import ShortQuestion from "@/components/FormCreator/ShortQuestion";
@@ -388,19 +389,25 @@ const Editor = () => {
             </button>
           </div>
           <div className="flex flex-col ml-12 flex-6 justify-center items-center">
-            {formData?.survey?.pages?.map((page, pageIndex: number) => {
-              return page.elements.map( (question: Question, questionIndex: number) => {
-                const Component = getType(question.type);
-                return (
-                  <div
-                    key={questionIndex}
-                    className="flex flex-col flex-1 justify-center items-center"
-                  >
-                    {Component && <Component onMove={(direction) => updateQuestionOrder(pageIndex,questionIndex,direction)} index={questionIndex} pageIndex={pageIndex} data={getQuestionByIndex(pageIndex,questionIndex)}/>}
-                  </div>
-                );
-              } )
-            })}
+            <AnimatePresence>
+              {formData?.survey?.pages?.map((page, pageIndex: number) => {
+                return page.elements.map( (question: Question, questionIndex: number) => {
+                  const Component = getType(question.type);
+                  return (
+                    <motion.div
+                      key={questionIndex}
+                      layout="position"
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 50 }}
+                      transition={{  type: 'spring', stiffness: 500, damping: 50 }}
+                      className="flex flex-col flex-1 justify-center items-center"
+                    >
+                      {Component && <Component onMove={(direction) => updateQuestionOrder(pageIndex,questionIndex,direction)} index={questionIndex} pageIndex={pageIndex} data={getQuestionByIndex(pageIndex,questionIndex)}/>}
+                    </motion.div>
+                  );
+                } )
+              })}
+            </AnimatePresence>
           </div>
         </div>
       )}
