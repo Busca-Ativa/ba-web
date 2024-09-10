@@ -25,6 +25,8 @@ const initialSurveyState = {
   },
   formName: "",
   formDescription: "",
+  createdAt: "",
+  updatedAt: "",
   tags: []
 };
 
@@ -46,6 +48,19 @@ const surveySlice = createSlice({
     setTags: (state, action) => {
       state.tags = action.payload;
     },
+    setStatusTag: (state, action) => {
+      if (state.tags.length < 1){
+        state.tags.push(action.payload);
+        return;
+      }
+      state.tags[1] = action.payload;
+    },
+    setUpdatedAt: (state, action) => {
+      state.updatedAt = action.payload;
+    },
+    setCreatedAt: (state, action) => {
+      state.createdAt = action.payload;
+    },
     addElement: (state, action) => {
       const { pageIndex, element } = action.payload;
       if (state.surveyJson.pages[pageIndex]) {
@@ -63,6 +78,35 @@ const surveySlice = createSlice({
       if (state.surveyJson.pages[pageIndex] && state.surveyJson.pages[pageIndex].elements[elementIndex]) {
         state.surveyJson.pages[pageIndex].elements[elementIndex] = updatedElement;
       }
+    },
+    updateQuestionOrder: (state, action) => {
+      const { pageIndex, questionIndex, direction } = action.payload;
+      console.log(pageIndex, questionIndex, direction);
+      if (state.surveyJson.pages[pageIndex]) {
+        const elements = state.surveyJson.pages[pageIndex].elements
+        if (elements.length === 0 || questionIndex < 0 || questionIndex >= elements.length) {
+          return ; // No changes if index is out of bounds
+        }
+        const swapElementFrom = elements[questionIndex]
+        if (direction === 'down') {
+          if (questionIndex < elements.length) {
+            const swapElementTo = elements[questionIndex + 1]
+            elements[questionIndex] = swapElementTo;
+            elements[questionIndex + 1] = swapElementFrom;
+          } else {
+            return;
+          }
+        } else if (direction === 'up') {
+          if (questionIndex > 0) {
+            const swapElementTo = elements[questionIndex - 1]
+            elements[questionIndex] = swapElementTo;
+            elements[questionIndex - 1] = swapElementFrom;
+          } else {
+            return;
+          }
+        }
+        state.surveyJson.pages[pageIndex].elements = elements;
+      }
     }
   }
 });
@@ -72,9 +116,13 @@ export const {
   setFormDescription,
   setSurveyJson,
   setTags,
+  setStatusTag,
+  setUpdatedAt,
+  setCreatedAt,
   addElement,
   updateElement,
-  removeElement
+  removeElement,
+  updateQuestionOrder
 } = surveySlice.actions;
 
 export default surveySlice.reducer;

@@ -17,7 +17,11 @@ import {
   setFormName,
   setFormDescription,
   setTags,
+  setStatusTag,
+  setCreatedAt,
+  setUpdatedAt,
   addElement,
+  updateQuestionOrder
 } from "../../../redux/surveySlice";
 import {
   CheckBoxOutlined,
@@ -47,21 +51,33 @@ import api from "@/services/api";
 import { surveyElements, surveyPageExample } from "../../utils/SurveyJS";
 import { FormContext } from "@/contexts/FormContext";
 import { Question } from "@/types/Question";
-import { getTime } from "@/utils";
+import { getTime, getStatus } from "@/utils";
 import MultipleSelection from "@/components/FormCreator/MultipleSelection";
 import YesNotQuestion from "@/components/FormCreator/YesNotQuestion";
 
 
 const Editor = () => {
-  const { formData, updateFormData, updateQuestionOrder, getQuestionByIndex, addQuestionToPage } = useContext(FormContext);
   const dispatch = useDispatch();
 
-  const surveyJson = useSelector((state: any) => state.survey.surveyJson);
-  const formName = useSelector((state: any) => state.survey.formName);
+  const surveyJson = useSelector(
+    (state: any) => state.survey.surveyJson,
+  );
+  const formName = useSelector(
+    (state: any) => state.survey.formName,
+  );
   const formDescription = useSelector(
     (state: any) => state.survey.formDescription
   );
-  const tags = useSelector((state: any) => state.survey.tags);
+  const updatedAt = useSelector(
+    (state: any) => state.survey.updatedAt
+  );
+  const createdAt = useSelector(
+    (state: any) => state.survey.createdAt
+  );
+  const tags = useSelector(
+    (state: any) => state.survey.tags,
+  );
+
   const [tabSelected, setTabSelected] = useState(0);
   const [tagHover, setTagHover] = useState<null | number>(null);
   const [user, setUser] = useState(AuthService.getUser());
@@ -78,20 +94,16 @@ const Editor = () => {
             withCredentials: true,
           });
           const formData = response.data;
-          updateFormData('survey', formData.data.survey_schema || {});
-          updateFormData('tags', formData.data.tags || []);
-          updateFormData('name', formData.data.survey_schema?.title || "");
-          updateFormData('created_at', formData.data.created_at || "");
-          updateFormData('updated_at', formData.data.created_at || "");
-          updateFormData('description', formData.data.survey_schema?.description || "");
+          console.log(formData)
+          dispatch(setUpdatedAt(formData.data.updated_at));
+          dispatch(setCreatedAt(formData.data.created_at));
           dispatch(setSurveyJson(formData.data.survey_schema || {}));
-          dispatch(setTags(formData.data.tags || []));
+          dispatch(setTags(formData.data.tags));
           dispatch(setFormName(formData.data.survey_schema?.title || ""));
           dispatch(
             setFormDescription(formData.data.survey_schema?.description || "")
           );
         } catch (error) {
-          console.log(formData);
           toast.error(
             "Erro ao carregar o formulário: " +
               (error.response?.data || error.message)
@@ -163,22 +175,6 @@ const Editor = () => {
     return dispatch(addElement({ pageIndex: 0, element }));
   };
 
-  const swapElement = (obj, olderIdx, newIdx) => {
-    if (
-      olderIdx >= obj.elements.length ||
-      newIdx >= arr.length ||
-      olderIdx < 0 ||
-      newIdx < 0
-    ) {
-      console.error("Indices fora da lista");
-      return;
-    }
-
-    const temp = obj.elements[olderIdx];
-    obj.elements[olderIdx] = obj.elements[newIdx];
-    obj.elements[newIdx] = temp;
-  };
-
   const types = {
     boolean: YesNotQuestion,
     checkbox: MultipleSelection,
@@ -214,10 +210,10 @@ const Editor = () => {
       surveyJson.title = formName;
       surveyJson.description = formDescription;
       if (formId) {
-        formData.tags[1] = "done"
+        dispatch(setStatusTag("done"))
         const sendData = {
-          tags: formData.tags,
-          schema: formData.survey,
+          tags: tags,
+          schema: surveyJson
         };
         response = await api.patch(`/editor/form/${formId}`, sendData,
         {
@@ -225,8 +221,8 @@ const Editor = () => {
         });
       } else {
         const sendData = {
-          title: formData.name,
-          schema: formData.survey,
+          title: formName,
+          schema: surveyJson,
         };
         response = await api.post("/editor/form", sendData, {
           withCredentials: true,
@@ -285,10 +281,8 @@ const Editor = () => {
         <div className="flex flex-col gap-[5px] h-fit">
           <input
             type="text"
-            value={formData.survey.title}
-            onChange={(e) => {updateFormData('name',e.target.value); updateFormData('survey.title', e.target.value)}}
-            // value={formName}
-            // onChange={(e) => dispatch(setFormName(e.target.value))}
+            value={formName}
+            onChange={(e) => dispatch(setFormName(e.target.value))}
             placeholder="Nome do Formulário"
             className="custom-placeholder form-input text-[#13866f] text-[28px] font-bold font-['Poppins'] leading-[35px] border-none outline-none bg-transparent"
             style={{
@@ -302,10 +296,8 @@ const Editor = () => {
           />
           <input
             type="text"
-            value={formData.survey.description}
-            onChange={(e) => {updateFormData('description',e.target.value); updateFormData('survey.description', e.target.value)}}
-            // value={formDescription}
-            // onChange={(e) => dispatch(setFormDescription(e.target.value))}
+            value={formDescription}
+            onChange={(e) => dispatch(setFormDescription(e.target.value))}
             placeholder="Descrição"
             className="form-input text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px] border-none outline-none bg-transparent"
             style={{
@@ -318,12 +310,12 @@ const Editor = () => {
           />
         </div>
         <div className="flex flex-col gap-2 items-end">
-          <Status status="Em Edição" bgColor="#FFE9A6" color="#BE9007" />
+          <Status status={getStatus(tags[1]?tags[1]:"Em edição").name} bgColor="#FFE9A6" color="#BE9007" />
           <div className="text-right text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
             Criado por: {`${user?.name}`}
           </div>
           <div className="text-right text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            Última edição: {formData.updated_at ? getTime(formData.updated_at): getTime(Date().toString())}
+            Última edição: {createdAt ? getTime(createdAt): getTime(Date().toString())}
           </div>
         </div>
       </div>
@@ -357,16 +349,11 @@ const Editor = () => {
               onMouseOver={() => handleTagsHover(0)}
               onMouseLeave={handleTagsLeave}
               onClick={() => {
-                // handleAddElement({
-                //   type: "radiogroup",
-                //   name: "",
-                // });
-                addQuestionToPage(0,{
-                  name: "FirstName",
-                  title: "Enter your first name:",
+                handleAddElement({
                   type: "radiogroup",
-              });
-	      }}
+                  name: "",
+                });
+              }}
             >
               <RadioButtonChecked />
               {tagHover === 0 && (
@@ -412,16 +399,11 @@ const Editor = () => {
               onMouseOver={() => handleTagsHover(4)}
               onMouseLeave={handleTagsLeave}
               onClick={() => {
-                addQuestionToPage(0,{
-                  name: "FirstName",
-                  title: "Enter your first name:",
-			type: "text",
-		});
-		//               handleAddElement({
-		//                 name: "",
-		//                 title: "",
-		//                 type: "text",
-		// });
+		              handleAddElement({
+		                name: "",
+		                title: "",
+		                type: "text",
+                });
               }}
             >
               <ShortTextOutlined />
@@ -434,16 +416,11 @@ const Editor = () => {
               onMouseOver={() => handleTagsHover(5)}
               onMouseLeave={handleTagsLeave}
               onClick={() => {
-                addQuestionToPage(0,{
-                  name: "FirstName",
-                  title: "Enter your first name:",
+                handleAddElement({
+                  name: "",
+                  title: "",
                   type: "comment",
                 });
-                // handleAddElement({
-                //   name: "",
-                //   title: "",
-                //   type: "comment",
-                // });
               }}
             >
               <SubjectOutlined />
@@ -478,7 +455,7 @@ const Editor = () => {
                 </button>
               </div>
             )}
-            {formData?.survey?.pages?.map((page, pageIndex: number) => {
+            {surveyJson?.pages?.map((page, pageIndex: number) => {
               return page.elements.map( (question: Question, questionIndex: number) => {
                 const Component = getType(question.type);
                 return (
@@ -486,7 +463,7 @@ const Editor = () => {
                     key={questionIndex}
                     className="flex flex-col flex-1 justify-center items-center"
                   >
-                    {Component && <Component onMove={(direction) => updateQuestionOrder(pageIndex,questionIndex,direction)} index={questionIndex} pageIndex={pageIndex} data={getQuestionByIndex(pageIndex,questionIndex)}/>}
+                    {Component && <Component onMove={(direction) => dispatch(updateQuestionOrder({pageIndex,questionIndex,direction}))} index={questionIndex} elementIndex={questionIndex} pageIndex={pageIndex}/>}
                   </div>
                 );
               } )
@@ -494,7 +471,7 @@ const Editor = () => {
           </div>
         </div>
       )}
-      {tabSelected == 1 && <Survey model={new Model(formData?.survey)} />}
+      {tabSelected == 1 && <Survey model={new Model(surveyJson)} />}
       <ToastContainer />
     </div>
   );
