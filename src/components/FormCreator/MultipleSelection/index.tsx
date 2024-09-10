@@ -2,7 +2,7 @@ import { CancelOutlined } from "@mui/icons-material";
 import SquaredDownArrow from "@/assets/icons/SquaredDownArrow";
 import SquaredUpArrow from "@/assets/icons/SquaredUpArrow";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import BaseComponent from "../BaseComponent";
 import BaseContent from "../BaseContent";
 import BaseTitle from "../BaseTitle";
@@ -18,22 +18,20 @@ interface EditableCheckbox {
   enabled: boolean;
 }
 
-interface UniqueSelectionProps {
+interface MultipleSelectionProps {
   pageIndex: number;
   elementIndex: number;
   onCopy: () => void;
   onDelete: () => void;
   onMove: () => void;
-  index: number;
 }
 
-const UniqueSelection: React.FC<UniqueSelectionProps> = ({
+const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   pageIndex,
   elementIndex,
   onCopy,
   onDelete,
   onMove,
-  index,
 }) => {
   const dispatch = useDispatch();
 
@@ -41,20 +39,18 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     (state: any) =>
       state.survey.surveyJson.pages[pageIndex]?.elements[elementIndex]
   );
+
   const [question, setQuestion] = useState<string>(element?.name || "");
-  const [type, setType] = useState<string>("text");
+  const [type, setType] = useState<string>(element?.type || "text");
   const [required, setRequired] = useState<boolean>(element?.required || false);
-  const [options, setOptions] = useState<EditableCheckbox[]>(
-    element?.options || [
-      { id: "1", label: "Muito Frequentemente", enabled: true },
-      { id: "2", label: "Raramente", enabled: true },
-      { id: "3", label: "Item 2", enabled: false },
-      { id: "4", label: "Item 3", enabled: false },
-      { id: "5", label: "Nenhum", enabled: false },
-      { id: "6", label: "Outro (Descreva)", enabled: false },
-    ]
-  );
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [options, setOptions] = useState<EditableCheckbox[]>([
+    { id: "1", label: "Item 1", enabled: true },
+    { id: "2", label: "Item 2", enabled: true },
+    { id: "3", label: "Item 3", enabled: true },
+    { id: "4", label: "Selecionar Todos", enabled: false },
+    { id: "5", label: "Outro (Descreva)", enabled: false },
+  ]);
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
   const updateElementChoices = () => {
     console.log("updateElementChoices", options);
@@ -76,9 +72,6 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   };
 
   useEffect(() => {
-    if (options.every(option => option.enabled)) {
-      setOptions([...options, { id: Date.now().toString(), label: `Option ${options.length + 1}`, enabled: false }]);
-    }
     if (element) {
       setQuestion(element.name);
       setType(element.type);
@@ -155,8 +148,8 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   const moveOption = (index: number, direction: "up" | "down") => {
     const newOptions = [...options];
     const [movedOption] = newOptions.splice(index, 1);
-    if (direction === 'down') {
-      if (index <= newOptions.length && newOptions[index].enabled){
+    if (direction === "down") {
+      if (index + 1 <= newOptions.length && newOptions[index + 1].enabled) {
         newOptions.splice(index + 1, 0, movedOption);
       } else {
         return;
@@ -172,7 +165,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
 
   const content = (
     <div className="flex flex-col gap-4 justify-center">
-      {options?.map((option, index) => (
+      {options.map((option, index) => (
         <div key={option.id} className="flex items-center gap-4 relative group">
           {option.enabled ? (
             <CancelOutlined
@@ -188,18 +181,18 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
             />
           )}
           <input
-            type="radio"
-            name="unique-selection"
-            checked={selectedOption === option.id}
+            type="checkbox"
+            name="multiple-selection"
+            checked={selectedOptions.includes(option.id)}
             onChange={() => handleSelect(option.id)}
             disabled={!option.enabled}
-            className={`custom-checkbox${option.enabled ? "-enabled" : ""}`}
+            className={`m-custom-checkbox${option.enabled ? "-enabled" : ""}`}
           />
           <input
             type="text"
             value={option.label}
             onChange={(e) => handleLabelChange(option.id, e.target.value)}
-            className={`text-lg  rounded-full font-regular font-poppins text-[16px] leading-[21px] focus:outline-none ${
+            className={`text-lg font-regular font-poppins text-[16px] leading-[21px] focus:outline-none ${
               !option.enabled ? "text-gray-400" : "text-black"
             } border-2 rounded border-transparent hover:border-[#575757]`}
           />
@@ -209,7 +202,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
                 <SquaredUpArrow className="cursor-pointer" />
               </button>
             )}
-            {index < options?.length - 1 && (
+            {index < options.length - 1 && (
               <button onClick={() => moveOption(index, "down")}>
                 <SquaredDownArrow className="cursor-pointer" />
               </button>
@@ -230,19 +223,14 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     <BaseTitle
       required={required}
       question={question}
-      type={type}
-      onChange={setQuestion}
-      onMove={onMove}
-      index={index}
-      // onChange={handleChangeQuestion}
+      type={"text"}
+      onChange={handleChangeQuestion}
     />
   );
 
   const footer = <BaseFooter onRequire={handleRequired} required={required} />;
 
-  return (
-    <BaseComponent onMove={onMove} index={index} header={header} content={content} footer={footer} />
-  );
+  return <BaseComponent header={header} content={content} footer={footer} />;
 };
 
-export default UniqueSelection;
+export default MultipleSelection;

@@ -11,6 +11,14 @@ import Typography from "@mui/material/Typography";
 import { Button } from "@mui/material";
 import Link from "@mui/material/Link";
 import { toast, ToastContainer } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setSurveyJson,
+  setFormName,
+  setFormDescription,
+  setTags,
+  addElement,
+} from "../../../redux/surveySlice";
 import {
   CheckBoxOutlined,
   RadioButtonChecked,
@@ -27,7 +35,6 @@ import {
   LabelOutlined,
 } from "@mui/icons-material";
 import EditFormIcon from "@/components/Icons/EditFormIcon";
-
 import Status from "@/components/Status";
 import ShortQuestion from "@/components/FormCreator/ShortQuestion";
 import LongQuestion from "@/components/FormCreator/LongQuestion";
@@ -41,10 +48,20 @@ import { surveyElements, surveyPageExample } from "../../utils/SurveyJS";
 import { FormContext } from "@/contexts/FormContext";
 import { Question } from "@/types/Question";
 import { getTime } from "@/utils";
+import MultipleSelection from "@/components/FormCreator/MultipleSelection";
+import YesNotQuestion from "@/components/FormCreator/YesNotQuestion";
 
 
 const Editor = () => {
   const { formData, updateFormData, updateQuestionOrder, getQuestionByIndex, addQuestionToPage } = useContext(FormContext);
+  const dispatch = useDispatch();
+
+  const surveyJson = useSelector((state: any) => state.survey.surveyJson);
+  const formName = useSelector((state: any) => state.survey.formName);
+  const formDescription = useSelector(
+    (state: any) => state.survey.formDescription
+  );
+  const tags = useSelector((state: any) => state.survey.tags);
   const [tabSelected, setTabSelected] = useState(0);
   const [tagHover, setTagHover] = useState<null | number>(null);
   const [user, setUser] = useState(AuthService.getUser());
@@ -67,7 +84,14 @@ const Editor = () => {
           updateFormData('created_at', formData.data.created_at || "");
           updateFormData('updated_at', formData.data.created_at || "");
           updateFormData('description', formData.data.survey_schema?.description || "");
+          dispatch(setSurveyJson(formData.data.survey_schema || {}));
+          dispatch(setTags(formData.data.tags || []));
+          dispatch(setFormName(formData.data.survey_schema?.title || ""));
+          dispatch(
+            setFormDescription(formData.data.survey_schema?.description || "")
+          );
         } catch (error) {
+          console.log(formData);
           toast.error(
             "Erro ao carregar o formulário: " +
               (error.response?.data || error.message)
@@ -79,9 +103,6 @@ const Editor = () => {
     fetchForm();
   }, [formId]);
 
-  useEffect( () => {
-    console.log(formData)
-  }, [formData] )
 
   const breadcrumbs = [
     <Link underline="hover" key="1" color="inherit" href="/editor/formularios">
@@ -138,9 +159,29 @@ const Editor = () => {
     },
   ];
 
+  const handleAddElement = (element: any): UnknownAction => {
+    return dispatch(addElement({ pageIndex: 0, element }));
+  };
+
+  const swapElement = (obj, olderIdx, newIdx) => {
+    if (
+      olderIdx >= obj.elements.length ||
+      newIdx >= arr.length ||
+      olderIdx < 0 ||
+      newIdx < 0
+    ) {
+      console.error("Indices fora da lista");
+      return;
+    }
+
+    const temp = obj.elements[olderIdx];
+    obj.elements[olderIdx] = obj.elements[newIdx];
+    obj.elements[newIdx] = temp;
+  };
+
   const types = {
-    boolean: null,
-    checkbox: null,
+    boolean: YesNotQuestion,
+    checkbox: MultipleSelection,
     comment: LongQuestion,
     dropdown: null,
     tagbox: null,
@@ -170,6 +211,8 @@ const Editor = () => {
     const toastId = toast.loading("Salvando...");
     let response;
     try {
+      surveyJson.title = formName;
+      surveyJson.description = formDescription;
       if (formId) {
         formData.tags[1] = "done"
         const sendData = {
@@ -244,6 +287,8 @@ const Editor = () => {
             type="text"
             value={formData.survey.title}
             onChange={(e) => {updateFormData('name',e.target.value); updateFormData('survey.title', e.target.value)}}
+            // value={formName}
+            // onChange={(e) => dispatch(setFormName(e.target.value))}
             placeholder="Nome do Formulário"
             className="custom-placeholder form-input text-[#13866f] text-[28px] font-bold font-['Poppins'] leading-[35px] border-none outline-none bg-transparent"
             style={{
@@ -259,6 +304,8 @@ const Editor = () => {
             type="text"
             value={formData.survey.description}
             onChange={(e) => {updateFormData('description',e.target.value); updateFormData('survey.description', e.target.value)}}
+            // value={formDescription}
+            // onChange={(e) => dispatch(setFormDescription(e.target.value))}
             placeholder="Descrição"
             className="form-input text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px] border-none outline-none bg-transparent"
             style={{
@@ -273,7 +320,7 @@ const Editor = () => {
         <div className="flex flex-col gap-2 items-end">
           <Status status="Em Edição" bgColor="#FFE9A6" color="#BE9007" />
           <div className="text-right text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            Criado por: {`${user.name}`}
+            Criado por: {`${user?.name}`}
           </div>
           <div className="text-right text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
             Última edição: {formData.updated_at ? getTime(formData.updated_at): getTime(Date().toString())}
@@ -304,42 +351,60 @@ const Editor = () => {
       </div>
       {tabSelected == 0 && (
         <div className="flex">
-          <div className="flex items-start flex-col w-[20%] 2xl:w-[28%] px-[7px] gap-[12px] text-[#575757]">
+          <div className="flex items-start flex-col w-[23%] 2xl:w-[28%] px-[7px] gap-[12px] text-[#575757]">
             <button
               className="h-[34px] pl-[7px] pr-[15px] py-[5px] hover:bg-white rounded-[100px] hover:shadow justify-start items-center gap-2.5 inline-flex hover:text-[#19b394]"
               onMouseOver={() => handleTagsHover(0)}
               onMouseLeave={handleTagsLeave}
               onClick={() => {
+                // handleAddElement({
+                //   type: "radiogroup",
+                //   name: "",
+                // });
                 addQuestionToPage(0,{
                   name: "FirstName",
                   title: "Enter your first name:",
                   type: "radiogroup",
-                });
-              }}
+              });
+	      }}
             >
               <RadioButtonChecked />
               {tagHover === 0 && (
-                <span className="text-[#575757]">Seleção Única</span>
+                <span className="text-[#0f1113]">Seleção Única</span>
               )}
             </button>
             <button
               className="h-[34px] pl-[7px] pr-[15px] py-[5px] hover:bg-white rounded-[100px] hover:shadow justify-start items-center gap-2.5 inline-flex hover:text-[#19b394]"
               onMouseOver={() => handleTagsHover(1)}
               onMouseLeave={handleTagsLeave}
+              onClick={() => {
+                handleAddElement({
+                  type: "checkbox",
+                  name: "",
+                });
+              }}
             >
               <CheckBoxOutlined />
               {tagHover === 1 && (
-                <span className="text-[#575757]">Seleção Múltipla</span>
+                <span className="text-[#0f1113]">Seleção Múltipla</span>
               )}
             </button>
             <button
               className="h-[34px] pl-[7px] pr-[15px] py-[5px] hover:bg-white rounded-[100px] hover:shadow justify-start items-center gap-2.5 inline-flex hover:text-[#19b394]"
               onMouseOver={() => handleTagsHover(3)}
               onMouseLeave={handleTagsLeave}
+              onClick={() => {
+                handleAddElement({
+                  name: "",
+                  type: "boolean",
+                  labelFalse: "Não",
+                  labelTrue: "Sim",
+                });
+              }}
             >
               <ToggleOnOutlined />
               {tagHover === 3 && (
-                <span className="text-[#575757]">Sim/Não</span>
+                <span className="text-[#0f1113]">Sim/Não</span>
               )}
             </button>
             <button
@@ -350,13 +415,18 @@ const Editor = () => {
                 addQuestionToPage(0,{
                   name: "FirstName",
                   title: "Enter your first name:",
-                  type: "text",
-                });
+			type: "text",
+		});
+		//               handleAddElement({
+		//                 name: "",
+		//                 title: "",
+		//                 type: "text",
+		// });
               }}
             >
               <ShortTextOutlined />
               {tagHover === 4 && (
-                <span className="text-[#575757]">Resposta Curta</span>
+                <span className="text-[#0f1113]">Resposta Curta</span>
               )}
             </button>
             <button
@@ -369,11 +439,16 @@ const Editor = () => {
                   title: "Enter your first name:",
                   type: "comment",
                 });
+                // handleAddElement({
+                //   name: "",
+                //   title: "",
+                //   type: "comment",
+                // });
               }}
             >
               <SubjectOutlined />
               {tagHover === 5 && (
-                <span className="text-[#575757]">Resposta Longa</span>
+                <span className="text-[#0f1113]">Resposta Longa</span>
               )}
             </button>
             <button
@@ -383,11 +458,26 @@ const Editor = () => {
             >
               <UploadFileOutlined />
               {tagHover === 6 && (
-                <span className="text-[#575757]">Importar Seção/Questão</span>
+                <span className="text-[#0f1113]">Importar Seção/Questão</span>
               )}
             </button>
           </div>
           <div className="flex flex-col ml-12 flex-6 justify-center items-center">
+            {Object.keys(surveyJson).length === 0 && (
+              <div className="flex flex-col flex-1 justify-center items-center gap-[45px]">
+                <div className="text-center text-black text-sm font-normal font-['Poppins'] leading-[21px]">
+                  O formulário está vazio.
+                  <br />
+                  Adicione um elemento das opções ao lado ou clique no botão
+                  abaixo.
+                </div>
+                <button className="h-[41px] px-[25px] py-2 bg-[#d2f9f1] rounded justify-center items-center gap-3 inline-flex">
+                  <div className="grow shrink basis-0 text-center text-[#19b394] text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
+                    Adicionar Questão
+                  </div>
+                </button>
+              </div>
+            )}
             {formData?.survey?.pages?.map((page, pageIndex: number) => {
               return page.elements.map( (question: Question, questionIndex: number) => {
                 const Component = getType(question.type);

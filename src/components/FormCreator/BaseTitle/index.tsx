@@ -5,17 +5,15 @@ interface BaseTitleProps {
   question: string;
   type: string;
   required: boolean;
-  onChange: Dispatch<SetStateAction<string>>
+  onChange: Dispatch<SetStateAction<string>>;
 }
 
 const BaseTitle: React.FC<BaseTitleProps> = ({
- question,
- type,
- required,
- onChange,
+  question,
+  type,
+  required,
+  onChange,
 }) => {
-
-
   return (
     <div className="flex justify-between items-center gap-4">
       <input
@@ -27,6 +25,6 @@ const BaseTitle: React.FC<BaseTitleProps> = ({
       />
       {required && <AsteriskRed />}
     </div>
-  )
-}
+  );
+};
 export default BaseTitle;

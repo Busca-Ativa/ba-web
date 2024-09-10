@@ -5,6 +5,8 @@ import SideBar from "@/components/Sidebar";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { FormProvider } from "@/contexts/FormContext";
+import { Provider } from "react-redux";
+import store from "../../redux/store";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,13 +22,21 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body
+        className={inter.className}
+        style={{
+          background:
+            pathname !== "/" && pathname !== "/register"
+              ? "#FEFEFE"
+              : "#F7FAF9",
+        }}
+      >
         <div className="flex">
           {pathname !== "/" && pathname !== "/register" && (
             <SideBar user={""} activePage={activePage || "dashboard"} />
           )}
           <FormProvider>
-            {children}
+		<Provider store={store}>{children}</Provider>
           </FormProvider>
         </div>
       </body>
