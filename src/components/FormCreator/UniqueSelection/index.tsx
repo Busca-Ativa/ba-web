@@ -45,19 +45,11 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   const [type, setType] = useState<string>("text");
   const [required, setRequired] = useState<boolean>(element?.required || false);
   const [options, setOptions] = useState<EditableCheckbox[]>(
-    element?.options || [
-      { id: "1", label: "Muito Frequentemente", enabled: true },
-      { id: "2", label: "Raramente", enabled: true },
-      { id: "3", label: "Item 2", enabled: false },
-      { id: "4", label: "Item 3", enabled: false },
-      { id: "5", label: "Nenhum", enabled: false },
-      { id: "6", label: "Outro (Descreva)", enabled: false },
-    ]
+    element?.choices.map((value,index) => ({id:index,label:value,enabled:true}))
   );
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const updateElementChoices = () => {
-    console.log("updateElementChoices", options);
 
     const updatedElement = {
       ...element,
@@ -75,41 +67,84 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     );
   };
 
-  useEffect(() => {
-    if (options.every(option => option.enabled)) {
-      setOptions([...options, { id: Date.now().toString(), label: `Option ${options.length + 1}`, enabled: false }]);
-    }
-    if (element) {
-      setQuestion(element.name);
-      setType(element.type);
-      setRequired(element.required);
-      console.log(element.choices);
+  const updateChoices = (newChoices) => {
 
-      const choices = element.choices || [];
+    const updatedElement = {
+      ...element,
+      choices: newChoices
+        .filter((option) => option.enabled)
+        .map((option) => option.label),
+    };
 
-      const existingOptions = options.filter(
-        (option) =>
-          option.label !== "Nenhum" && option.label !== "Outro (Descreva)"
-      );
-
-      const updatedOptions = [
-        ...existingOptions,
-        { id: "5", label: "Nenhum", enabled: false },
-        { id: "6", label: "Outro (Descreva)", enabled: false },
-      ];
-      updateElementChoices();
-      setOptions(updatedOptions);
-      updateElementChoices();
-    }
-  }, []);
-
-  const toggleOption = (id: string) => {
-    setOptions(
-      options?.map((option) =>
-        option.id === id ? { ...option, enabled: true } : option
-      )
+    dispatch(
+      updateElement({
+        pageIndex,
+        elementIndex,
+        updatedElement,
+      })
     );
-    updateElementChoices();
+  };
+
+  const updateChoice = (id: string, newLabel: string) => {
+
+    const updatedOptions = options.map(option =>
+      option.id === id ? { ...option, label: newLabel } : option
+    );
+
+    const updatedElement = {
+      ...element,
+      choices: updatedOptions
+        .filter((option) => option.enabled)
+        .map((option) => option.label),
+    };
+
+    dispatch(
+      updateElement({
+        pageIndex,
+        elementIndex,
+        updatedElement,
+      })
+    );
+  };
+
+  useEffect(() => {
+    if (options.length < 5 && options) {
+      const defaultOptions = [{id:0,label:"Muito Frequentemente",enabled:false}, {id:1,label:"Raramente",enabled:false}, {id:2,label:"Item 2",enabled:false}, {id:3,label:"Item 3",enabled:false}, {id:4,label:"Outro (Descreva)",enabled:false}  ];
+      const missingCount = 5 - options.length;
+      const toAdd = [...options,...defaultOptions.slice(-missingCount)];
+      setOptions( (prev) => [...toAdd] );
+    }
+  }, [options])
+
+  // useEffect(() => {
+  //   if (options.every(option => option.enabled)) {
+  //     setOptions([...options, { id: Date.now().toString(), label: `Option ${options.length + 1}`, enabled: false }]);
+  //   }
+  //   if (element) {
+  //     setQuestion(element.name);
+  //     setType(element.type);
+  //     setRequired(element.required);
+  //     console.log(element.choices);
+  //
+  //     const existingOptions = options.filter(
+  //       (option) =>
+  //         option.label !== "Nenhum" && option.label !== "Outro (Descreva)"
+  //     );
+  //
+  //     const updatedOptions = [
+  //       ...existingOptions,
+  //       { id: "5", label: "Nenhum", enabled: false },
+  //       { id: "6", label: "Outro (Descreva)", enabled: false },
+  //     ];
+  //     setOptions(updatedOptions);
+  //   }
+  // }, []);
+  //
+  const toggleOption = (id: string) => {
+    const newOptions = options?.map( (option) => option.id === id ? {...option, enabled:!option.enabled} : option )
+    console.log(newOptions);
+    setOptions(newOptions);
+    updateChoices(newOptions)
   };
 
   const handleSelect = (id: string) => {
@@ -144,12 +179,21 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
         option.id === id ? { ...option, label: newLabel } : option
       )
     );
-    updateElementChoices();
+    updateChoice(id,newLabel);
   };
 
   const handleRemove = (id: string) => {
     setOptions(options?.filter((option) => option.id !== id));
-    updateElementChoices();
+    const updatedOptions = options.map(option =>
+      option.id === id ? option.enabled = false : option.enabled
+    );
+    dispatch(
+      updateElement({
+        pageIndex,
+        elementIndex,
+        updatedElement: { ...element, choices: updatedOptions},
+      })
+    );
   };
 
   const moveOption = (index: number, direction: "up" | "down") => {
@@ -167,13 +211,13 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
       }
     }
     setOptions(newOptions);
-    updateElementChoices();
+    updateChoices(newOptions);
   };
 
   const content = (
     <div className="flex flex-col gap-4 justify-center">
       {options?.map((option, index) => (
-        <div key={option.id} className="flex items-center gap-4 relative group">
+        <div key={index} className="flex items-center gap-4 relative group">
           {option.enabled ? (
             <CancelOutlined
               fontSize="small"

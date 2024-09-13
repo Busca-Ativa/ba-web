@@ -39,6 +39,7 @@ import {
   LabelOutlined,
 } from "@mui/icons-material";
 import EditFormIcon from "@/components/Icons/EditFormIcon";
+import { motion, AnimatePresence } from 'framer-motion';
 import Status from "@/components/Status";
 import ShortQuestion from "@/components/FormCreator/ShortQuestion";
 import LongQuestion from "@/components/FormCreator/LongQuestion";
@@ -207,12 +208,12 @@ const Editor = () => {
     const toastId = toast.loading("Salvando...");
     let response;
     try {
-      surveyJson.title = formName;
-      surveyJson.description = formDescription;
       if (formId) {
         dispatch(setStatusTag("done"))
+        const newTags = [...tags]
+        newTags[1] = "done"
         const sendData = {
-          tags: tags,
+          tags: newTags,
           schema: surveyJson
         };
         response = await api.patch(`/editor/form/${formId}`, sendData,
@@ -352,6 +353,17 @@ const Editor = () => {
                 handleAddElement({
                   type: "radiogroup",
                   name: "",
+                  // choices: [
+                  //   {id:0,label:"Muito Frequentemente",enabled:true},
+                  //   {id:1,label:"Raramente",enabled:true},
+                  //   {id:2,label:"Item 2",enabled:false},
+                  //   {id:3,label:"Item 3",enabled:false},
+                  //   {id:4,label:"Outro (Descreva)",enabled:false},
+                  // ]
+                  choices: [
+                    "Muito Frequentemente",
+                    "Raramente",
+                  ]
                 });
               }}
             >
@@ -455,19 +467,25 @@ const Editor = () => {
                 </button>
               </div>
             )}
-            {surveyJson?.pages?.map((page, pageIndex: number) => {
-              return page.elements.map( (question: Question, questionIndex: number) => {
-                const Component = getType(question.type);
-                return (
-                  <div
-                    key={questionIndex}
-                    className="flex flex-col flex-1 justify-center items-center"
-                  >
-                    {Component && <Component onMove={(direction) => dispatch(updateQuestionOrder({pageIndex,questionIndex,direction}))} index={questionIndex} elementIndex={questionIndex} pageIndex={pageIndex}/>}
-                  </div>
-                );
-              } )
-            })}
+            <AnimatePresence>
+              {surveyJson?.pages?.map((page, pageIndex: number) => {
+                return page.elements.map( (question: Question, questionIndex: number) => {
+                  const Component = getType(question.type);
+                  return (
+                    <motion.div
+                      key={questionIndex}
+                      layout="position"
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 50 }}
+                      transition={{  type: 'spring', stiffness: 500, damping: 50 }}
+                      className="flex flex-col flex-1 justify-center items-center"
+                    >
+                      {Component && <Component onMove={(direction) => dispatch(updateQuestionOrder({pageIndex,questionIndex,direction}))} index={questionIndex} elementIndex={questionIndex} pageIndex={pageIndex}/>}
+                    </motion.div>
+                  );
+                } )
+              })}
+            </AnimatePresence>
           </div>
         </div>
       )}
