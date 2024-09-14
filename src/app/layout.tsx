@@ -35,9 +35,7 @@ export default function RootLayout({
           {pathname !== "/" && pathname !== "/register" && (
             <SideBar user={""} activePage={activePage || "dashboard"} />
           )}
-          <FormProvider>
-		<Provider store={store}>{children}</Provider>
-          </FormProvider>
+          <Provider store={store}>{children}</Provider>
         </div>
       </body>
     </html>
