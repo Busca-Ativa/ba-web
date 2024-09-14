@@ -46,13 +46,14 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
       state.survey.surveyJson.pages[pageIndex]?.elements[elementIndex]
   );
 
-  const [question, setQuestion] = useState<string>(element?.name || "");
+  const [question, setQuestion] = useState<string>(element?.title || "");
   const [type, setType] = useState<string>(element?.type || "text");
   const [required, setRequired] = useState<boolean>(element?.required || false);
 
   useEffect(() => {
+    console.log(element)
     if (element) {
-      setQuestion(element.name);
+      setQuestion(element.title);
       setType(element.type);
       setRequired(element.required);
     }
@@ -74,7 +75,7 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
       updateElement({
         pageIndex,
         elementIndex,
-        updatedElement: { ...element, name: newQuestion },
+        updatedElement: { ...element, title: newQuestion },
       })
     );
   };
@@ -90,6 +91,7 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
     <textarea
       rows={5}
       cols={90}
+      disabled
       className="flex-1 bg-[#F5F5F5] text-[#0f1113] text-lg font-semibold font-['Poppins'] leading-[21px]  p-2"
     />
   );
