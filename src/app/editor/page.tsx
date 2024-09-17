@@ -21,7 +21,7 @@ import {
   setCreatedAt,
   setUpdatedAt,
   addElement,
-  updateQuestionOrder
+  updateQuestionOrder,
 } from "../../../redux/surveySlice";
 import {
   CheckBoxOutlined,
@@ -39,7 +39,7 @@ import {
   LabelOutlined,
 } from "@mui/icons-material";
 import EditFormIcon from "@/components/Icons/EditFormIcon";
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from "framer-motion";
 import Status from "@/components/Status";
 import ShortQuestion from "@/components/FormCreator/ShortQuestion";
 import LongQuestion from "@/components/FormCreator/LongQuestion";
@@ -56,28 +56,17 @@ import { getTime, getStatus } from "@/utils";
 import MultipleSelection from "@/components/FormCreator/MultipleSelection";
 import YesNotQuestion from "@/components/FormCreator/YesNotQuestion";
 
-
 const Editor = () => {
   const dispatch = useDispatch();
 
-  const surveyJson = useSelector(
-    (state: any) => state.survey.surveyJson,
-  );
-  const formName = useSelector(
-    (state: any) => state.survey.formName,
-  );
+  const surveyJson = useSelector((state: any) => state.survey.surveyJson);
+  const formName = useSelector((state: any) => state.survey.formName);
   const formDescription = useSelector(
     (state: any) => state.survey.formDescription
   );
-  const updatedAt = useSelector(
-    (state: any) => state.survey.updatedAt
-  );
-  const createdAt = useSelector(
-    (state: any) => state.survey.createdAt
-  );
-  const tags = useSelector(
-    (state: any) => state.survey.tags,
-  );
+  const updatedAt = useSelector((state: any) => state.survey.updatedAt);
+  const createdAt = useSelector((state: any) => state.survey.createdAt);
+  const tags = useSelector((state: any) => state.survey.tags);
 
   const [tabSelected, setTabSelected] = useState(0);
   const [tagHover, setTagHover] = useState<null | number>(null);
@@ -95,7 +84,7 @@ const Editor = () => {
             withCredentials: true,
           });
           const formData = response.data;
-          console.log(formData)
+          console.log(formData);
           dispatch(setUpdatedAt(formData.data.updated_at));
           dispatch(setCreatedAt(formData.data.created_at));
           dispatch(setSurveyJson(formData.data.survey_schema || {}));
@@ -115,7 +104,6 @@ const Editor = () => {
 
     fetchForm();
   }, [formId]);
-
 
   const breadcrumbs = [
     <Link underline="hover" key="1" color="inherit" href="/editor/formularios">
@@ -209,15 +197,14 @@ const Editor = () => {
     let response;
     try {
       if (formId) {
-        dispatch(setStatusTag("done"))
-        const newTags = [...tags]
-        newTags[1] = "done"
+        dispatch(setStatusTag("done"));
+        const newTags = [...tags];
+        newTags[1] = "done";
         const sendData = {
           tags: newTags,
-          schema: surveyJson
+          schema: surveyJson,
         };
-        response = await api.patch(`/editor/form/${formId}`, sendData,
-        {
+        response = await api.patch(`/editor/form/${formId}`, sendData, {
           withCredentials: true,
         });
       } else {
@@ -271,10 +258,10 @@ const Editor = () => {
           <ClickOrDropDownButton
             optionGroups={saveOptionsGroups}
             color="#40C156"
-            startIcon={<SaveIcon/>}
+            startIcon={<SaveIcon />}
             onClick={handleSave}
           >
-          Salvar
+            Salvar
           </ClickOrDropDownButton>
         </div>
       </div>
@@ -311,12 +298,17 @@ const Editor = () => {
           />
         </div>
         <div className="flex flex-col gap-2 items-end">
-          <Status status={getStatus(tags[1]?tags[1]:"Em edição").name} bgColor="#FFE9A6" color="#BE9007" />
+          <Status
+            status={getStatus(tags[1] ? tags[1] : "Em edição").name}
+            bgColor="#FFE9A6"
+            color="#BE9007"
+          />
           <div className="text-right text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
             Criado por: {`${user?.name}`}
           </div>
           <div className="text-right text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            Última edição: {createdAt ? getTime(createdAt): getTime(Date().toString())}
+            Última edição:{" "}
+            {createdAt ? getTime(createdAt) : getTime(Date().toString())}
           </div>
         </div>
       </div>
@@ -360,10 +352,7 @@ const Editor = () => {
                   //   {id:3,label:"Item 3",enabled:false},
                   //   {id:4,label:"Outro (Descreva)",enabled:false},
                   // ]
-                  choices: [
-                    "Muito Frequentemente",
-                    "Raramente",
-                  ]
+                  choices: ["Muito Frequentemente", "Raramente"],
                 });
               }}
             >
@@ -380,10 +369,7 @@ const Editor = () => {
                 handleAddElement({
                   type: "checkbox",
                   name: "",
-                  choices: [
-                    "Muito Frequentemente",
-                    "Raramente",
-                  ]
+                  choices: ["Muito Frequentemente", "Raramente"],
                 });
               }}
             >
@@ -415,10 +401,10 @@ const Editor = () => {
               onMouseOver={() => handleTagsHover(4)}
               onMouseLeave={handleTagsLeave}
               onClick={() => {
-		              handleAddElement({
-		                name: "",
-		                title: "",
-		                type: "text",
+                handleAddElement({
+                  name: "",
+                  title: "",
+                  type: "text",
                 });
               }}
             >
@@ -473,21 +459,42 @@ const Editor = () => {
             )}
             <AnimatePresence>
               {surveyJson?.pages?.map((page, pageIndex: number) => {
-                return page.elements.map( (question: Question, questionIndex: number) => {
-                  const Component = getType(question.type);
-                  return (
-                    <motion.div
-                      key={questionIndex}
-                      layout="position"
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 50 }}
-                      transition={{  type: 'spring', stiffness: 500, damping: 50 }}
-                      className="flex flex-col flex-1 justify-center items-center"
-                    >
-                      {Component && <Component onMove={(direction) => dispatch(updateQuestionOrder({pageIndex,questionIndex,direction}))} index={questionIndex} elementIndex={questionIndex} pageIndex={pageIndex}/>}
-                    </motion.div>
-                  );
-                } )
+                return page.elements.map(
+                  (question: Question, questionIndex: number) => {
+                    const Component = getType(question.type);
+                    return (
+                      <motion.div
+                        key={questionIndex}
+                        layout="position"
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 50 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 50,
+                        }}
+                        className="flex flex-col flex-1 justify-center items-center"
+                      >
+                        {Component && (
+                          <Component
+                            onMove={(direction) =>
+                              dispatch(
+                                updateQuestionOrder({
+                                  pageIndex,
+                                  questionIndex,
+                                  direction,
+                                })
+                              )
+                            }
+                            index={questionIndex}
+                            elementIndex={questionIndex}
+                            pageIndex={pageIndex}
+                          />
+                        )}
+                      </motion.div>
+                    );
+                  }
+                );
               })}
             </AnimatePresence>
           </div>

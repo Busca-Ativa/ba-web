@@ -19,17 +19,20 @@ interface TextAreaProps {
   value: string;
 }
 
-const TextArea: React.FC<TextAreaProps> = ({value,placeholder,onChange}) => {
-
+const TextArea: React.FC<TextAreaProps> = ({
+  value,
+  placeholder,
+  onChange,
+}) => {
   return (
-        <textarea
-          placeholder="Texto Longo"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          rows={5}
-          cols={90}
-          className="flex-1 bg-[#F5F5F5] text-[#0f1113] text-lg font-semibold font-['Poppins'] leading-[21px]  p-2"
-        />
+    <textarea
+      placeholder="Texto Longo"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      rows={5}
+      cols={90}
+      className="flex-1 bg-[#F5F5F5] text-[#0f1113] text-lg font-semibold font-['Poppins'] leading-[21px]  p-2"
+    />
   );
 };
 const LongQuestion: React.FC<LongQuestionProps> = ({
@@ -51,7 +54,7 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
   const [required, setRequired] = useState<boolean>(element?.required || false);
 
   useEffect(() => {
-    console.log(element)
+    console.log(element);
     if (element) {
       setQuestion(element.title);
       setType(element.type);
@@ -95,10 +98,22 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
       className="flex-1 bg-[#F5F5F5] text-[#0f1113] text-lg font-semibold font-['Poppins'] leading-[21px]  p-2"
     />
   );
-  const footer = <BaseFooter onRequire={handleRequired} />;
+  const footer = (
+    <BaseFooter
+      onRequire={handleRequired}
+      elementIndex={elementIndex}
+      pageIndex={pageIndex}
+    />
+  );
 
   return (
-    <BaseComponent onMove={onMove} index={index} header={header} content={content} footer={footer}/>
+    <BaseComponent
+      onMove={onMove}
+      index={index}
+      header={header}
+      content={content}
+      footer={footer}
+    />
   );
 };
 

@@ -122,7 +122,13 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
     </div>
   );
 
-  const footer = <BaseFooter onRequire={handleRequired} />;
+  const footer = (
+    <BaseFooter
+      onRequire={handleRequired}
+      pageIndex={pageIndex}
+      elementIndex={elementIndex}
+    />
+  );
 
   return <BaseComponent header={header} content={content} footer={footer} />;
 };

@@ -107,6 +107,21 @@ const surveySlice = createSlice({
         }
         state.surveyJson.pages[pageIndex].elements = elements;
       }
+    },
+    duplicateElement: (state, action) => {
+      const { pageIndex, elementIndex } = action.payload;
+      if (state.surveyJson.pages[pageIndex] && state.surveyJson.pages[pageIndex].elements[elementIndex]) {
+        const elementToDuplicate = state.surveyJson.pages[pageIndex].elements[elementIndex];
+        const duplicatedElement = { ...elementToDuplicate };
+        state.surveyJson.pages[pageIndex].elements.splice(elementIndex + 1, 0, duplicatedElement);
+      }
+    },
+    setElementRequired: (state, action) => {
+      const { pageIndex, elementIndex } = action.payload;
+      if (state.surveyJson.pages[pageIndex] && state.surveyJson.pages[pageIndex].elements[elementIndex]) {
+        const element = state.surveyJson.pages[pageIndex].elements[elementIndex];
+        element.isRequired = !element.isRequired;
+      }
     }
   }
 });
@@ -122,7 +137,9 @@ export const {
   addElement,
   updateElement,
   removeElement,
-  updateQuestionOrder
+  updateQuestionOrder,
+  duplicateElement,
+  setElementRequired
 } = surveySlice.actions;
 
 export default surveySlice.reducer;

@@ -45,12 +45,15 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   const [type, setType] = useState<string>("comment");
   const [required, setRequired] = useState<boolean>(element?.required || false);
   const [options, setOptions] = useState<EditableCheckbox[]>(
-    element?.choices.map((value,index) => ({id:index,label:value,enabled:true}))
+    element?.choices.map((value, index) => ({
+      id: index,
+      label: value,
+      enabled: true,
+    }))
   );
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const updateElementChoices = () => {
-
     const updatedElement = {
       ...element,
       choices: options
@@ -68,7 +71,6 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   };
 
   const updateChoices = (newChoices) => {
-
     const updatedElement = {
       ...element,
       choices: newChoices
@@ -86,8 +88,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   };
 
   const updateChoice = (id: string, newLabel: string) => {
-
-    const updatedOptions = options.map(option =>
+    const updatedOptions = options.map((option) =>
       option.id === id ? { ...option, label: newLabel } : option
     );
 
@@ -109,12 +110,18 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
 
   useEffect(() => {
     if (options.length < 5 && options) {
-      const defaultOptions = [{id:0,label:"Muito Frequentemente",enabled:false}, {id:1,label:"Raramente",enabled:false}, {id:2,label:"Item 2",enabled:false}, {id:3,label:"Item 3",enabled:false}, {id:4,label:"Outro (Descreva)",enabled:false}  ];
+      const defaultOptions = [
+        { id: 0, label: "Muito Frequentemente", enabled: false },
+        { id: 1, label: "Raramente", enabled: false },
+        { id: 2, label: "Item 2", enabled: false },
+        { id: 3, label: "Item 3", enabled: false },
+        { id: 4, label: "Outro (Descreva)", enabled: false },
+      ];
       const missingCount = 5 - options.length;
-      const toAdd = [...options,...defaultOptions.slice(-missingCount)];
-      setOptions( (prev) => [...toAdd] );
+      const toAdd = [...options, ...defaultOptions.slice(-missingCount)];
+      setOptions((prev) => [...toAdd]);
     }
-  }, [options])
+  }, [options]);
 
   // useEffect(() => {
   //   if (options.every(option => option.enabled)) {
@@ -141,10 +148,12 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   // }, []);
   //
   const toggleOption = (id: string) => {
-    const newOptions = options?.map( (option) => option.id === id ? {...option, enabled:!option.enabled} : option )
+    const newOptions = options?.map((option) =>
+      option.id === id ? { ...option, enabled: !option.enabled } : option
+    );
     console.log(newOptions);
     setOptions(newOptions);
-    updateChoices(newOptions)
+    updateChoices(newOptions);
   };
 
   const handleSelect = (id: string) => {
@@ -179,19 +188,19 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
         option.id === id ? { ...option, label: newLabel } : option
       )
     );
-    updateChoice(id,newLabel);
+    updateChoice(id, newLabel);
   };
 
   const handleRemove = (id: string) => {
     setOptions(options?.filter((option) => option.id !== id));
-    const updatedOptions = options.map(option =>
-      option.id === id ? option.enabled = false : option.enabled
+    const updatedOptions = options.map((option) =>
+      option.id === id ? (option.enabled = false) : option.enabled
     );
     dispatch(
       updateElement({
         pageIndex,
         elementIndex,
-        updatedElement: { ...element, choices: updatedOptions},
+        updatedElement: { ...element, choices: updatedOptions },
       })
     );
   };
@@ -199,8 +208,8 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   const moveOption = (index: number, direction: "up" | "down") => {
     const newOptions = [...options];
     const [movedOption] = newOptions.splice(index, 1);
-    if (direction === 'down') {
-      if (index <= newOptions.length && newOptions[index].enabled){
+    if (direction === "down") {
+      if (index <= newOptions.length && newOptions[index].enabled) {
         newOptions.splice(index + 1, 0, movedOption);
       } else {
         return;
@@ -281,10 +290,23 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     />
   );
 
-  const footer = <BaseFooter onRequire={handleRequired} required={required} />;
+  const footer = (
+    <BaseFooter
+      onRequire={handleRequired}
+      required={required}
+      pageIndex={pageIndex}
+      elementIndex={elementIndex}
+    />
+  );
 
   return (
-    <BaseComponent onMove={onMove} index={index} header={header} content={content} footer={footer} />
+    <BaseComponent
+      onMove={onMove}
+      index={index}
+      header={header}
+      content={content}
+      footer={footer}
+    />
   );
 };
 

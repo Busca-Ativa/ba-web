@@ -44,7 +44,11 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   const [type, setType] = useState<string>(element?.type || "text");
   const [required, setRequired] = useState<boolean>(element?.required || false);
   const [options, setOptions] = useState<EditableCheckbox[]>(
-    element?.choices?.map((value,index) => ({id:index,label:value,enabled:true}))
+    element?.choices?.map((value, index) => ({
+      id: index,
+      label: value,
+      enabled: true,
+    }))
   );
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
@@ -68,7 +72,6 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   };
 
   const updateChoices = (newChoices) => {
-
     const updatedElement = {
       ...element,
       choices: newChoices
@@ -86,8 +89,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   };
 
   const updateChoice = (id: string, newLabel: string) => {
-
-    const updatedOptions = options.map(option =>
+    const updatedOptions = options.map((option) =>
       option.id === id ? { ...option, label: newLabel } : option
     );
 
@@ -109,12 +111,18 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
 
   useEffect(() => {
     if (options?.length < 5 && options) {
-      const defaultOptions = [{id:0,label:"Muito Frequentemente",enabled:false}, {id:1,label:"Raramente",enabled:false}, {id:2,label:"Item 2",enabled:false}, {id:3,label:"Item 3",enabled:false}, {id:4,label:"Outro (Descreva)",enabled:false}  ];
+      const defaultOptions = [
+        { id: 0, label: "Muito Frequentemente", enabled: false },
+        { id: 1, label: "Raramente", enabled: false },
+        { id: 2, label: "Item 2", enabled: false },
+        { id: 3, label: "Item 3", enabled: false },
+        { id: 4, label: "Outro (Descreva)", enabled: false },
+      ];
       const missingCount = 5 - options.length;
-      const toAdd = [...options,...defaultOptions.slice(-missingCount)];
-      setOptions( (prev) => [...toAdd] );
+      const toAdd = [...options, ...defaultOptions.slice(-missingCount)];
+      setOptions((prev) => [...toAdd]);
     }
-  }, [options])
+  }, [options]);
   // useEffect(() => {
   //   if (element) {
   //     setQuestion(element.name);
@@ -141,10 +149,10 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   // }, []);
 
   const toggleOption = (id: string) => {
-    const newOptions = options?.map( (option) => option.id === id ? {...option, enabled:!option.enabled} : option )
-    setOptions(
-      newOptions
+    const newOptions = options?.map((option) =>
+      option.id === id ? { ...option, enabled: !option.enabled } : option
     );
+    setOptions(newOptions);
     updateChoices(newOptions);
   };
 
@@ -191,8 +199,8 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   const moveOption = (index: number, direction: "up" | "down") => {
     const newOptions = [...options];
     const [movedOption] = newOptions.splice(index, 1);
-    if (direction === 'down') {
-      if (index <= newOptions.length && newOptions[index].enabled){
+    if (direction === "down") {
+      if (index <= newOptions.length && newOptions[index].enabled) {
         newOptions.splice(index + 1, 0, movedOption);
       } else {
         return;
@@ -271,7 +279,14 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
     />
   );
 
-  const footer = <BaseFooter onRequire={handleRequired} required={required} />;
+  const footer = (
+    <BaseFooter
+      onRequire={handleRequired}
+      required={required}
+      elementIndex={elementIndex}
+      pageIndex={pageIndex}
+    />
+  );
 
   return <BaseComponent header={header} content={content} footer={footer} />;
 };

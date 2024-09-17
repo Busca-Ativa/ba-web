@@ -1,7 +1,11 @@
 import { ArrowDropDown, ArrowDropUp } from "@mui/icons-material";
 import { useState, useEffect, use } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateElement } from "../../../../redux/surveySlice"; // Altere o caminho se necessário
+import {
+  duplicateElement,
+  removeElement,
+  updateElement,
+} from "../../../../redux/surveySlice"; // Altere o caminho se necessário
 import BaseComponent from "../BaseComponent";
 import BaseContent from "../BaseContent";
 import BaseTitle from "../BaseTitle";
@@ -91,12 +95,25 @@ const ShortQuestion: React.FC<ShortQuestionProps> = ({
       required={required}
     />
   );
+
   const content = <BaseContent kind={type} disabled={true} />;
   const footer = (
-    <BaseFooter left={<LeftDropdown />} onRequire={handleRequired} />
+    <BaseFooter
+      left={<LeftDropdown />}
+      pageIndex={pageIndex}
+      elementIndex={elementIndex}
+    />
   );
 
-  return <BaseComponent header={header} content={content} footer={footer} index={index} onMove={onMove}/>
+  return (
+    <BaseComponent
+      header={header}
+      content={content}
+      footer={footer}
+      index={index}
+      onMove={onMove}
+    />
+  );
 };
 
 export default ShortQuestion;
