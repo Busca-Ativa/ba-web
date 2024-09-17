@@ -5,6 +5,7 @@ import Image from "next/image";
 import { AuthService } from "@/services/auth/auth";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -18,9 +19,19 @@ const Login = () => {
     setError(null);
     const toastId = toast.loading("Entrando...");
     try {
-      await AuthService.login(email, password);
-      toast.dismiss(toastId);
-      router.push("/admin/dashboard");
+      const auth = await AuthService.login(email, password);
+      const token = auth.data.access_token;
+      const decoded = jwtDecode(token);
+      const role = decoded.role;
+      if (role == "editor") {
+        localStorage.setItem("role", role);
+        toast.dismiss(toastId);
+        router.push("/editor/formularios");
+      } else if (role == "admin") {
+        localStorage.setItem("role", role);
+        toast.dismiss(toastId);
+        router.push("/admin/dashboard");
+      }
     } catch (err) {
       toast.dismiss(toastId);
       setError(
