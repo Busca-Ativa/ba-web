@@ -10,7 +10,7 @@ import BaseFooter from "../BaseFooter";
 
 import "./styles.css";
 import { useDispatch, useSelector } from "react-redux";
-import { updateElement } from "../../../../redux/surveySlice";
+import { updateElement, updateChoiceOrder } from "../../../../redux/surveySlice";
 
 interface EditableCheckbox {
   id: string;
@@ -43,13 +43,9 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   const [question, setQuestion] = useState<string>(element?.name || "");
   const [type, setType] = useState<string>(element?.type || "text");
   const [required, setRequired] = useState<boolean>(element?.required || false);
-  const [options, setOptions] = useState<EditableCheckbox[]>([
-    { id: "1", label: "Item 1", enabled: true },
-    { id: "2", label: "Item 2", enabled: true },
-    { id: "3", label: "Item 3", enabled: true },
-    { id: "4", label: "Selecionar Todos", enabled: false },
-    { id: "5", label: "Outro (Descreva)", enabled: false },
-  ]);
+  const [options, setOptions] = useState<EditableCheckbox[]>(
+    element?.choices?.map((value,index) => ({id:index,label:value,enabled:true}))
+  );
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
   const updateElementChoices = () => {
@@ -71,30 +67,78 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
     );
   };
 
+  const updateChoices = (newChoices) => {
+
+    const updatedElement = {
+      ...element,
+      choices: newChoices
+        .filter((option) => option.enabled)
+        .map((option) => option.label),
+    };
+
+    dispatch(
+      updateElement({
+        pageIndex,
+        elementIndex,
+        updatedElement,
+      })
+    );
+  };
+
+  const updateChoice = (id: string, newLabel: string) => {
+
+    const updatedOptions = options.map(option =>
+      option.id === id ? { ...option, label: newLabel } : option
+    );
+
+    const updatedElement = {
+      ...element,
+      choices: updatedOptions
+        .filter((option) => option.enabled)
+        .map((option) => option.label),
+    };
+
+    dispatch(
+      updateElement({
+        pageIndex,
+        elementIndex,
+        updatedElement,
+      })
+    );
+  };
+
   useEffect(() => {
-    if (element) {
-      setQuestion(element.name);
-      setType(element.type);
-      setRequired(element.required);
-      console.log(element.choices);
-
-      const choices = element.choices || [];
-
-      const existingOptions = options.filter(
-        (option) =>
-          option.label !== "Nenhum" && option.label !== "Outro (Descreva)"
-      );
-
-      const updatedOptions = [
-        ...existingOptions,
-        { id: "5", label: "Nenhum", enabled: false },
-        { id: "6", label: "Outro (Descreva)", enabled: false },
-      ];
-      updateElementChoices();
-      setOptions(updatedOptions);
-      updateElementChoices();
+    if (options?.length < 5 && options) {
+      const defaultOptions = [{id:0,label:"Muito Frequentemente",enabled:false}, {id:1,label:"Raramente",enabled:false}, {id:2,label:"Item 2",enabled:false}, {id:3,label:"Item 3",enabled:false}, {id:4,label:"Outro (Descreva)",enabled:false}  ];
+      const missingCount = 5 - options.length;
+      const toAdd = [...options,...defaultOptions.slice(-missingCount)];
+      setOptions( (prev) => [...toAdd] );
     }
-  }, []);
+  }, [options])
+  // useEffect(() => {
+  //   if (element) {
+  //     setQuestion(element.name);
+  //     setType(element.type);
+  //     setRequired(element.required);
+  //     console.log(element.choices);
+  //
+  //     const choices = element.choices || [];
+  //
+  //     const existingOptions = options.filter(
+  //       (option) =>
+  //         option.label !== "Nenhum" && option.label !== "Outro (Descreva)"
+  //     );
+  //
+  //     const updatedOptions = [
+  //       ...existingOptions,
+  //       { id: "5", label: "Nenhum", enabled: false },
+  //       { id: "6", label: "Outro (Descreva)", enabled: false },
+  //     ];
+  //     updateElementChoices();
+  //     setOptions(updatedOptions);
+  //     updateElementChoices();
+  //   }
+  // }, []);
 
   const toggleOption = (id: string) => {
     setOptions(
@@ -148,8 +192,8 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   const moveOption = (index: number, direction: "up" | "down") => {
     const newOptions = [...options];
     const [movedOption] = newOptions.splice(index, 1);
-    if (direction === "down") {
-      if (index + 1 <= newOptions.length && newOptions[index + 1].enabled) {
+    if (direction === 'down') {
+      if (index <= newOptions.length && newOptions[index].enabled){
         newOptions.splice(index + 1, 0, movedOption);
       } else {
         return;
@@ -160,12 +204,12 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
       }
     }
     setOptions(newOptions);
-    updateElementChoices();
+    updateChoices(newOptions);
   };
 
   const content = (
     <div className="flex flex-col gap-4 justify-center">
-      {options.map((option, index) => (
+      {options?.map((option, index) => (
         <div key={option.id} className="flex items-center gap-4 relative group">
           {option.enabled ? (
             <CancelOutlined

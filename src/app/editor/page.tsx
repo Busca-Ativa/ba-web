@@ -380,6 +380,10 @@ const Editor = () => {
                 handleAddElement({
                   type: "checkbox",
                   name: "",
+                  choices: [
+                    "Muito Frequentemente",
+                    "Raramente",
+                  ]
                 });
               }}
             >
