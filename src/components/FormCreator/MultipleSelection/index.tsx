@@ -141,12 +141,11 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   // }, []);
 
   const toggleOption = (id: string) => {
+    const newOptions = options?.map( (option) => option.id === id ? {...option, enabled:!option.enabled} : option )
     setOptions(
-      options?.map((option) =>
-        option.id === id ? { ...option, enabled: true } : option
-      )
+      newOptions
     );
-    updateElementChoices();
+    updateChoices(newOptions);
   };
 
   const handleSelect = (id: string) => {
