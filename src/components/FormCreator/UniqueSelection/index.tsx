@@ -41,8 +41,8 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     (state: any) =>
       state.survey.surveyJson.pages[pageIndex]?.elements[elementIndex]
   );
-  const [question, setQuestion] = useState<string>(element?.name || "");
-  const [type, setType] = useState<string>("text");
+  const [question, setQuestion] = useState<string>(element?.title || "");
+  const [type, setType] = useState<string>("comment");
   const [required, setRequired] = useState<boolean>(element?.required || false);
   const [options, setOptions] = useState<EditableCheckbox[]>(
     element?.choices.map((value,index) => ({id:index,label:value,enabled:true}))
@@ -157,7 +157,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
       updateElement({
         pageIndex,
         elementIndex,
-        updatedElement: { ...element, name: newQuestion },
+        updatedElement: { ...element, title: newQuestion },
       })
     );
   };
@@ -275,10 +275,9 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
       required={required}
       question={question}
       type={type}
-      onChange={setQuestion}
       onMove={onMove}
       index={index}
-      // onChange={handleChangeQuestion}
+      onChange={handleChangeQuestion}
     />
   );
 
