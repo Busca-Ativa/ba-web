@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BaseComponent from "../BaseComponent";
 import BaseContent from "../BaseContent";
 import BaseTitle from "../BaseTitle";
@@ -34,6 +34,33 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
   const [labelYes, setLabelYes] = useState(element?.labelTrue || "Sim");
   const [labelNo, setLabelNo] = useState(element?.labelFalse || "Não");
 
+  useEffect(() => {
+    dispatch(
+      updateElement({
+        pageIndex,
+        elementIndex,
+        updatedElement: {
+          ...element,
+          labelTrue: labelYes,
+          labelFalse: labelNo,
+        },
+      })
+    );
+  }, [labelNo, labelYes]);
+
+  useEffect(() => {
+    dispatch(
+      updateElement({
+        pageIndex,
+        elementIndex,
+        updatedElement: {
+          ...element,
+          name: question,
+        },
+      })
+    );
+  }, [question]);
+
   const handleRequired = () => {
     setRequired(!required);
   };
@@ -59,16 +86,6 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
 
   const handleQuestion = (value) => {
     setQuestion(value);
-    dispatch(
-      updateElement({
-        pageIndex,
-        elementIndex,
-        updatedElement: {
-          ...element,
-          name: value,
-        },
-      })
-    );
   };
 
   const header = (
