@@ -10,7 +10,7 @@ import BaseFooter from "../BaseFooter";
 
 import "./styles.css";
 import { useDispatch, useSelector } from "react-redux";
-import { updateElement, updateChoiceOrder } from "../../../../redux/surveySlice";
+import { updateElement } from "../../../../redux/surveySlice";
 
 interface EditableCheckbox {
   id: string;
