@@ -105,6 +105,8 @@ const Editor = () => {
     fetchForm();
   }, [formId]);
 
+  useEffect( () => {console.log(tags)}, [] )
+
   const breadcrumbs = [
     <Link underline="hover" key="1" color="inherit" href="/editor/formularios">
       Formulários
@@ -299,7 +301,7 @@ const Editor = () => {
         </div>
         <div className="flex flex-col gap-2 items-end">
           <Status
-            status={getStatus(tags[1] ? tags[1] : "Em edição").name}
+            status={getStatus(tags[1]? tags[1] : "undone").name}
             bgColor="#FFE9A6"
             color="#BE9007"
           />
