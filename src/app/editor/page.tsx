@@ -154,6 +154,7 @@ const Editor = () => {
           label: "Modificar Status",
           onClick: () => console.log("Status Modificado"),
           icon: <DonutLargeOutlined />,
+          subOptions: [{label:<Typography color="#BE9007">Em edição</Typography>, onClick: () => dispatch(setStatus("undone"))},{label:<Typography color="#19b394">Pronto</Typography>, onClick: () => dispatch(setStatus("done"))}]
         },
         {
           label: "Modificar Tags",
