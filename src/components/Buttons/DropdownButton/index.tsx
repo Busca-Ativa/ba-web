@@ -137,11 +137,11 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
         onClose={handleSubMenuClose}
         anchorOrigin={{
           vertical: 'center',
-          horizontal: 'center',
+          horizontal: 'left',
         }}
         transformOrigin={{
           vertical: 'center',
-          horizontal: 'center',
+          horizontal: 'right',
         }}
         getContentAnchorEl={null} // Ensures submenu is aligned to center
       >
