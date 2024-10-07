@@ -27,7 +27,9 @@ const initialSurveyState = {
   formDescription: "",
   createdAt: "",
   updatedAt: "",
-  tags: []
+  tags: [],
+  status: 'undone',
+
 };
 
 const surveySlice = createSlice({
@@ -54,6 +56,9 @@ const surveySlice = createSlice({
         return;
       }
       state.tags[1] = action.payload;
+    },
+    setStatus: (state,action) => {
+      state.status = action.payload;
     },
     setUpdatedAt: (state, action) => {
       state.updatedAt = action.payload;
@@ -131,7 +136,7 @@ export const {
   setFormDescription,
   setSurveyJson,
   setTags,
-  setStatusTag,
+  setStatus,
   setUpdatedAt,
   setCreatedAt,
   addElement,
