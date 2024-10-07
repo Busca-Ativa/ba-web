@@ -11,6 +11,7 @@ interface Option {
   label: string;
   onClick: () => void;
   icon?: ReactNode;
+  subOptions?: Option[]; // Sub-options for the secondary menu
 }
 
 interface OptionGroup {
@@ -34,6 +35,8 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
   sx,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [subOptions, setSubOptions] = useState<Option[]>([]);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -41,6 +44,19 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
 
   const handleClose = () => {
     setAnchorEl(null);
+    setSubMenuAnchorEl(null);
+  };
+
+  const handleSubMenuClick = (
+    event: React.MouseEvent<HTMLElement>,
+    subOptions: Option[]
+  ) => {
+    setSubOptions(subOptions);
+    setSubMenuAnchorEl(event.currentTarget); // Use the actual DOM element as the anchor
+  };
+
+  const handleSubMenuClose = () => {
+    setSubMenuAnchorEl(null);
   };
 
   return (
@@ -52,7 +68,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
           <ExpandMoreIcon
             sx={{
               '&:hover': {
-                color: sx?.color || 'darkgreen'
+                color: sx?.color || 'darkgreen',
               },
             }}
           />
@@ -93,9 +109,13 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
             {group.options.map((option, optionIndex) => (
               <MenuItem
                 key={optionIndex}
-                onClick={() => {
-                  handleClose();
-                  option.onClick();
+                onClick={(event) => {
+                  if (option.subOptions) {
+                    handleSubMenuClick(event, option.subOptions);
+                  } else {
+                    handleClose();
+                    option.onClick();
+                  }
                 }}
               >
                 {option.icon && (
@@ -107,6 +127,39 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
               </MenuItem>
             ))}
           </div>
+        ))}
+      </Menu>
+
+      {/* Submenu */}
+      <Menu
+        anchorEl={subMenuAnchorEl}
+        open={Boolean(subMenuAnchorEl)}
+        onClose={handleSubMenuClose}
+        anchorOrigin={{
+          vertical: 'center',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'center',
+          horizontal: 'center',
+        }}
+        getContentAnchorEl={null} // Ensures submenu is aligned to center
+      >
+        {subOptions.map((subOption, subOptionIndex) => (
+          <MenuItem
+            key={subOptionIndex}
+            onClick={() => {
+              handleSubMenuClose();
+              subOption.onClick();
+            }}
+          >
+            {subOption.icon && (
+              <ListItemIcon>
+                {subOption.icon}
+              </ListItemIcon>
+            )}
+            <ListItemText>{subOption.label}</ListItemText>
+          </MenuItem>
         ))}
       </Menu>
     </>
