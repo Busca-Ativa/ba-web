@@ -22,6 +22,7 @@ import {
   setUpdatedAt,
   addElement,
   updateQuestionOrder,
+  selectAllElements,
 } from "../../../redux/surveySlice";
 import {
   CheckBoxOutlined,
@@ -75,6 +76,7 @@ const Editor = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const formId = searchParams.get("id");
+  const typeForm = searchParams.get("type") || "form";
 
   useEffect(() => {
     const fetchForm = async () => {
@@ -95,8 +97,13 @@ const Editor = () => {
           );
         } catch (error) {
           toast.error(
-            "Erro ao carregar o formulário: " +
-              (error.response?.data || error.message)
+            `Erro ao carregar o ${
+              typeForm === "form"
+                ? "formulário"
+                : typeForm === "section"
+                ? "seção"
+                : "questão"
+            }: ${error.response?.data || error.message}`
           );
         }
       }
@@ -105,14 +112,42 @@ const Editor = () => {
     fetchForm();
   }, [formId]);
 
-  useEffect( () => {console.log(tags)}, [] )
+  useEffect(() => {
+    console.log(tags);
+  }, []);
 
   const breadcrumbs = [
-    <Link underline="hover" key="1" color="inherit" href="/editor/formularios">
-      Formulários
+    <Link
+      underline="hover"
+      key="1"
+      color="inherit"
+      href={`/editor/${
+        typeForm == "form"
+          ? "formularios"
+          : typeForm == "section"
+          ? "secoes"
+          : "questoes"
+      }`}
+    >
+      {typeForm === "form"
+        ? "Formulários"
+        : typeForm === "section"
+        ? "Seções"
+        : "Questões"}
     </Link>,
     <Typography key="3" sx={{ color: "text.primary" }}>
-      {formId ? "Editar Formulário" : "Novo Formulário"}
+      {formId
+        ? "Editar " +
+          (typeForm === "form"
+            ? "Formulário"
+            : typeForm === "section"
+            ? "Seção"
+            : "Questão")
+        : typeForm === "form"
+        ? "Novo Formulário"
+        : typeForm === "section"
+        ? "Nova Seção"
+        : "Nova Questão"}
     </Typography>,
   ];
 
@@ -210,23 +245,66 @@ const Editor = () => {
           withCredentials: true,
         });
       } else {
-        const sendData = {
-          title: formName,
-          schema: surveyJson,
-        };
-        response = await api.post("/editor/form", sendData, {
+        let sendData;
+        if (typeForm === "form") {
+          sendData = {
+            title: formName,
+            schema: surveyJson,
+          };
+        } else if (typeForm === "section") {
+          sendData = {
+            title: formName,
+            questions: {
+              elements: surveyJson.pages[0].elements,
+            },
+            // origin_type: "institution",
+            // origin_id: "O UUID do local de origem",
+            // id_creator: "O UUID do criador da questão",
+          };
+        } else if (typeForm === "question") {
+          sendData = {
+            title: formName,
+            type: "text",
+            // origin_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            // origin_type: "unit",
+            // id_creator: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            question_data: surveyJson.pages[0].elements[0],
+            // tags: "unit,undone",
+          };
+        }
+        response = await api.post(`/editor/${typeForm}`, sendData, {
           withCredentials: true,
         });
       }
       if (response.data?.data) {
         toast.dismiss(toastId);
-        toast.success("Formulário salvo com sucesso!");
-        router.push("/editor/formularios");
+        toast.success(
+          `${
+            typeForm == "form"
+              ? "Formulario salvo"
+              : typeForm == "section"
+              ? "Seção salva"
+              : "Questão salva"
+          } com sucesso!`
+        );
+        if (typeForm === "form") {
+          router.push("/editor/formularios");
+        } else if (typeForm === "section") {
+          router.push("/editor/secoes");
+        } else if (typeForm === "question") {
+          router.push("/editor/questoes");
+        }
       }
     } catch (error: any) {
       toast.dismiss(toastId);
       toast.error(
-        "Erro ao salvar formulário: " + (error.response?.data || error.message)
+        `Erro ao salvar ${
+          typeForm == "form"
+            ? "formulario"
+            : typeForm == "section"
+            ? "seção"
+            : "questão"
+        }: ` + (error.response?.data || error.message)
       );
       throw error;
     }
@@ -273,7 +351,13 @@ const Editor = () => {
             type="text"
             value={formName}
             onChange={(e) => dispatch(setFormName(e.target.value))}
-            placeholder="Nome do Formulário"
+            placeholder={`Nome ${
+              typeForm == "form"
+                ? "do Formulario"
+                : typeForm == "section"
+                ? "da Seção"
+                : "da Questão"
+            }`}
             className="custom-placeholder form-input text-[#13866f] text-[28px] font-bold font-['Poppins'] leading-[35px] border-none outline-none bg-transparent"
             style={{
               paddingTop: "0px",
@@ -301,7 +385,7 @@ const Editor = () => {
         </div>
         <div className="flex flex-col gap-2 items-end">
           <Status
-            status={getStatus(tags[1]? tags[1] : "undone").name}
+            status={getStatus(tags[1] ? tags[1] : "undone").name}
             bgColor="#FFE9A6"
             color="#BE9007"
           />
@@ -447,7 +531,13 @@ const Editor = () => {
             {Object.keys(surveyJson).length === 0 && (
               <div className="flex flex-col flex-1 justify-center items-center gap-[45px]">
                 <div className="text-center text-black text-sm font-normal font-['Poppins'] leading-[21px]">
-                  O formulário está vazio.
+                  O{" "}
+                  {typeForm == "form"
+                    ? "formulario"
+                    : typeForm == "section"
+                    ? "seção"
+                    : "questão"}{" "}
+                  está vazio.
                   <br />
                   Adicione um elemento das opções ao lado ou clique no botão
                   abaixo.

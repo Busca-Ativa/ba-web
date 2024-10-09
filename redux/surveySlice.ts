@@ -1,4 +1,4 @@
-// surveySlice.js
+// surveySlice.ts
 
 import { createSlice } from "@reduxjs/toolkit";
 
@@ -141,5 +141,9 @@ export const {
   duplicateElement,
   setElementRequired
 } = surveySlice.actions;
+
+export const selectAllElements = (state) => {
+  return state.survey.surveyJson.pages.flatMap(page => page.elements);
+};
 
 export default surveySlice.reducer;
