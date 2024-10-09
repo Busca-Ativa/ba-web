@@ -30,8 +30,9 @@ const Formularios = () => {
       let list_forms = []
       try{
 
-        let response = await api.get('/editor/institution/forms', {withCredentials:true})
+        let response = await api.get('/editor/unit/forms', {withCredentials:true})
         if (response.data.data){
+          console.log(response.data.data)
           list_forms.push(...response.data.data)
         }
 
@@ -57,7 +58,7 @@ const Formularios = () => {
   useEffect( () => {
   setRows(forms?.map( (value) => {
     const name: string = value.editor.name + " " + value.editor.lastName;
-    const status: StatusObject = getStatus(value.tags[1]);
+    const status: StatusObject = getStatus(value.status);
     return {
       id: value.id,
       title: value.name,
@@ -65,7 +66,7 @@ const Formularios = () => {
       status: status.name,
       // WARN: Apenas se for o mesmo criado pode deletar e editar.
       config: value.editor.id !== user.id ? {editable: false, deletable: false} : status.config,
-      origin: value.tags[0] === 'institution'? value.institution.name : value.unit.name
+      origin: value.origin.name
     }
   } ));
 
@@ -129,7 +130,7 @@ const Formularios = () => {
           <h1>Formulários</h1>
           <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
             {/* Secretaria de Saúde - Fortaleza */}
-            {forms[0]?.institution.name} - {forms[0]?.institution.code_state} - {forms[0]?.institution.code_city}
+            {forms[0]?.origin.name} - {forms[0]?.origin.code_state} - {forms[0]?.origin.code_city}
           </h2>
         </div>
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">

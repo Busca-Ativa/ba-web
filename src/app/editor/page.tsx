@@ -17,7 +17,7 @@ import {
   setFormName,
   setFormDescription,
   setTags,
-  setStatusTag,
+  setStatus,
   setCreatedAt,
   setUpdatedAt,
   addElement,
@@ -68,6 +68,7 @@ const Editor = () => {
   const updatedAt = useSelector((state: any) => state.survey.updatedAt);
   const createdAt = useSelector((state: any) => state.survey.createdAt);
   const tags = useSelector((state: any) => state.survey.tags);
+  const status = useSelector((state: any) => state.survey.status);
 
   const [tabSelected, setTabSelected] = useState(0);
   const [tagHover, setTagHover] = useState<null | number>(null);
@@ -91,6 +92,7 @@ const Editor = () => {
           dispatch(setCreatedAt(formData.data.created_at));
           dispatch(setSurveyJson(formData.data.survey_schema || {}));
           dispatch(setTags(formData.data.tags));
+          dispatch(setStatus(formData.data.status));
           dispatch(setFormName(formData.data.survey_schema?.title || ""));
           dispatch(
             setFormDescription(formData.data.survey_schema?.description || "")
@@ -187,6 +189,16 @@ const Editor = () => {
           label: "Modificar Status",
           onClick: () => console.log("Status Modificado"),
           icon: <DonutLargeOutlined />,
+          subOptions: [
+            {
+              label: <Typography color="#BE9007">Em edição</Typography>,
+              onClick: () => dispatch(setStatus("undone")),
+            },
+            {
+              label: <Typography color="#19b394">Pronto</Typography>,
+              onClick: () => dispatch(setStatus("done")),
+            },
+          ],
         },
         {
           label: "Modificar Tags",
@@ -234,11 +246,12 @@ const Editor = () => {
     let response;
     try {
       if (formId) {
-        dispatch(setStatusTag("done"));
+        dispatch(setStatus("done"));
+        const status = "done";
         const newTags = [...tags];
-        newTags[1] = "done";
         const sendData = {
           tags: newTags,
+          status: status,
           schema: surveyJson,
         };
         response = await api.patch(`/editor/form/${formId}`, sendData, {
@@ -385,9 +398,9 @@ const Editor = () => {
         </div>
         <div className="flex flex-col gap-2 items-end">
           <Status
-            status={getStatus(tags[1] ? tags[1] : "undone").name}
-            bgColor="#FFE9A6"
-            color="#BE9007"
+            status={getStatus(status ? status : "undone").name}
+            bgColor={getStatus(status ? status : "undone").bcolor}
+            color={getStatus(status ? status : "undone").color}
           />
           <div className="text-right text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
             Criado por: {`${user?.name}`}
