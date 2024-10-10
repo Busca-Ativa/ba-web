@@ -78,6 +78,12 @@ const surveySlice = createSlice({
         state.surveyJson.pages[pageIndex].elements.splice(elementIndex, 1);
       }
     },
+    removeAllElements: (state, action) => {
+      const { pageIndex } = action.payload;
+      if (state.surveyJson.pages[pageIndex]) {
+        state.surveyJson.pages[pageIndex].elements = [];
+      }
+    },
     updateElement: (state, action) => {
       const { pageIndex, elementIndex, updatedElement } = action.payload;
       if (state.surveyJson.pages[pageIndex] && state.surveyJson.pages[pageIndex].elements[elementIndex]) {
@@ -144,6 +150,7 @@ export const {
   removeElement,
   updateQuestionOrder,
   duplicateElement,
+  removeAllElements,
   setElementRequired
 } = surveySlice.actions;
 

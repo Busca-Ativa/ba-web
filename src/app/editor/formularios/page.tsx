@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import { Add, PlusOne } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 
-import api from '../../../services/api'
-import nookies from 'nookies';
-import { GetServerSidePropsContext } from 'next';
+import api from "../../../services/api";
+import nookies from "nookies";
+import { GetServerSidePropsContext } from "next";
 import { AuthService } from "@/services/auth/auth";
 import { getStatus, StatusObject } from "@/utils";
 
@@ -21,19 +21,29 @@ const Formularios = () => {
   ];
 
   const [forms, setForms] = useState([]);
-  const [rows, setRows] = useState([]);
+  interface Row {
+    id: any;
+    title: any;
+    creator: string;
+    status: string;
+    config: { editable: boolean; deletable: boolean };
+    origin: any;
+  }
+
+  const [rows, setRows] = useState<Row[]>([]);
   const [rowsConfig, setRowsConfig] = useState([]);
   const user = AuthService.getUser();
 
-  useEffect( () =>{
-    const getForms = async () =>{
-      let list_forms = []
-      try{
-
-        let response = await api.get('/editor/unit/forms', {withCredentials:true})
-        if (response.data.data){
-          console.log(response.data.data)
-          list_forms.push(...response.data.data)
+  useEffect(() => {
+    const getForms = async () => {
+      let list_forms = [];
+      try {
+        let response = await api.get("/editor/unit/forms", {
+          withCredentials: true,
+        });
+        if (response.data.data) {
+          console.log(response.data.data);
+          list_forms.push(...response.data.data);
         }
 
         // WARN: Pegar unidades pega alguns forms que ja vem no da instituição fazendo eles ficarem repetidos
@@ -41,63 +51,68 @@ const Formularios = () => {
         // if (response.data.data){
         //   list_forms.push(...response.data.data)
         // }
-      } catch (error: any){
-        console.error(error.response?.message)
+      } catch (error: any) {
+        console.error(error.response?.message);
         throw error;
-      } finally{
-        setForms(list_forms)
+      } finally {
+        setForms(list_forms);
       }
-
-    }
-    getForms()
-
-  }, [] )
-
+    };
+    getForms();
+  }, []);
 
   // TODO: Quando deletar apagar a linha da tabela e refresh do component
-  useEffect( () => {
-  setRows(forms?.map( (value) => {
-    const name: string = value.editor.name + " " + value.editor.lastName;
-    const status: StatusObject = getStatus(value.status);
-    return {
-      id: value.id,
-      title: value.name,
-      creator: name,
-      status: status.name,
-      // WARN: Apenas se for o mesmo criado pode deletar e editar.
-      config: value.editor.id !== user.id ? {editable: false, deletable: false} : status.config,
-      origin: value.origin.name
-    }
-  } ));
-
-  }, [forms] )
+  useEffect(() => {
+    return setRows(
+      forms?.map((value) => {
+        const name: string = value.editor.name + " " + value.editor.lastName;
+        const status: StatusObject = getStatus(value?.status);
+        return {
+          id: value.id,
+          title: value.name,
+          creator: name,
+          status: status.name,
+          // WARN: Apenas se for o mesmo criado pode deletar e editar.
+          config:
+            value.editor.id !== user.id
+              ? { editable: false, deletable: false }
+              : status.config,
+          origin: value?.origin?.name,
+        };
+      })
+    );
+  }, [forms]);
 
   const pushEditor = () => {
     router.push("/editor");
   };
 
-  const handleDelete = async (row: Record<string, string|number>, rowIndex: number) => {
-    try{
+  const handleDelete = async (
+    row: Record<string, string | number>,
+    rowIndex: number
+  ) => {
+    try {
       let response = await api.delete(`/editor/form/${row.id}`);
-      const updatedRows = rows.filter( (_, index ) => index !== rowIndex);
+      const updatedRows = rows.filter((_, index) => index !== rowIndex);
       setRows(updatedRows);
-
-
-    } catch (error: any){
+    } catch (error: any) {
       console.error(error.response?.message);
       throw error;
     }
+  };
 
-  }
-
-  const handleEdit = async (row: Record<string, string|number>) => {
-    router.push(`/editor/?id=${row.id}`)
-  }
+  const handleEdit = async (row: Record<string, string | number>) => {
+    router.push(`/editor/?id=${row.id}`);
+  };
 
   const handleDuplicate = async (row, rowIndex) => {
-    try{
-      let response = await api.post(`/editor/form/${row.id}`,{}, {withCredentials:true});
-      if (response.status === 200){
+    try {
+      let response = await api.post(
+        `/editor/form/${row.id}`,
+        {},
+        { withCredentials: true }
+      );
+      if (response.status === 200) {
         const data = response.data.data;
         const status = getStatus(data.tags[1]);
         const duplicatedRow = {
@@ -105,23 +120,27 @@ const Formularios = () => {
           title: data.name,
           creator: data.editor.name + " " + data.editor.lastName,
           status: status.name,
-          config: data.editor.id !== user.id ? {editable: false, deletable: false} : status.config,
-          origin: data.tags[0] === 'institution'? data.institution.name : data.unit.name
-        }
+          config:
+            data.editor.id !== user.id
+              ? { editable: false, deletable: false }
+              : status.config,
+          origin:
+            data.tags[0] === "institution"
+              ? data.institution.name
+              : data.unit.name,
+        };
         const updatedRows = [
-        ...rows.slice(0, rowIndex + 1),
-        duplicatedRow,
-        ...rows.slice(rowIndex + 1),
+          ...rows.slice(0, rowIndex + 1),
+          duplicatedRow,
+          ...rows.slice(rowIndex + 1),
         ];
         setRows(updatedRows);
       }
-
-
-    } catch (error: any){
+    } catch (error: any) {
       console.error(error.response?.message);
       throw error;
     }
-  }
+  };
 
   return (
     <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
@@ -130,7 +149,9 @@ const Formularios = () => {
           <h1>Formulários</h1>
           <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
             {/* Secretaria de Saúde - Fortaleza */}
-            {forms[0]?.origin.name} - {forms[0]?.origin.code_state} - {forms[0]?.origin.code_city}
+            {forms[0]?.origin?.name} -{" "}
+            {forms[0]?.origin?.institution?.code_state} -{" "}
+            {forms[0]?.origin?.institution?.code_city}
           </h2>
         </div>
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
@@ -143,7 +164,13 @@ const Formularios = () => {
           </div>
         </button>
       </div>
-      <BATable columns={columns} initialRows={rows} onDuplicate={handleDuplicate} onDelete={handleDelete} onEdit={handleEdit} />
+      <BATable
+        columns={columns}
+        initialRows={rows}
+        onDuplicate={handleDuplicate}
+        onDelete={handleDelete}
+        onEdit={handleEdit}
+      />
     </div>
   );
 };

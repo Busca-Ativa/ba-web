@@ -23,6 +23,7 @@ import {
   addElement,
   updateQuestionOrder,
   selectAllElements,
+  removeAllElements,
 } from "../../../redux/surveySlice";
 import {
   CheckBoxOutlined,
@@ -80,23 +81,36 @@ const Editor = () => {
   const typeForm = searchParams.get("type") || "form";
 
   useEffect(() => {
+    console.log("user", user);
+  }, [user]);
+
+  useEffect(() => {
     const fetchForm = async () => {
       if (formId) {
         try {
-          const response = await api.get(`/editor/form/${formId}`, {
+          const response = await api.get(`/editor/${typeForm}/${formId}`, {
             withCredentials: true,
           });
           const formData = response.data;
           console.log(formData);
-          dispatch(setUpdatedAt(formData.data.updated_at));
-          dispatch(setCreatedAt(formData.data.created_at));
-          dispatch(setSurveyJson(formData.data.survey_schema || {}));
-          dispatch(setTags(formData.data.tags));
-          dispatch(setStatus(formData.data.status));
-          dispatch(setFormName(formData.data.survey_schema?.title || ""));
-          dispatch(
-            setFormDescription(formData.data.survey_schema?.description || "")
-          );
+          if (typeForm == "form") {
+            dispatch(setUpdatedAt(formData.data.updated_at));
+            dispatch(setCreatedAt(formData.data.created_at));
+            dispatch(setSurveyJson(formData.data.survey_schema || {}));
+            dispatch(setTags(formData.data.tags));
+            dispatch(setStatus(formData.data.status));
+            dispatch(setFormName(formData.data.survey_schema?.title || ""));
+            dispatch(
+              setFormDescription(formData.data.survey_schema?.description || "")
+            );
+          } else if (typeForm == "section") {
+            dispatch(setFormName(formData?.title || ""));
+            console.log("formData", formData);
+            dispatch(removeAllElements({ pageIndex: 0 }));
+            formData?.questions?.elements.forEach((question: any) => {
+              dispatch(addElement({ pageIndex: 0, element: question }));
+            });
+          }
         } catch (error) {
           toast.error(
             `Erro ao carregar o ${
@@ -249,12 +263,23 @@ const Editor = () => {
         dispatch(setStatus("done"));
         const status = "done";
         const newTags = [...tags];
-        const sendData = {
-          tags: newTags,
-          status: status,
-          schema: surveyJson,
-        };
-        response = await api.patch(`/editor/form/${formId}`, sendData, {
+        let sendData = {};
+        if (typeForm == "form") {
+          sendData = {
+            tags: newTags,
+            status: status,
+            schema: surveyJson,
+          };
+        } else if (typeForm == "section") {
+          sendData = {
+            title: formName,
+            questions: {
+              elements: surveyJson.pages[0].elements,
+            },
+          };
+        }
+
+        response = await api.patch(`/editor/${typeForm}/${formId}`, sendData, {
           withCredentials: true,
         });
       } else {
@@ -262,7 +287,9 @@ const Editor = () => {
         if (typeForm === "form") {
           sendData = {
             title: formName,
+            tags: tags,
             schema: surveyJson,
+            status: status,
           };
         } else if (typeForm === "section") {
           sendData = {

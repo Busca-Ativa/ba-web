@@ -45,13 +45,24 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   const [type, setType] = useState<string>("comment");
   const [required, setRequired] = useState<boolean>(element?.required || false);
   const [options, setOptions] = useState<EditableCheckbox[]>(
-    element?.choices.map((value, index) => ({
+    element?.choices?.map((value, index) => ({
       id: index,
       label: value,
       enabled: true,
     }))
   );
+
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+
+  useEffect(() => {
+    setOptions(
+      element?.choices?.map((value, index) => ({
+        id: index,
+        label: value,
+        enabled: true,
+      }))
+    );
+  }, [element]);
 
   const updateElementChoices = () => {
     const updatedElement = {
@@ -88,15 +99,15 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   };
 
   const updateChoice = (id: string, newLabel: string) => {
-    const updatedOptions = options.map((option) =>
+    const updatedOptions = options?.map((option) =>
       option.id === id ? { ...option, label: newLabel } : option
     );
 
     const updatedElement = {
       ...element,
       choices: updatedOptions
-        .filter((option) => option.enabled)
-        .map((option) => option.label),
+        ?.filter((option) => option.enabled)
+        ?.map((option) => option.label),
     };
 
     dispatch(
@@ -109,7 +120,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   };
 
   useEffect(() => {
-    if (options.length < 5 && options) {
+    if (options?.length < 5 && options) {
       const defaultOptions = [
         { id: 0, label: "Muito Frequentemente", enabled: false },
         { id: 1, label: "Raramente", enabled: false },
@@ -117,36 +128,12 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
         { id: 3, label: "Item 3", enabled: false },
         { id: 4, label: "Outro (Descreva)", enabled: false },
       ];
-      const missingCount = 5 - options.length;
-      const toAdd = [...options, ...defaultOptions.slice(-missingCount)];
+      const missingCount = 5 - options?.length;
+      const toAdd = [...options, ...defaultOptions?.slice(-missingCount)];
       setOptions((prev) => [...toAdd]);
     }
   }, [options]);
 
-  // useEffect(() => {
-  //   if (options.every(option => option.enabled)) {
-  //     setOptions([...options, { id: Date.now().toString(), label: `Option ${options.length + 1}`, enabled: false }]);
-  //   }
-  //   if (element) {
-  //     setQuestion(element.name);
-  //     setType(element.type);
-  //     setRequired(element.required);
-  //     console.log(element.choices);
-  //
-  //     const existingOptions = options.filter(
-  //       (option) =>
-  //         option.label !== "Nenhum" && option.label !== "Outro (Descreva)"
-  //     );
-  //
-  //     const updatedOptions = [
-  //       ...existingOptions,
-  //       { id: "5", label: "Nenhum", enabled: false },
-  //       { id: "6", label: "Outro (Descreva)", enabled: false },
-  //     ];
-  //     setOptions(updatedOptions);
-  //   }
-  // }, []);
-  //
   const toggleOption = (id: string) => {
     const newOptions = options?.map((option) =>
       option.id === id ? { ...option, enabled: !option.enabled } : option
@@ -193,7 +180,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
 
   const handleRemove = (id: string) => {
     setOptions(options?.filter((option) => option.id !== id));
-    const updatedOptions = options.map((option) =>
+    const updatedOptions = options?.map((option) =>
       option.id === id ? (option.enabled = false) : option.enabled
     );
     dispatch(
@@ -207,16 +194,16 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
 
   const moveOption = (index: number, direction: "up" | "down") => {
     const newOptions = [...options];
-    const [movedOption] = newOptions.splice(index, 1);
+    const [movedOption] = newOptions?.splice(index, 1);
     if (direction === "down") {
-      if (index <= newOptions.length && newOptions[index].enabled) {
-        newOptions.splice(index + 1, 0, movedOption);
+      if (index <= newOptions?.length && newOptions[index].enabled) {
+        newOptions?.splice(index + 1, 0, movedOption);
       } else {
         return;
       }
     } else if (direction === "up") {
       if (index - 1 >= 0 && newOptions[index - 1].enabled) {
-        newOptions.splice(index - 1, 0, movedOption);
+        newOptions?.splice(index - 1, 0, movedOption);
       }
     }
     setOptions(newOptions);

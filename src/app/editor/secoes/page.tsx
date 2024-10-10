@@ -20,7 +20,18 @@ const Secoes = () => {
   ];
 
   const [forms, setForms] = useState([]);
-  const [rows, setRows] = useState([]);
+  interface Row {
+    id: any;
+    title: string;
+    creator: string;
+    config: {
+      editable: boolean;
+      deletable: boolean;
+    };
+    origin: string;
+  }
+
+  const [rows, setRows] = useState<Row[]>([]);
   const [rowsConfig, setRowsConfig] = useState([]);
   const user = AuthService.getUser();
 
@@ -31,8 +42,9 @@ const Secoes = () => {
         let response = await api.get("/editor/sections", {
           withCredentials: true,
         });
-        if (response.data.data) {
-          list_forms.push(...response.data.data);
+        if (response.data) {
+          console.log("response", response);
+          list_forms.push(...response.data);
         }
 
         // WARN: Pegar unidades pega alguns forms que ja vem no da instituição fazendo eles ficarem repetidos
@@ -56,28 +68,31 @@ const Secoes = () => {
 
   // TODO: Quando deletar apagar a linha da tabela e refresh do component
   useEffect(() => {
-    setRows(
+    console.log("user", user);
+    return setRows(
       forms?.map((value) => {
-        const name: string = value.editor.name + " " + value.editor.lastName;
-        const status: StatusObject = getStatus(value.tags[1]);
+        const name: string = value.creator.name + " " + value.creator.lastName;
         return {
           id: value.id,
-          title: value.name,
+          title: value.title,
           creator: name,
-          status: status.name,
           // WARN: Apenas se for o mesmo criado pode deletar e editar.
           config:
-            value.editor.id !== user.id
-              ? { editable: false, deletable: false }
-              : status.config,
+            value.creator.id == user.id
+              ? { editable: true, deletable: true }
+              : { editable: false, deletable: false },
           origin:
             value.tags[0] === "institution"
-              ? value.institution.name
-              : value.unit.name,
+              ? value?.institution?.name
+              : value?.unit?.name,
         };
       })
     );
-  }, [forms]);
+  }, [forms, user.id]);
+
+  useEffect(() => {
+    console.log(rows);
+  }, [rows]);
 
   const pushEditor = () => {
     router.push("/editor?type=section");
@@ -117,13 +132,13 @@ const Secoes = () => {
           creator: data.editor.name + " " + data.editor.lastName,
           status: status.name,
           config:
-            data.editor.id !== user.id
+            data.creator.id !== user.id
               ? { editable: false, deletable: false }
               : status.config,
           origin:
             data.tags[0] === "institution"
-              ? data.institution.name
-              : data.unit.name,
+              ? data.institution?.name
+              : data.unit?.name,
         };
         const updatedRows = [
           ...rows.slice(0, rowIndex + 1),
@@ -145,8 +160,8 @@ const Secoes = () => {
           <h1>Seções</h1>
           <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
             {/* Secretaria de Saúde - Fortaleza */}
-            {forms[0]?.institution.name} - {forms[0]?.institution.code_state} -{" "}
-            {forms[0]?.institution.code_city}
+            {forms[0]?.institution?.name} - {forms[0]?.institution?.code_state}{" "}
+            - {forms[0]?.institution?.code_city}
           </h2>
         </div>
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
