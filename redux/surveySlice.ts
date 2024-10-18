@@ -159,3 +159,5 @@ export const selectAllElements = (state) => {
 };
 
 export default surveySlice.reducer;
+
+export const initialState = initialSurveyState;

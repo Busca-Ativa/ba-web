@@ -24,6 +24,7 @@ import {
   updateQuestionOrder,
   selectAllElements,
   removeAllElements,
+  initialState,
 } from "../../../redux/surveySlice";
 import {
   CheckBoxOutlined,
@@ -79,6 +80,14 @@ const Editor = () => {
   const searchParams = useSearchParams();
   const formId = searchParams.get("id");
   const typeForm = searchParams.get("type") || "form";
+
+  useEffect(() => {
+    return () => {
+      dispatch(setSurveyJson(initialState.surveyJson));
+      dispatch(setFormName(""));
+      dispatch(setFormDescription(""));
+    };
+  }, []);
 
   useEffect(() => {
     console.log("user", user);
@@ -282,6 +291,25 @@ const Editor = () => {
         response = await api.patch(`/editor/${typeForm}/${formId}`, sendData, {
           withCredentials: true,
         });
+        if (response.data) {
+          toast.dismiss(toastId);
+          toast.success(
+            `${
+              typeForm == "form"
+                ? "Formulario salvo"
+                : typeForm == "section"
+                ? "Seção salva"
+                : "Questão salva"
+            } com sucesso!`
+          );
+          if (typeForm === "form") {
+            router.push("/editor/formularios");
+          } else if (typeForm === "section") {
+            router.push("/editor/secoes");
+          } else if (typeForm === "question") {
+            router.push("/editor/questoes");
+          }
+        }
       } else {
         let sendData;
         if (typeForm === "form") {

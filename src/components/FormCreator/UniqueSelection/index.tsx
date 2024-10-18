@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateElement } from "../../../../redux/surveySlice";
 
 interface EditableCheckbox {
-  id: string;
+  id: number;
   label: string;
   enabled: boolean;
 }
@@ -130,7 +130,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
       ];
       const missingCount = 5 - options?.length;
       const toAdd = [...options, ...defaultOptions?.slice(-missingCount)];
-      setOptions((prev) => [...toAdd]);
+      setOptions(toAdd);
     }
   }, [options]);
 
