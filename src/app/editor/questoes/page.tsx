@@ -34,15 +34,9 @@ const Questoes = () => {
         let response = await api.get("/editor/questions", {
           withCredentials: true,
         });
-        if (response.data.data) {
-          list_forms.push(...response.data.data);
+        if (response.data) {
+          list_forms.push(...response.data);
         }
-
-        // WARN: Pegar unidades pega alguns forms que ja vem no da instituição fazendo eles ficarem repetidos
-        // response = await api.get('/editor/unit/forms')
-        // if (response.data.data){
-        //   list_forms.push(...response.data.data)
-        // }
       } catch (error: any) {
         console.error(error.response?.message);
         throw error;
@@ -53,26 +47,30 @@ const Questoes = () => {
     getForms();
   }, []);
 
+  const getType = (type) => {
+    if (type == "text") return "Resposta Curta";
+    if (type == "comment") return "Resposta Longa";
+    if (type == "boolean") return "Sim/Não";
+    if (type == "radiogroup") return "Seleção Única";
+    if (type == "chekbox") return "Seleção Multipla";
+  };
   // TODO: Quando deletar apagar a linha da tabela e refresh do component
   useEffect(() => {
     setRows(
       forms?.map((value) => {
-        const name: string = value.editor.name + " " + value.editor.lastName;
+        const name: string = value.creator.name + " " + value.creator.lastName;
         const status: StatusObject = getStatus(value.tags[1]);
         return {
           id: value.id,
-          title: value.name,
+          title: value.title,
           creator: name,
           status: status.name,
-          // WARN: Apenas se for o mesmo criado pode deletar e editar.
+          type: getType(value.type),
           config:
-            value.editor.id !== user.id
+            value.creator.id !== user.id
               ? { editable: false, deletable: false }
-              : status.config,
-          origin:
-            value.tags[0] === "institution"
-              ? value.institution.name
-              : value.unit.name,
+              : { editable: true, deletable: true, duplicable: true },
+          origin: "",
         };
       })
     );
@@ -144,8 +142,8 @@ const Questoes = () => {
           <h1>Questões</h1>
           <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
             {/* Secretaria de Saúde - Fortaleza */}
-            {forms[0]?.institution.name} - {forms[0]?.institution.code_state} -{" "}
-            {forms[0]?.institution.code_city}
+            {/* {forms[0]?.institution.name} - {forms[0]?.institution.code_state} -{" "} */}
+            {/* {forms[0]?.institution.code_city} */}
           </h2>
         </div>
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">

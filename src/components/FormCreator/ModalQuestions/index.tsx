@@ -6,13 +6,17 @@ import UniqueSelection from "../UniqueSelection";
 import MultipleSelection from "../MultipleSelection";
 import { useDispatch, useSelector } from "react-redux";
 import { addElement, removeElement } from "../../../../redux/surveySlice";
+import api from "@/services/api";
+import { toast } from "react-toastify";
 
 const ModalQuestions = ({ onClose }) => {
   const modalRef = useRef(null);
   const dispatch = useDispatch();
   const [selectedQuestion, setSelectedQuestion] = useState("ShortQuestion");
   const surveyState = useSelector((state) => state.survey);
-
+  const question = useSelector(
+    (state) => state.survey.surveyJson.pages[0].elements[0]
+  );
   const handleClickOutside = (event) => {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
       onClose(false);
@@ -21,8 +25,10 @@ const ModalQuestions = ({ onClose }) => {
 
   useEffect(() => {
     const data = getQuestionData(selectedQuestion);
+
     if (data) {
-      dispatch(removeElement({ pageIndex: 0, elementIndex: 0 })); // Remova o elemento específico se necessário
+      // Remover o elemento antes de adicionar um novo, respeitando a sequência
+      dispatch(removeElement({ pageIndex: 0, elementIndex: 0 }));
       dispatch(addElement({ pageIndex: 0, element: data }));
     }
   }, [dispatch, selectedQuestion]);
@@ -117,6 +123,24 @@ const ModalQuestions = ({ onClose }) => {
     }
   };
 
+  const saveQuestion = async () => {
+    const questionData = {
+      title: question.title,
+      type: question.type,
+      question_data: question,
+      tags: "",
+    };
+
+    try {
+      await api.post("/editor/question", questionData);
+      toast.success("Questão salva com sucesso!");
+      onClose();
+    } catch (error) {
+      console.error("Erro ao salvar a questão:", error);
+      toast.error("Erro ao salvar a questão.");
+    }
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
       <div
@@ -144,9 +168,7 @@ const ModalQuestions = ({ onClose }) => {
           {renderQuestionComponent()}
           <div className="flex justify-between w-full mt-[40px]">
             <button
-              onClick={() => {
-                console.log(surveyState);
-              }}
+              onClick={saveQuestion}
               className="h-[41px] px-10 py-2 bg-[#19b394] rounded justify-center items-center gap-3 inline-flex"
             >
               <div className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
