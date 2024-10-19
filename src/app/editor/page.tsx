@@ -60,7 +60,7 @@ import MultipleSelection from "@/components/FormCreator/MultipleSelection";
 import YesNotQuestion from "@/components/FormCreator/YesNotQuestion";
 import { UnknownAction } from "@reduxjs/toolkit";
 
-const Editor = () => {
+const EditorContent = () => {
   const dispatch = useDispatch();
 
   const surveyJson = useSelector((state: any) => state.survey.surveyJson);
@@ -664,6 +664,14 @@ const Editor = () => {
       {tabSelected == 1 && <Survey model={new Model(surveyJson)} />}
       <ToastContainer />
     </div>
+  );
+};
+
+const Editor = () => {
+  return (
+    <Suspense fallback={<div>Loading editor...</div>}>
+      <EditorContent />
+    </Suspense>
   );
 };
 
