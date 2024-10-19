@@ -34,10 +34,10 @@ const BaseComponent: React.FC<BaseComponentProps> = ({
       {isHovered && (
         <div className="absolute right-[30px] top-[-5px] flex flex-row items-center gap-2">
           <button onClick={() => onMove("up")}>
-            <SquaredUpArrow className="cursor-pointer" />
+            <SquaredUpArrow />
           </button>
           <button onClick={() => onMove("down")}>
-            <SquaredDownArrow className="cursor-pointer" />
+            <SquaredDownArrow />
           </button>
         </div>
       )}
@@ -51,7 +51,7 @@ const BaseComponent: React.FC<BaseComponentProps> = ({
       ) : (
         <BaseContent text={contentValue} onChange={setContentValue} />
       )}
-      {footer ? footer : <BaseFooter />}
+      {footer ? footer : <BaseFooter  />}
     </div>
   );
 };

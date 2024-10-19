@@ -1,25 +1,27 @@
+/* eslint-disable */
 import React, { useState, ReactNode } from 'react';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { SxProps, Theme } from '@mui/system';
 import { ListItemIcon, ListItemText, Divider } from '@mui/material';
-import { darken } from '@mui/system'; // Import darken utility
+import { darken } from '@mui/material/styles'
+import { SxProps, Theme } from '@mui/material'; // Import darken utility }
 
 interface Option {
-  label: string;
+  label: string | ReactNode;
   onClick: () => void;
   icon?: ReactNode;
+  subOptions?: Option[];
 }
 
-interface OptionGroup {
+export interface OptionGroup {
   groupLabel?: string;
   options: Option[];
 }
 
 interface DropdownButtonProps {
-  children?: string;
+  children?: ReactNode;
   color?: string;
   startIcon?: ReactNode;
   optionGroups?: OptionGroup[];
@@ -56,8 +58,8 @@ const ClickOrDropdownButton: React.FC<DropdownButtonProps> = ({
         onClick={handleClick}
         endIcon={
           <ExpandMoreIcon
-            onClick={(event) => {
-              event.stopPropagation(); // Prevent triggering the main button click
+            onClick={(event: any) => {
+              event.stopPropagation();
               handleArrowClick(event);
             }}
             sx={{
@@ -74,8 +76,7 @@ const ClickOrDropdownButton: React.FC<DropdownButtonProps> = ({
           '&:hover': {
             backgroundColor: color,
           },
-          color: sx?.color,
-          ...sx,
+          ...( sx as SxProps<Theme> ),
         }}
       >
         {children}

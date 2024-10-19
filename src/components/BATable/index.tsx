@@ -111,7 +111,7 @@ const BATable: React.FC<BATableProps> = ({
 }) => {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<string | undefined>(columns[0]?.id);
-  const [rows, setRows] = useState(initialRows);
+  const [rows, setRows] = useState<any>(initialRows);
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
 
@@ -177,13 +177,13 @@ const BATable: React.FC<BATableProps> = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedRows.map((row, rowIndex) => (
+            {paginatedRows.map((row: any, rowIndex: number) => (
               <TableRow key={rowIndex}>
                 {columns.map((column) => (
                   <TableCell key={column.id}>
                     {column.id === "status" ? (
                       <Status
-                        status={row[column.id]}
+                        status={row[column.id] as string}
                         bgColor={
                           row[column.id] == "Em Edição"
                             ? "#FFE9A6"

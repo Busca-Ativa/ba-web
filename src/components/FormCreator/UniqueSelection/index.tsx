@@ -45,7 +45,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   const [type, setType] = useState<string>("comment");
   const [required, setRequired] = useState<boolean>(element?.required || false);
   const [options, setOptions] = useState<EditableCheckbox[]>(
-    element?.choices?.map((value, index) => ({
+    element?.choices?.map((value: any, index: number) => ({
       id: index,
       label: value,
       enabled: true,
@@ -56,7 +56,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
 
   useEffect(() => {
     setOptions(
-      element?.choices?.map((value, index) => ({
+      element?.choices?.map((value: any, index: number) => ({
         id: index,
         label: value,
         enabled: true,
@@ -81,12 +81,12 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     );
   };
 
-  const updateChoices = (newChoices) => {
+  const updateChoices = (newChoices: any) => {
     const updatedElement = {
       ...element,
       choices: newChoices
-        .filter((option) => option.enabled)
-        .map((option) => option.label),
+        .filter((option: any) => option.enabled)
+        .map((option: any) => option.label),
     };
 
     dispatch(
@@ -99,7 +99,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   };
 
   const updateChoice = (id: string, newLabel: string) => {
-    const updatedOptions = options?.map((option) =>
+    const updatedOptions = options?.map((option: any) =>
       option.id === id ? { ...option, label: newLabel } : option
     );
 
@@ -135,7 +135,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   }, [options]);
 
   const toggleOption = (id: string) => {
-    const newOptions = options?.map((option) =>
+    const newOptions = options?.map((option: any) =>
       option.id === id ? { ...option, enabled: !option.enabled } : option
     );
     console.log(newOptions);
@@ -171,7 +171,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
 
   const handleLabelChange = (id: string, newLabel: string) => {
     setOptions(
-      options?.map((option) =>
+      options?.map((option: any) =>
         option.id === id ? { ...option, label: newLabel } : option
       )
     );
@@ -179,8 +179,8 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   };
 
   const handleRemove = (id: string) => {
-    setOptions(options?.filter((option) => option.id !== id));
-    const updatedOptions = options?.map((option) =>
+    setOptions(options?.filter((option:any) => option.id !== id));
+    const updatedOptions = options?.map((option:any) =>
       option.id === id ? (option.enabled = false) : option.enabled
     );
     dispatch(
@@ -218,27 +218,27 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
             <CancelOutlined
               fontSize="small"
               className="text-red-500 cursor-pointer"
-              onClick={() => toggleOption(option.id)}
+              onClick={() => toggleOption(option.id.toString())}
             />
           ) : (
             <AddCircleOutlineIcon
               fontSize="small"
               className="text-green-500 cursor-pointer"
-              onClick={() => toggleOption(option.id)}
+              onClick={() => toggleOption(option.id.toString())}
             />
           )}
           <input
             type="radio"
             name="unique-selection"
-            checked={selectedOption === option.id}
-            onChange={() => handleSelect(option.id)}
+            checked={selectedOption === option.id.toString()}
+            onChange={() => handleSelect(option.id.toString())}
             disabled={!option.enabled}
             className={`custom-checkbox${option.enabled ? "-enabled" : ""}`}
           />
           <input
             type="text"
             value={option.label}
-            onChange={(e) => handleLabelChange(option.id, e.target.value)}
+            onChange={(e) => handleLabelChange(option.id.toString(),e.target.value)}
             className={`text-lg  rounded-full font-regular font-poppins text-[16px] leading-[21px] focus:outline-none ${
               !option.enabled ? "text-gray-400" : "text-black"
             } border-2 rounded border-transparent hover:border-[#575757]`}
@@ -246,12 +246,12 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
           <div className="flex gap-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
             {index > 0 && (
               <button onClick={() => moveOption(index, "up")}>
-                <SquaredUpArrow className="cursor-pointer" />
+                <SquaredUpArrow/>
               </button>
             )}
             {index < options?.length - 1 && (
               <button onClick={() => moveOption(index, "down")}>
-                <SquaredDownArrow className="cursor-pointer" />
+                <SquaredDownArrow/>
               </button>
             )}
           </div>
@@ -271,8 +271,6 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
       required={required}
       question={question}
       type={type}
-      onMove={onMove}
-      index={index}
       onChange={handleChangeQuestion}
     />
   );
@@ -280,7 +278,6 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   const footer = (
     <BaseFooter
       onRequire={handleRequired}
-      required={required}
       pageIndex={pageIndex}
       elementIndex={elementIndex}
     />

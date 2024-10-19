@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { BarChart } from "@mui/x-charts/BarChart";
 
 export default function WeekChart() {
-  const chartContainerRef = useRef(null);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
   useEffect(() => {

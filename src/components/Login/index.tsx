@@ -20,7 +20,7 @@ const Login = () => {
     try {
       const auth = await AuthService.login(email, password);
       const token = auth.data.access_token;
-      const decoded = jwtDecode(token);
+      const decoded: any = jwtDecode(token);
       const role = decoded.role;
       if (role == "editor") {
         localStorage.setItem("role", role);

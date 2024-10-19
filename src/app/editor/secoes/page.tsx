@@ -19,7 +19,7 @@ const Secoes = () => {
     { id: "origin", label: "Origem", numeric: false },
   ];
 
-  const [forms, setForms] = useState([]);
+  const [forms, setForms] = useState<any[]>([]);
   interface Row {
     id: any;
     title: string;
@@ -33,7 +33,7 @@ const Secoes = () => {
 
   const [rows, setRows] = useState<Row[]>([]);
   const [rowsConfig, setRowsConfig] = useState([]);
-  const user = AuthService.getUser();
+  const user: any = AuthService.getUser();
 
   useEffect(() => {
     const getForms = async () => {
@@ -116,7 +116,7 @@ const Secoes = () => {
     router.push(`/editor/?id=${row.id}&type=section`);
   };
 
-  const handleDuplicate = async (row, rowIndex) => {
+  const handleDuplicate = async (row: any, rowIndex: number) => {
     try {
       let response = await api.post(
         `/editor/section/${row.id}`,
@@ -176,7 +176,7 @@ const Secoes = () => {
       </div>
       <BATable
         columns={columns}
-        initialRows={rows}
+        initialRows={rows as any}
         onDuplicate={handleDuplicate}
         onDelete={handleDelete}
         onEdit={handleEdit}

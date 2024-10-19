@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, MouseEvent } from "react";
 import ShortQuestion from "../ShortQuestion";
 import LongQuestion from "../LongQuestion";
 import YesNotQuestion from "../YesNotQuestion";
@@ -9,15 +9,19 @@ import { addElement, removeElement } from "../../../../redux/surveySlice";
 import api from "@/services/api";
 import { toast } from "react-toastify";
 
-const ModalQuestions = ({ onClose }) => {
-  const modalRef = useRef(null);
+type ModalQuestionProps = {
+  onClose: (value: boolean) => void;
+};
+
+const ModalQuestions = ({ onClose }: ModalQuestionProps) => {
+  const modalRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   const [selectedQuestion, setSelectedQuestion] = useState("ShortQuestion");
-  const surveyState = useSelector((state) => state.survey);
+  const surveyState = useSelector((state: any) => state.survey);
   const question = useSelector(
-    (state) => state.survey.surveyJson.pages[0].elements[0]
+    (state: any) => state.survey.surveyJson.pages[0].elements[0]
   );
-  const handleClickOutside = (event) => {
+  const handleClickOutside = (event: any) => {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
       onClose(false);
     }
@@ -33,7 +37,7 @@ const ModalQuestions = ({ onClose }) => {
     }
   }, [dispatch, selectedQuestion]);
 
-  const getQuestionData = (questionType) => {
+  const getQuestionData = (questionType: string) => {
     switch (questionType) {
       case "ShortQuestion":
         return { name: "", title: "", type: "text" };
@@ -90,6 +94,7 @@ const ModalQuestions = ({ onClose }) => {
       case "YesNotQuestion":
         return (
           <YesNotQuestion
+            index={0}
             elementIndex={0}
             pageIndex={0}
             onCopy={() => {}}
@@ -113,6 +118,7 @@ const ModalQuestions = ({ onClose }) => {
           <MultipleSelection
             elementIndex={0}
             pageIndex={0}
+            index={0}
             onCopy={() => {}}
             onDelete={() => {}}
             onMove={() => {}}
@@ -134,7 +140,7 @@ const ModalQuestions = ({ onClose }) => {
     try {
       await api.post("/editor/question", questionData);
       toast.success("Questão salva com sucesso!");
-      onClose();
+      onClose(false);
     } catch (error) {
       console.error("Erro ao salvar a questão:", error);
       toast.error("Erro ao salvar a questão.");

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { Add, PlusOne } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 
@@ -21,15 +21,23 @@ const Questoes = () => {
     { id: "origin", label: "Origem", numeric: false },
   ];
 
-  const [forms, setForms] = useState([]);
-  const [rows, setRows] = useState([]);
+  const [forms, setForms] = useState<any[]>([]);
+  interface Row {
+    id: any;
+    title: any;
+    creator: string;
+    status: string;
+    config: { editable: boolean; deletable: boolean };
+    origin: any;
+  }
+  const [rows, setRows] = useState<Row[]>([]);
   const [rowsConfig, setRowsConfig] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const user = AuthService.getUser();
+  const user: any = AuthService.getUser();
 
   useEffect(() => {
     const getForms = async () => {
-      let list_forms = [];
+      let list_forms: SetStateAction<any[]> = [];
       try {
         let response = await api.get("/editor/questions", {
           withCredentials: true,
@@ -47,7 +55,7 @@ const Questoes = () => {
     getForms();
   }, []);
 
-  const getType = (type) => {
+  const getType = (type : string) => {
     if (type == "text") return "Resposta Curta";
     if (type == "comment") return "Resposta Longa";
     if (type == "boolean") return "Sim/Não";
@@ -57,7 +65,7 @@ const Questoes = () => {
   // TODO: Quando deletar apagar a linha da tabela e refresh do component
   useEffect(() => {
     setRows(
-      forms?.map((value) => {
+      forms?.map((value: any) => {
         const name: string = value.creator.name + " " + value.creator.lastName;
         const status: StatusObject = getStatus(value.tags[1]);
         return {
@@ -98,7 +106,7 @@ const Questoes = () => {
     router.push(`/editor/?id=${row.id}&type=question`);
   };
 
-  const handleDuplicate = async (row, rowIndex) => {
+  const handleDuplicate = async (row: any, rowIndex: number) => {
     try {
       let response = await api.post(
         `/editor/question/${row.id}`,
@@ -158,7 +166,7 @@ const Questoes = () => {
       </div>
       <BATable
         columns={columns}
-        initialRows={rows}
+        initialRows={rows as any}
         onDuplicate={handleDuplicate}
         onDelete={handleDelete}
         onEdit={handleEdit}

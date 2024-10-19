@@ -4,8 +4,8 @@ import AsteriskRed from "@/assets/icons/AsteriskRed";
 interface BaseTitleProps {
   question: string;
   type: string;
-  required: boolean;
-  onChange: Dispatch<SetStateAction<string>>;
+  required?: boolean;
+  onChange: Dispatch<SetStateAction<string>> | ((value:string)=>void);
 }
 
 const BaseTitle: React.FC<BaseTitleProps> = ({

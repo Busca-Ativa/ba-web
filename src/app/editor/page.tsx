@@ -4,7 +4,7 @@ import "survey-core/defaultV2.min.css";
 import "react-toastify/dist/ReactToastify.css";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, Suspense } from "react";
 import { Model, Survey } from "survey-react-ui";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Typography from "@mui/material/Typography";
@@ -51,13 +51,14 @@ import BaseComponent from "@/components/FormCreator/BaseComponent";
 import { AuthService } from "@/services/auth/auth";
 import DropDownButton from "@/components/Buttons/DropdownButton";
 import ClickOrDropDownButton from "@/components/Buttons/ClickOrDropdownButton";
+import { OptionGroup } from "@/components/Buttons/ClickOrDropdownButton";
 import api from "@/services/api";
 import { surveyElements, surveyPageExample } from "../../utils/SurveyJS";
-import { FormContext } from "@/contexts/FormContext";
 import { Question } from "@/types/Question";
 import { getTime, getStatus } from "@/utils";
 import MultipleSelection from "@/components/FormCreator/MultipleSelection";
 import YesNotQuestion from "@/components/FormCreator/YesNotQuestion";
+import { UnknownAction } from "@reduxjs/toolkit";
 
 const Editor = () => {
   const dispatch = useDispatch();
@@ -74,7 +75,7 @@ const Editor = () => {
 
   const [tabSelected, setTabSelected] = useState(0);
   const [tagHover, setTagHover] = useState<null | number>(null);
-  const [user, setUser] = useState(AuthService.getUser());
+  const [user, setUser] = useState<any>(AuthService.getUser());
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -128,7 +129,7 @@ const Editor = () => {
                 : typeForm === "section"
                 ? "seção"
                 : "questão"
-            }: ${error.response?.data || error.message}`
+            }: ${( error as any).response?.data || ( error as any ).message}`
           );
         }
       }
@@ -176,7 +177,7 @@ const Editor = () => {
     </Typography>,
   ];
 
-  const saveOptionsGroups: OptionGroups[] = [
+  const saveOptionsGroups: OptionGroup[] = [
     {
       groupLabel: "",
       options: [
@@ -204,7 +205,7 @@ const Editor = () => {
     },
   ];
 
-  const modifyOptionsGroups: OptionGroups = [
+  const modifyOptionsGroups: OptionGroup[] = [
     {
       groupLabel: "",
       options: [
@@ -260,8 +261,8 @@ const Editor = () => {
     text: ShortQuestion,
   };
 
-  const getType = (type: string) => {
-    return types[type] || null;
+  const getType = (type: string): any => {
+    return ( types as any )[type] || null;
   };
 
   const handleSave = async () => {
@@ -378,7 +379,7 @@ const Editor = () => {
     }
   };
 
-  const handleTagsHover = (i) => {
+  const handleTagsHover = (i: number) => {
     setTagHover(i);
   };
 
@@ -618,7 +619,7 @@ const Editor = () => {
               </div>
             )}
             <AnimatePresence>
-              {surveyJson?.pages?.map((page, pageIndex: number) => {
+              {surveyJson?.pages?.map((page: any, pageIndex: number) => {
                 return page.elements.map(
                   (question: Question, questionIndex: number) => {
                     const Component = getType(question.type);
@@ -637,7 +638,7 @@ const Editor = () => {
                       >
                         {Component && (
                           <Component
-                            onMove={(direction) =>
+                            onMove={(direction : string) =>
                               dispatch(
                                 updateQuestionOrder({
                                   pageIndex,

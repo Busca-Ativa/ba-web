@@ -26,9 +26,24 @@ export const AuthService = {
     }
   },
 
-  getUser(ctx?: GetServerSidePropsContext){
-    const token = nookies.get(ctx).access_token
-    return jwtDecode(token).sub
+  getUser(ctx?: GetServerSidePropsContext) {
+    // Retrieve the access_token from cookies
+    const cookies = nookies.get(ctx);
+    const token = cookies.access_token;
+
+    // Check if the token is defined and is a string
+    if (!token || typeof token !== 'string') {
+      return {}
+    }
+
+    // Decode the token and extract the subject (sub)
+    try {
+      const decodedToken = jwtDecode(token);
+      return decodedToken.sub; // Ensure that 'sub' exists in the decoded token
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      throw new Error('Invalid token: cannot decode');
+    }
   },
 
   async register(userData: {

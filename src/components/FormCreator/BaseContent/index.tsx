@@ -3,8 +3,8 @@ import AsteriskRed from "@/assets/icons/AsteriskRed";
 
 interface BaseContentProps {
   text: string
-  type: string
-  disabled: boolean
+  type?: string
+  disabled?: boolean
   onChange: (value: string) => void
 }
 

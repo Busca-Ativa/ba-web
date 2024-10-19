@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import SideBar from "@/components/Sidebar";
 import "./globals.css";
 import { Inter } from "next/font/google";
-import { FormProvider } from "@/contexts/FormContext";
 import { Provider } from "react-redux";
 import store from "../../redux/store";
 
