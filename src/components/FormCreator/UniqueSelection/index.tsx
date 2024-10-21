@@ -54,15 +54,6 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
-  useEffect(() => {
-    setOptions(
-      element?.choices?.map((value: any, index: number) => ({
-        id: index,
-        label: value,
-        enabled: true,
-      }))
-    );
-  }, [element]);
 
   const updateElementChoices = () => {
     const updatedElement = {
@@ -134,7 +125,8 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     }
   }, [options]);
 
-  const toggleOption = (id: string) => {
+  const toggleOption = (id: number) => {
+    console.log(options);
     const newOptions = options?.map((option: any) =>
       option.id === id ? { ...option, enabled: !option.enabled } : option
     );
@@ -218,13 +210,13 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
             <CancelOutlined
               fontSize="small"
               className="text-red-500 cursor-pointer"
-              onClick={() => toggleOption(option.id.toString())}
+              onClick={() => toggleOption(option.id)}
             />
           ) : (
             <AddCircleOutlineIcon
               fontSize="small"
               className="text-green-500 cursor-pointer"
-              onClick={() => toggleOption(option.id.toString())}
+              onClick={() => toggleOption(option.id)}
             />
           )}
           <input
