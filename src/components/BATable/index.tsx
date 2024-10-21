@@ -16,10 +16,10 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import {
+  Add,
+  Close,
   DeleteOutline,
-  Edit,
   EditOutlined,
-  FileCopy,
   FileCopyOutlined,
 } from "@mui/icons-material";
 import Status from "../Status";
@@ -37,9 +37,15 @@ interface Config {
   insertable?: boolean;
 }
 
+interface InsertsSelected {
+  id: string;
+  selected: boolean;
+}
+
 interface BATableProps {
   columns: Column[];
   initialRows: Record<string, string | number>[];
+  insertsSelected?: InsertsSelected[];
   // configRows?: Config[];
   onEdit?: (row: Record<string, string | number>) => void;
   onDelete?: (row: Record<string, string | number>, rowIndex: number) => void;
@@ -47,6 +53,7 @@ interface BATableProps {
     row: Record<string, string | number>,
     rowIndex: number
   ) => void;
+  onInsert?: (selectedId: string) => void;
 }
 
 // Customização do tema
@@ -108,9 +115,10 @@ type Order = "asc" | "desc" | undefined;
 const BATable: React.FC<BATableProps> = ({
   columns,
   initialRows,
+  insertsSelected,
   onEdit,
   onDelete,
-  // configRows,
+  onInsert,
   onDuplicate,
 }) => {
   const [order, setOrder] = useState<Order>("asc");
@@ -121,6 +129,7 @@ const BATable: React.FC<BATableProps> = ({
 
   useEffect(() => {
     setRows(initialRows);
+    console.log("initialRows", initialRows);
   }, [initialRows]);
   const handleRequestSort = (property: string) => {
     const isAsc = order === "asc";
@@ -248,24 +257,60 @@ const BATable: React.FC<BATableProps> = ({
                   </>
                 ) : (
                   <TableCell colSpan={2} sx={{ width: 20 }}>
-                    <button
-                      onClick={() => onDuplicate && onDuplicate(row, rowIndex)}
-                      style={{
-                        backgroundColor: "#FFF",
-                        color: "#1D2432",
-                        padding: "8px 16px",
-                        borderRadius: "4px",
-                        border: "1px solid #CACDD5",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "12px",
-                        width: "100%",
-                      }}
-                    >
-                      <FileCopyOutlined fontSize="small" />
-                      <span>Duplicar</span>
-                    </button>
+                    {rows[rowIndex]?.config?.insertable == false && (
+                      <button
+                        onClick={() =>
+                          onDuplicate && onDuplicate(row, rowIndex)
+                        }
+                        style={{
+                          backgroundColor: "#FFF",
+                          color: "#1D2432",
+                          padding: "8px 16px",
+                          borderRadius: "4px",
+                          border: "1px solid #CACDD5",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "12px",
+                          width: "100%",
+                        }}
+                      >
+                        <FileCopyOutlined fontSize="small" />
+                        <span>Duplicar</span>
+                      </button>
+                    )}
+                    <div className="w-full flex justify-end">
+                      {rows[rowIndex]?.config?.insertable == true &&
+                        insertsSelected?.find((i) => i.id == rows[rowIndex].id)
+                          ?.selected == false && (
+                          <button
+                            className="h-7 px-[15px] py-[5px] bg-white rounded border border-[#40c156] justify-center items-center gap-[5px] inline-flex"
+                            onClick={() => {
+                              onInsert && onInsert(rows[rowIndex].id);
+                            }}
+                          >
+                            <Add fontSize="small" sx={{ color: "#40c156" }} />
+                            <div className="text-[#40c156] text-xs font-semibold font-['Source Sans Pro'] leading-[18px]">
+                              Adicionar
+                            </div>
+                          </button>
+                        )}
+                      {rows[rowIndex]?.config?.insertable == true &&
+                        insertsSelected?.find((i) => i.id == rows[rowIndex].id)
+                          ?.selected && (
+                          <button
+                            className="h-7 px-[15px] py-[5px] bg-[#ef4838] rounded border border-[#ef4838] justify-center items-center gap-[5px] inline-flex"
+                            onClick={() => {
+                              onInsert && onInsert(rows[rowIndex].id);
+                            }}
+                          >
+                            <Close fontSize="small" sx={{ color: "#fff" }} />
+                            <div className="text-white text-xs font-semibold font-['Source Sans Pro'] leading-[18px]">
+                              Remover
+                            </div>
+                          </button>
+                        )}
+                    </div>
                   </TableCell>
                 )}
               </TableRow>
