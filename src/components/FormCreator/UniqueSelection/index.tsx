@@ -54,15 +54,6 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
-  useEffect(() => {
-    setOptions(
-      element?.choices?.map((value: any, index: number) => ({
-        id: index,
-        label: value,
-        enabled: true,
-      }))
-    );
-  }, [element]);
 
   const updateElementChoices = () => {
     const updatedElement = {
@@ -134,7 +125,8 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     }
   }, [options]);
 
-  const toggleOption = (id: string) => {
+  const toggleOption = (id: number) => {
+    console.log(options);
     const newOptions = options?.map((option: any) =>
       option.id === id ? { ...option, enabled: !option.enabled } : option
     );
@@ -169,7 +161,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     );
   };
 
-  const handleLabelChange = (id: string, newLabel: string) => {
+  const handleLabelChange = (id: number, newLabel: string) => {
     setOptions(
       options?.map((option: any) =>
         option.id === id ? { ...option, label: newLabel } : option
@@ -218,13 +210,13 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
             <CancelOutlined
               fontSize="small"
               className="text-red-500 cursor-pointer"
-              onClick={() => toggleOption(option.id.toString())}
+              onClick={() => toggleOption(option.id)}
             />
           ) : (
             <AddCircleOutlineIcon
               fontSize="small"
               className="text-green-500 cursor-pointer"
-              onClick={() => toggleOption(option.id.toString())}
+              onClick={() => toggleOption(option.id)}
             />
           )}
           <input
@@ -238,7 +230,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
           <input
             type="text"
             value={option.label}
-            onChange={(e) => handleLabelChange(option.id.toString(),e.target.value)}
+            onChange={(e) => handleLabelChange(option.id,e.target.value)}
             className={`text-lg  rounded-full font-regular font-poppins text-[16px] leading-[21px] focus:outline-none ${
               !option.enabled ? "text-gray-400" : "text-black"
             } border-2 rounded border-transparent hover:border-[#575757]`}

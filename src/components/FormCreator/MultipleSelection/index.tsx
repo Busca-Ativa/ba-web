@@ -150,7 +150,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   //   }
   // }, []);
 
-  const toggleOption = (id: string) => {
+  const toggleOption = (id: number) => {
     const newOptions = options?.map((option: any) =>
       option.id === id ? { ...option, enabled: !option.enabled } : option
     );
@@ -224,13 +224,13 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
             <CancelOutlined
               fontSize="small"
               className="text-red-500 cursor-pointer"
-              onClick={() => toggleOption(option.id.toString())}
+              onClick={() => toggleOption(option.id)}
             />
           ) : (
             <AddCircleOutlineIcon
               fontSize="small"
               className="text-green-500 cursor-pointer"
-              onClick={() => toggleOption(option.id.toString())}
+              onClick={() => toggleOption(option.id)}
             />
           )}
           <input
