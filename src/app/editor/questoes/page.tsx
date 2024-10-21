@@ -33,9 +33,29 @@ const Questoes = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [rowsConfig, setRowsConfig] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [userData, setUserData] = useState<any>({});
   const user: any = AuthService.getUser();
 
   useEffect(() => {
+    const getUserData = async () => {
+      try {
+        let response = await api.get("/all/user", {
+          withCredentials: true,
+        });
+        if (response.data) {
+          setUserData(response.data);
+          console.log("Dante",response.data)
+        }
+
+      } catch (error: any) {
+        if (error.response?.status === 401) {
+          console.warn("Acesso não autorizado");
+        } else {
+          console.error(error.response?.message);
+          throw error;
+        }
+      }
+    }
     const getForms = async () => {
       let list_forms: SetStateAction<any[]> = [];
       try {
@@ -50,9 +70,11 @@ const Questoes = () => {
         throw error;
       } finally {
         setForms(list_forms);
+        console.log(list_forms)
       }
     };
     getForms();
+    getUserData();
   }, []);
 
   const getType = (type: string) => {
@@ -78,7 +100,10 @@ const Questoes = () => {
             value.creator.id !== user.id
               ? { editable: false, deletable: false }
               : { editable: true, deletable: true, duplicable: true },
-          origin: "",
+          origin:
+            value.origin
+              ? value?.origin?.name
+              : value?.unit?.name,
         };
       })
     );
