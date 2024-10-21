@@ -55,7 +55,7 @@ const Questoes = () => {
     getForms();
   }, []);
 
-  const getType = (type : string) => {
+  const getType = (type: string) => {
     if (type == "text") return "Resposta Curta";
     if (type == "comment") return "Resposta Longa";
     if (type == "boolean") return "Sim/Não";
@@ -82,6 +82,7 @@ const Questoes = () => {
         };
       })
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forms]);
 
   const pushEditor = () => {
