@@ -34,8 +34,28 @@ const Secoes = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [rowsConfig, setRowsConfig] = useState([]);
   const user: any = AuthService.getUser();
+  const [userData, setUserData] = useState<any>({});
 
   useEffect(() => {
+    const getUserData = async () => {
+      try {
+        let response = await api.get("/all/user", {
+          withCredentials: true,
+        });
+        if (response.data) {
+          setUserData(response.data);
+          console.log("Dante",response.data)
+        }
+
+      } catch (error: any) {
+        if (error.response?.status === 401) {
+          console.warn("Acesso não autorizado");
+        } else {
+          console.error(error.response?.message);
+          throw error;
+        }
+      }
+    }
     const getForms = async () => {
       let list_forms = [];
       try {
@@ -64,6 +84,7 @@ const Secoes = () => {
       }
     };
     getForms();
+    getUserData();
   }, []);
 
   // TODO: Quando deletar apagar a linha da tabela e refresh do component
@@ -82,8 +103,8 @@ const Secoes = () => {
               ? { editable: true, deletable: true }
               : { editable: false, deletable: false },
           origin:
-            value.tags[0] === "institution"
-              ? value?.institution?.name
+            value.origin
+              ? value?.origin?.name
               : value?.unit?.name,
         };
       })
@@ -159,9 +180,10 @@ const Secoes = () => {
         <div className="flex flex-col gap-[5px]">
           <h1>Seções</h1>
           <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {/* Secretaria de Saúde - Fortaleza */}
-            {forms[0]?.institution?.name} - {forms[0]?.institution?.code_state}{" "}
-            - {forms[0]?.institution?.code_city}
+            {userData?.unit
+              ? ( userData.unit.name + " - " + userData.institution.code_city + " - " + userData.institution.code_state)
+              :
+                (userData?.institution?.name + " - " + userData?.institution?.code_state + " - " + userData?.institution?.code_city) }
           </h2>
         </div>
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">

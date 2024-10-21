@@ -21,11 +21,12 @@ const Login = () => {
       const auth = await AuthService.login(email, password);
       const token = auth.data.access_token;
       const decoded: any = jwtDecode(token);
+      console.log(decoded)
       const role = decoded.role;
       if (role == "editor") {
         localStorage.setItem("role", role);
         router.push("/editor/formularios");
-      } else if (role == "admin") {
+      } else if (role == "admin" | role == "superuser") {
         localStorage.setItem("role", role);
         router.push("/admin/dashboard");
       }
