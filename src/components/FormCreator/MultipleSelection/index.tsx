@@ -54,6 +54,16 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   );
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
+  useEffect(() => {
+    setOptions(
+      element?.choices?.map((value: any, index: number) => ({
+        id: index,
+        label: value,
+        enabled: true,
+      }))
+    );
+  }, [element]);
+
   const updateElementChoices = () => {
     console.log("updateElementChoices", options);
 
@@ -159,7 +169,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   };
 
   const handleSelect = (id: string) => {
-    setSelectedOptions([ id ]);
+    setSelectedOptions([id]);
   };
 
   const handleChangeQuestion = (newQuestion: string) => {
@@ -252,12 +262,12 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
           <div className="flex gap-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
             {index > 0 && (
               <button onClick={() => moveOption(index, "up")}>
-                <SquaredUpArrow/>
+                <SquaredUpArrow />
               </button>
             )}
             {index < options.length - 1 && (
               <button onClick={() => moveOption(index, "down")}>
-                <SquaredDownArrow/>
+                <SquaredDownArrow />
               </button>
             )}
           </div>
@@ -289,7 +299,15 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
     />
   );
 
-  return <BaseComponent header={header} content={content} footer={footer} onMove={onMove} index={index} />;
+  return (
+    <BaseComponent
+      header={header}
+      content={content}
+      footer={footer}
+      onMove={onMove}
+      index={index}
+    />
+  );
 };
 
 export default MultipleSelection;

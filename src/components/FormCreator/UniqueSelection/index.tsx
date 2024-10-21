@@ -41,6 +41,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     (state: any) =>
       state.survey.surveyJson.pages[pageIndex]?.elements[elementIndex]
   );
+
   const [question, setQuestion] = useState<string>(element?.title || "");
   const [type, setType] = useState<string>("comment");
   const [required, setRequired] = useState<boolean>(element?.required || false);
@@ -54,6 +55,9 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
+  useEffect(() => {
+    console.log("element", element);
+  }, [element]);
 
   const updateElementChoices = () => {
     const updatedElement = {
@@ -171,8 +175,8 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   };
 
   const handleRemove = (id: string) => {
-    setOptions(options?.filter((option:any) => option.id !== id));
-    const updatedOptions = options?.map((option:any) =>
+    setOptions(options?.filter((option: any) => option.id !== id));
+    const updatedOptions = options?.map((option: any) =>
       option.id === id ? (option.enabled = false) : option.enabled
     );
     dispatch(
@@ -230,7 +234,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
           <input
             type="text"
             value={option.label}
-            onChange={(e) => handleLabelChange(option.id,e.target.value)}
+            onChange={(e) => handleLabelChange(option.id, e.target.value)}
             className={`text-lg  rounded-full font-regular font-poppins text-[16px] leading-[21px] focus:outline-none ${
               !option.enabled ? "text-gray-400" : "text-black"
             } border-2 rounded border-transparent hover:border-[#575757]`}
@@ -238,12 +242,12 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
           <div className="flex gap-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
             {index > 0 && (
               <button onClick={() => moveOption(index, "up")}>
-                <SquaredUpArrow/>
+                <SquaredUpArrow />
               </button>
             )}
             {index < options?.length - 1 && (
               <button onClick={() => moveOption(index, "down")}>
-                <SquaredDownArrow/>
+                <SquaredDownArrow />
               </button>
             )}
           </div>

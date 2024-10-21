@@ -36,7 +36,7 @@ const Formularios = () => {
 
   useEffect(() => {
     const getForms = async () => {
-      let list_forms  = [];
+      let list_forms = [];
       try {
         let response = await api.get("/editor/unit/forms", {
           withCredentials: true,
@@ -81,6 +81,7 @@ const Formularios = () => {
         };
       })
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forms]);
 
   const pushEditor = () => {
@@ -119,7 +120,7 @@ const Formularios = () => {
           id: data.id,
           title: data.name,
           creator: data.editor.name + " " + data.editor.lastName,
-          status: status.name ,
+          status: status.name,
           config:
             data.editor.id !== user.id
               ? { editable: false, deletable: false }

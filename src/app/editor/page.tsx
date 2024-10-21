@@ -59,6 +59,7 @@ import { getTime, getStatus } from "@/utils";
 import MultipleSelection from "@/components/FormCreator/MultipleSelection";
 import YesNotQuestion from "@/components/FormCreator/YesNotQuestion";
 import { UnknownAction } from "@reduxjs/toolkit";
+import ModalInsertions from "@/components/FormCreator/ModalInsertions";
 
 const EditorContent = () => {
   const dispatch = useDispatch();
@@ -77,6 +78,8 @@ const EditorContent = () => {
   const [tagHover, setTagHover] = useState<null | number>(null);
   const [user, setUser] = useState<any>(AuthService.getUser());
 
+  const [modalOpen, setModalOpen] = useState(false);
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const formId = searchParams.get("id");
@@ -88,6 +91,7 @@ const EditorContent = () => {
       dispatch(setFormName(""));
       dispatch(setFormDescription(""));
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -129,18 +133,19 @@ const EditorContent = () => {
                 : typeForm === "section"
                 ? "seção"
                 : "questão"
-            }: ${( error as any).response?.data || ( error as any ).message}`
+            }: ${(error as any).response?.data || (error as any).message}`
           );
         }
       }
     };
 
     fetchForm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formId]);
 
   useEffect(() => {
     console.log(tags);
-  }, []);
+  }, [tags]);
 
   const breadcrumbs = [
     <Link
@@ -262,7 +267,7 @@ const EditorContent = () => {
   };
 
   const getType = (type: string): any => {
-    return ( types as any )[type] || null;
+    return (types as any)[type] || null;
   };
 
   const handleSave = async () => {
@@ -491,7 +496,7 @@ const EditorContent = () => {
       </div>
       {tabSelected == 0 && (
         <div className="flex">
-          <div className="flex items-start flex-col w-[23%] 2xl:w-[28%] px-[7px] gap-[12px] text-[#575757]">
+          <div className="flex items-start flex-col w-[24%] 2xl:w-[28%] px-[7px] gap-[12px] text-[#575757]">
             <button
               className="h-[34px] pl-[7px] pr-[15px] py-[5px] hover:bg-white rounded-[100px] hover:shadow justify-start items-center gap-2.5 inline-flex hover:text-[#19b394]"
               onMouseOver={() => handleTagsHover(0)}
@@ -589,6 +594,9 @@ const EditorContent = () => {
               className="mt-[38px] h-[34px] pl-[7px] pr-[15px] py-[5px] hover:bg-white rounded-[100px] hover:shadow justify-start items-center gap-2.5 inline-flex hover:text-[#19b394]"
               onMouseOver={() => handleTagsHover(6)}
               onMouseLeave={handleTagsLeave}
+              onClick={() => {
+                setModalOpen(true);
+              }}
             >
               <UploadFileOutlined />
               {tagHover === 6 && (
@@ -638,7 +646,7 @@ const EditorContent = () => {
                       >
                         {Component && (
                           <Component
-                            onMove={(direction : string) =>
+                            onMove={(direction: string) =>
                               dispatch(
                                 updateQuestionOrder({
                                   pageIndex,
@@ -663,6 +671,7 @@ const EditorContent = () => {
       )}
       {tabSelected == 1 && <Survey model={new Model(surveyJson)} />}
       <ToastContainer />
+      {modalOpen && <ModalInsertions onClose={setModalOpen} />}
     </div>
   );
 };
