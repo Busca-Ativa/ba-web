@@ -161,7 +161,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     );
   };
 
-  const handleLabelChange = (id: string, newLabel: string) => {
+  const handleLabelChange = (id: number, newLabel: string) => {
     setOptions(
       options?.map((option: any) =>
         option.id === id ? { ...option, label: newLabel } : option
@@ -230,7 +230,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
           <input
             type="text"
             value={option.label}
-            onChange={(e) => handleLabelChange(option.id.toString(),e.target.value)}
+            onChange={(e) => handleLabelChange(option.id,e.target.value)}
             className={`text-lg  rounded-full font-regular font-poppins text-[16px] leading-[21px] focus:outline-none ${
               !option.enabled ? "text-gray-400" : "text-black"
             } border-2 rounded border-transparent hover:border-[#575757]`}
