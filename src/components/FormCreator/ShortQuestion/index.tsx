@@ -120,12 +120,12 @@ const ShortQuestion: React.FC<ShortQuestionProps> = ({
 
   const [question, setQuestion] = useState(element?.title || "");
   const [type, setType] = useState(element?.inputType || "text");
-  const [required, setRequired] = useState(element?.required || false);
+  const [required, setRequired] = useState(element?.isRequired || false);
 
   useEffect(() => {
     if (element) {
       setQuestion(element.text);
-      setRequired(element.required);
+      setRequired(element.isRequired);
     }
   }, [element]);
 
@@ -148,7 +148,7 @@ const ShortQuestion: React.FC<ShortQuestionProps> = ({
       updateElement({
         pageIndex,
         elementIndex,
-        updatedElement: { ...element, required: newRequired },
+        updatedElement: { ...element, isRequired: newRequired },
       })
     );
   };
@@ -183,6 +183,7 @@ const ShortQuestion: React.FC<ShortQuestionProps> = ({
       left={<LeftDropdown type={type} setType={setType} />}
       pageIndex={pageIndex}
       elementIndex={elementIndex}
+      onRequire={handleRequired}
     />
   );
 

@@ -47,11 +47,12 @@ const ModalQuestions = ({
         dispatch(removeElement({ pageIndex: 0, elementIndex: 0 }));
         dispatch(addElement({ pageIndex: 0, element: data }));
       } else if (modalEdit && question) {
+        console.log(question);
         if (question.type === "radiogroup") {
           setSelectedQuestion("UniqueSelection");
         } else if (question.type === "checkbox") {
           setSelectedQuestion("MultipleSelection");
-        } else if (question.type === "boolean") {
+        } else if (question.type == "boolean") {
           setSelectedQuestion("YesNotQuestion");
         } else if (question.type === "text") {
           setSelectedQuestion("ShortQuestion");
@@ -162,6 +163,7 @@ const ModalQuestions = ({
       question_data: question,
       tags: "",
     };
+    console.log(questionData);
     try {
       if (modalEdit) {
         await api.patch(`/editor/question/${editQuestion.id}`, questionData);

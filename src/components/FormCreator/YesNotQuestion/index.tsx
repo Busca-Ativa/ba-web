@@ -32,7 +32,7 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
 
   const [question, setQuestion] = useState(element?.name || "");
   const [type, setType] = useState(element?.type || "boolean");
-  const [required, setRequired] = useState(element?.required || false);
+  const [required, setRequired] = useState(element?.isRequired || false);
   const [labelYes, setLabelYes] = useState(element?.labelTrue || "Sim");
   const [labelNo, setLabelNo] = useState(element?.labelFalse || "Não");
 
@@ -64,7 +64,15 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
   }, [question]);
 
   const handleRequired = () => {
-    setRequired(!required);
+    const newRequired = !required;
+    setRequired(newRequired);
+    dispatch(
+      updateElement({
+        pageIndex,
+        elementIndex,
+        updatedElement: { ...element, isRequired: newRequired },
+      })
+    );
   };
 
   const handleLabel = (label: any, value: any) => {
@@ -132,7 +140,15 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
     />
   );
 
-  return <BaseComponent index={index} onMove={onMove} header={header} content={content} footer={footer} />;
+  return (
+    <BaseComponent
+      index={index}
+      onMove={onMove}
+      header={header}
+      content={content}
+      footer={footer}
+    />
+  );
 };
 
 export default YesNotQuestion;
