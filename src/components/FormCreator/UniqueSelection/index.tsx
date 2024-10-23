@@ -110,7 +110,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     );
   };
 
-  const updateChoice = (id: string, newLabel: string) => {
+  const updateChoice = (id: number, newLabel: string) => {
     const updatedOptions = options?.map((option: any) =>
       option.id === id ? { ...option, label: newLabel } : option
     );
