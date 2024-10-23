@@ -257,28 +257,29 @@ const BATable: React.FC<BATableProps> = ({
                   </>
                 ) : (
                   <TableCell colSpan={2} sx={{ width: 20 }}>
-                    {rows[rowIndex]?.config?.insertable == false && (
-                      <button
-                        onClick={() =>
-                          onDuplicate && onDuplicate(row, rowIndex)
-                        }
-                        style={{
-                          backgroundColor: "#FFF",
-                          color: "#1D2432",
-                          padding: "8px 16px",
-                          borderRadius: "4px",
-                          border: "1px solid #CACDD5",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "12px",
-                          width: "100%",
-                        }}
-                      >
-                        <FileCopyOutlined fontSize="small" />
-                        <span>Duplicar</span>
-                      </button>
-                    )}
+                    {rows[rowIndex]?.config?.editable == false &&
+                      rows[rowIndex]?.config?.insertable != true && (
+                        <button
+                          onClick={() =>
+                            onDuplicate && onDuplicate(row, rowIndex)
+                          }
+                          style={{
+                            backgroundColor: "#FFF",
+                            color: "#1D2432",
+                            padding: "8px 16px",
+                            borderRadius: "4px",
+                            border: "1px solid #CACDD5",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "12px",
+                            width: "100%",
+                          }}
+                        >
+                          <FileCopyOutlined fontSize="small" />
+                          <span>Duplicar</span>
+                        </button>
+                      )}
                     <div className="w-full flex justify-end">
                       {rows[rowIndex]?.config?.insertable == true &&
                         insertsSelected?.find((i) => i.id == rows[rowIndex].id)

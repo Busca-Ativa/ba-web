@@ -52,12 +52,29 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
       enabled: true,
     }))
   );
-
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [hasFirstRender, setHasFirstRender] = useState(false);
 
   useEffect(() => {
-    console.log("element", element);
-  }, [element]);
+    if (
+      !hasFirstRender &&
+      element?.choices &&
+      JSON.stringify(element.choices) ==
+        JSON.stringify(["Muito Frequentemente", "Raramente"])
+    ) {
+      console.log("entrou");
+      const updatedOptions = element.choices.map(
+        (value: any, index: number) => ({
+          id: index,
+          label: value,
+          enabled: true,
+        })
+      );
+      setOptions(updatedOptions);
+      setHasFirstRender(true);
+    }
+  }, [element, hasFirstRender]);
+
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const updateElementChoices = () => {
     const updatedElement = {
@@ -115,6 +132,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   };
 
   useEffect(() => {
+    console.log(options);
     if (options?.length < 5 && options) {
       const defaultOptions = [
         { id: 0, label: "Muito Frequentemente", enabled: false },

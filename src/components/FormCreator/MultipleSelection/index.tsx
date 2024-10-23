@@ -53,16 +53,27 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
     }))
   );
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [hasFirstRender, setHasFirstRender] = useState(false);
 
   useEffect(() => {
-    setOptions(
-      element?.choices?.map((value: any, index: number) => ({
-        id: index,
-        label: value,
-        enabled: true,
-      }))
-    );
-  }, [element]);
+    if (
+      !hasFirstRender &&
+      element?.choices &&
+      JSON.stringify(element.choices) ==
+        JSON.stringify(["Muito Frequentemente", "Raramente"])
+    ) {
+      console.log("entrou");
+      const updatedOptions = element.choices.map(
+        (value: any, index: number) => ({
+          id: index,
+          label: value,
+          enabled: true,
+        })
+      );
+      setOptions(updatedOptions);
+      setHasFirstRender(true);
+    }
+  }, [element, hasFirstRender]);
 
   const updateElementChoices = () => {
     console.log("updateElementChoices", options);
