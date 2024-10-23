@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { Add, PlusOne } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 
@@ -11,6 +11,8 @@ import { GetServerSidePropsContext } from "next";
 import { AuthService } from "@/services/auth/auth";
 import { getStatus, StatusObject } from "@/utils";
 import ModalQuestions from "@/components/FormCreator/ModalQuestions";
+import { useDispatch } from "react-redux";
+import { addElement, removeAllElements } from "../../../../redux/surveySlice";
 
 const Questoes = () => {
   const router = useRouter();
@@ -21,28 +23,82 @@ const Questoes = () => {
     { id: "origin", label: "Origem", numeric: false },
   ];
 
-  const [forms, setForms] = useState([]);
-  const [rows, setRows] = useState([]);
+  const [forms, setForms] = useState<any[]>([]);
+  interface Row {
+    id: any;
+    title: any;
+    creator: string;
+    status: string;
+    config: { editable: boolean; deletable: boolean };
+    origin: any;
+  }
+  const [rows, setRows] = useState<Row[]>([]);
   const [rowsConfig, setRowsConfig] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const user = AuthService.getUser();
+  const [modalEdit, setModalEdit] = useState(false);
+  const [userData, setUserData] = useState<any>({});
+  const [editQuestion, setEditQuestion] = useState<any>({});
+  const user: any = AuthService.getUser();
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
+    if (!modalOpen) {
+      dispatch(removeAllElements({ pageIndex: 0 }));
+      setModalEdit(false);
+    }
+  }, [dispatch, modalOpen]);
+
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        let response = await api.get("/all/user", {
+          withCredentials: true,
+        });
+        if (response.data) {
+          setUserData(response.data);
+          console.log("Dante", response.data);
+        }
+      } catch (error: any) {
+        if (error.response?.status === 401) {
+          console.warn("Acesso não autorizado");
+        } else {
+          console.error(error.response?.message);
+          throw error;
+        }
+      }
+    };
     const getForms = async () => {
-      let list_forms = [];
+      let list_forms: SetStateAction<any[]> = [];
       try {
         let response = await api.get("/editor/questions", {
           withCredentials: true,
         });
-        if (response.data.data) {
-          list_forms.push(...response.data.data);
+        if (response.data) {
+          list_forms.push(...response.data);
         }
+      } catch (error: any) {
+        console.error(error.response?.message);
+        throw error;
+      } finally {
+        setForms(list_forms);
+        console.log(list_forms);
+      }
+    };
+    getForms();
+    getUserData();
+  }, []);
 
-        // WARN: Pegar unidades pega alguns forms que ja vem no da instituição fazendo eles ficarem repetidos
-        // response = await api.get('/editor/unit/forms')
-        // if (response.data.data){
-        //   list_forms.push(...response.data.data)
-        // }
+  const reloadQuestions = () => {
+    const getForms = async () => {
+      let list_forms: SetStateAction<any[]> = [];
+      try {
+        let response = await api.get("/editor/questions", {
+          withCredentials: true,
+        });
+        if (response.data) {
+          list_forms.push(...response.data);
+        }
       } catch (error: any) {
         console.error(error.response?.message);
         throw error;
@@ -51,31 +107,36 @@ const Questoes = () => {
       }
     };
     getForms();
-  }, []);
+  };
 
+  const getType = (type: string) => {
+    if (type == "text") return "Resposta Curta";
+    if (type == "comment") return "Resposta Longa";
+    if (type == "boolean") return "Sim/Não";
+    if (type == "radiogroup") return "Seleção Única";
+    if (type == "checkbox") return "Seleção Multipla";
+  };
   // TODO: Quando deletar apagar a linha da tabela e refresh do component
   useEffect(() => {
     setRows(
-      forms?.map((value) => {
-        const name: string = value.editor.name + " " + value.editor.lastName;
+      forms?.map((value: any) => {
+        const name: string = value.creator.name + " " + value.creator.lastName;
         const status: StatusObject = getStatus(value.tags[1]);
         return {
           id: value.id,
-          title: value.name,
+          title: value.title || value.question_data.name,
           creator: name,
           status: status.name,
-          // WARN: Apenas se for o mesmo criado pode deletar e editar.
+          type: getType(value.type),
           config:
-            value.editor.id !== user.id
+            value.creator.id !== user.id
               ? { editable: false, deletable: false }
-              : status.config,
-          origin:
-            value.tags[0] === "institution"
-              ? value.institution.name
-              : value.unit.name,
+              : { editable: true, deletable: true, duplicable: true },
+          origin: value.origin ? value.origin.name : value.unit.name,
         };
       })
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forms]);
 
   const pushEditor = () => {
@@ -97,10 +158,20 @@ const Questoes = () => {
   };
 
   const handleEdit = async (row: Record<string, string | number>) => {
-    router.push(`/editor/?id=${row.id}&type=question`);
+    setEditQuestion(row);
+    api.get(`/editor/question/${row.id}`).then((response) => {
+      if (response.status === 200) {
+        const data = response.data;
+        console.log(data.question_data);
+        dispatch(removeAllElements({ pageIndex: 0 }));
+        dispatch(addElement({ pageIndex: 0, element: data.question_data }));
+        setModalOpen(true);
+        setModalEdit(true);
+      }
+    });
   };
 
-  const handleDuplicate = async (row, rowIndex) => {
+  const handleDuplicate = async (row: any, rowIndex: number) => {
     try {
       let response = await api.post(
         `/editor/question/${row.id}`,
@@ -144,8 +215,8 @@ const Questoes = () => {
           <h1>Questões</h1>
           <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
             {/* Secretaria de Saúde - Fortaleza */}
-            {forms[0]?.institution.name} - {forms[0]?.institution.code_state} -{" "}
-            {forms[0]?.institution.code_city}
+            {/* {forms[0]?.institution.name} - {forms[0]?.institution.code_state} -{" "} */}
+            {/* {forms[0]?.institution.code_city} */}
           </h2>
         </div>
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
@@ -160,12 +231,20 @@ const Questoes = () => {
       </div>
       <BATable
         columns={columns}
-        initialRows={rows}
+        initialRows={rows as any}
         onDuplicate={handleDuplicate}
         onDelete={handleDelete}
         onEdit={handleEdit}
       />
-      {modalOpen && <ModalQuestions onClose={setModalOpen} />}
+      {modalOpen && (
+        <ModalQuestions
+          onClose={setModalOpen}
+          modalEdit={modalEdit}
+          setModalEdit={setModalEdit}
+          editQuestion={editQuestion}
+          reloadQuestions={reloadQuestions}
+        />
+      )}
     </div>
   );
 };

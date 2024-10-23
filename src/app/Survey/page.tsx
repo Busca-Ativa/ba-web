@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import "survey-core/defaultV2.min.css";
-import { Model } from "survey-core";
+import { Model } from "survey-react-ui";
 import { Survey } from "survey-react-ui";
 import api from '../../services/api'
 
@@ -35,7 +35,7 @@ const surveySchema = {
 
 function App() {
   const survey = new Model(surveyJson);
-  const alertResults = useCallback(async (sender) => {
+  const alertResults = useCallback(async (sender: any) => {
     try {
       const response = await api.post('/editor/form',
         JSON.stringify(surveyJson),

@@ -12,6 +12,7 @@ interface YesNotQuestionProps {
   onCopy: () => void;
   onDelete: () => void;
   onMove: () => void;
+  index: number;
 }
 
 const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
@@ -20,6 +21,7 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
   onCopy,
   onDelete,
   onMove,
+  index,
 }) => {
   const dispatch = useDispatch();
 
@@ -65,7 +67,7 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
     setRequired(!required);
   };
 
-  const handleLabel = (label, value) => {
+  const handleLabel = (label: any, value: any) => {
     if (label) {
       setLabelYes(value);
     } else {
@@ -84,14 +86,14 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
     );
   };
 
-  const handleQuestion = (value) => {
+  const handleQuestion = (value: any) => {
     setQuestion(value);
   };
 
   const header = (
     <BaseTitle
       question={question}
-      kind={type}
+      type={type}
       onChange={handleQuestion}
       required={required}
     />
@@ -130,7 +132,7 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
     />
   );
 
-  return <BaseComponent header={header} content={content} footer={footer} />;
+  return <BaseComponent index={index} onMove={onMove} header={header} content={content} footer={footer} />;
 };
 
 export default YesNotQuestion;

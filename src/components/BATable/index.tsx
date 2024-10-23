@@ -16,13 +16,14 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import {
+  Add,
+  Close,
   DeleteOutline,
-  Edit,
   EditOutlined,
-  FileCopy,
   FileCopyOutlined,
 } from "@mui/icons-material";
 import Status from "../Status";
+import { usePathname } from "next/navigation";
 
 interface Column {
   id: string;
@@ -34,15 +35,26 @@ interface Config {
   editable?: boolean;
   deletable?: boolean;
   duplicable?: boolean;
+  insertable?: boolean;
+}
+
+interface InsertsSelected {
+  id: string;
+  selected: boolean;
 }
 
 interface BATableProps {
   columns: Column[];
   initialRows: Record<string, string | number>[];
+  insertsSelected?: InsertsSelected[];
   // configRows?: Config[];
   onEdit?: (row: Record<string, string | number>) => void;
   onDelete?: (row: Record<string, string | number>, rowIndex: number) => void;
-  onDuplicate?: (row: Record<string, string | number>, rowIndex: number) => void;
+  onDuplicate?: (
+    row: Record<string, string | number>,
+    rowIndex: number
+  ) => void;
+  onInsert?: (selectedId: string) => void;
 }
 
 // Customização do tema
@@ -104,19 +116,25 @@ type Order = "asc" | "desc" | undefined;
 const BATable: React.FC<BATableProps> = ({
   columns,
   initialRows,
+  insertsSelected,
   onEdit,
   onDelete,
-  // configRows,
+  onInsert,
   onDuplicate,
 }) => {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<string | undefined>(columns[0]?.id);
-  const [rows, setRows] = useState(initialRows);
+  const [rows, setRows] = useState<any>(initialRows);
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
 
+  const pathname = usePathname();
+  // Pega o último segmento da rota
+  const activePage = pathname.split("/").filter(Boolean).pop();
+
   useEffect(() => {
     setRows(initialRows);
+    console.log("initialRows", initialRows);
   }, [initialRows]);
   const handleRequestSort = (property: string) => {
     const isAsc = order === "asc";
@@ -177,13 +195,13 @@ const BATable: React.FC<BATableProps> = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedRows.map((row, rowIndex) => (
+            {paginatedRows.map((row: any, rowIndex: number) => (
               <TableRow key={rowIndex}>
                 {columns.map((column) => (
                   <TableCell key={column.id}>
                     {column.id === "status" ? (
                       <Status
-                        status={row[column.id]}
+                        status={row[column.id] as string}
                         bgColor={
                           row[column.id] == "Em Edição"
                             ? "#FFE9A6"
@@ -208,7 +226,9 @@ const BATable: React.FC<BATableProps> = ({
                   <>
                     <TableCell sx={{ width: 10, paddingRight: "4px" }}>
                       <button
-                        onClick={() => onEdit && onEdit(row)}
+                        onClick={() => {
+                          onEdit && onEdit(row);
+                        }}
                         style={{
                           backgroundColor: "#FFF",
                           color: "#1D2432",
@@ -226,7 +246,7 @@ const BATable: React.FC<BATableProps> = ({
                     {rows[rowIndex]?.config?.deletable && (
                       <TableCell sx={{ width: 10, paddingLeft: "4px" }}>
                         <button
-                          onClick={() => onDelete && onDelete(row,rowIndex)}
+                          onClick={() => onDelete && onDelete(row, rowIndex)}
                           style={{
                             backgroundColor: "#FFF",
                             color: "#1D2432",
@@ -244,24 +264,61 @@ const BATable: React.FC<BATableProps> = ({
                   </>
                 ) : (
                   <TableCell colSpan={2} sx={{ width: 20 }}>
-                    <button
-                      onClick={() => onDuplicate && onDuplicate(row,rowIndex)}
-                      style={{
-                        backgroundColor: "#FFF",
-                        color: "#1D2432",
-                        padding: "8px 16px",
-                        borderRadius: "4px",
-                        border: "1px solid #CACDD5",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "12px",
-                        width: "100%",
-                      }}
-                    >
-                      <FileCopyOutlined fontSize="small" />
-                      <span>Duplicar</span>
-                    </button>
+                    {rows[rowIndex]?.config?.editable == false &&
+                      rows[rowIndex]?.config?.insertable != true && (
+                        <button
+                          onClick={() =>
+                            onDuplicate && onDuplicate(row, rowIndex)
+                          }
+                          style={{
+                            backgroundColor: "#FFF",
+                            color: "#1D2432",
+                            padding: "8px 16px",
+                            borderRadius: "4px",
+                            border: "1px solid #CACDD5",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "12px",
+                            width: "100%",
+                          }}
+                        >
+                          <FileCopyOutlined fontSize="small" />
+                          <span>Duplicar</span>
+                        </button>
+                      )}
+                    <div className="w-full flex justify-end">
+                      {rows[rowIndex]?.config?.insertable == true &&
+                        insertsSelected?.find((i) => i.id == rows[rowIndex].id)
+                          ?.selected == false && (
+                          <button
+                            className="h-7 px-[15px] py-[5px] bg-white rounded border border-[#40c156] justify-center items-center gap-[5px] inline-flex"
+                            onClick={() => {
+                              onInsert && onInsert(rows[rowIndex].id);
+                            }}
+                          >
+                            <Add fontSize="small" sx={{ color: "#40c156" }} />
+                            <div className="text-[#40c156] text-xs font-semibold font-['Source Sans Pro'] leading-[18px]">
+                              Adicionar
+                            </div>
+                          </button>
+                        )}
+                      {rows[rowIndex]?.config?.insertable == true &&
+                        insertsSelected?.find((i) => i.id == rows[rowIndex].id)
+                          ?.selected && (
+                          <button
+                            className="h-7 px-[15px] py-[5px] bg-[#ef4838] rounded border border-[#ef4838] justify-center items-center gap-[5px] inline-flex"
+                            onClick={() => {
+                              onInsert && onInsert(rows[rowIndex].id);
+                            }}
+                          >
+                            <Close fontSize="small" sx={{ color: "#fff" }} />
+                            <div className="text-white text-xs font-semibold font-['Source Sans Pro'] leading-[18px]">
+                              Remover
+                            </div>
+                          </button>
+                        )}
+                    </div>
                   </TableCell>
                 )}
               </TableRow>

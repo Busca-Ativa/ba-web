@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState, ReactNode } from 'react';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
@@ -8,13 +9,13 @@ import { ListItemIcon, ListItemText, Divider } from '@mui/material';
 import { darken } from '@mui/system';
 
 interface Option {
-  label: string;
+  label: string | ReactNode;
   onClick: () => void;
   icon?: ReactNode;
-  subOptions?: Option[]; // Sub-options for the secondary menu
+  subOptions?: Option[];
 }
 
-interface OptionGroup {
+export interface OptionGroup {
   groupLabel?: string;
   options: Option[];
 }
@@ -24,7 +25,7 @@ interface DropdownButtonProps {
   color?: string;
   startIcon?: ReactNode;
   optionGroups?: OptionGroup[];
-  sx?: SxProps<Theme>; // Estilos gerais para texto e ícones
+  sx?: any; // Estilos gerais para texto e ícones
 }
 
 const DropdownButton: React.FC<DropdownButtonProps> = ({
@@ -79,7 +80,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
             backgroundColor: darken(color, 0.2),
           },
           color: sx?.color,
-          ...sx,
+          ...( sx ),
         }}
         onClick={handleClick}
       >
@@ -143,7 +144,6 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
           vertical: 'center',
           horizontal: 'right',
         }}
-        getContentAnchorEl={null} // Ensures submenu is aligned to center
       >
         {subOptions.map((subOption, subOptionIndex) => (
           <MenuItem

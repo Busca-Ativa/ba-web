@@ -42,7 +42,7 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
             <span>Administrativo</span>
             <ul className="flex flex-col gap-2">
               <li className={activePage === "dashboard" ? "active" : ""}>
-                <Link href="/admin/dashboard">
+                <Link style={{ width: "100%" }} href="/admin/dashboard">
                   <div className="flex items-center gap-2">
                     <DashboardOutlined />
                     <span>Dashboard</span>
@@ -50,7 +50,7 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
                 </Link>
               </li>
               <li className={activePage === "instituicoes" ? "active" : ""}>
-                <Link href="/admin/instituicoes">
+                <Link style={{ width: "100%" }} href="/admin/instituicoes">
                   <div className="flex items-center gap-2">
                     <DomainRounded />
                     <span>Instituições</span>
@@ -58,7 +58,7 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
                 </Link>
               </li>
               <li className={activePage === "usuarios" ? "active" : ""}>
-                <Link href="/admin/usuarios">
+                <Link style={{ width: "100%" }} href="/admin/usuarios">
                   <div className="flex items-center gap-2">
                     <Groups2Outlined />
                     <span>Usuários</span>
@@ -72,23 +72,23 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
           <span>Edição</span>
           <ul className="flex flex-col gap-2">
             <li className={activePage === "formularios" ? "active" : ""}>
-              <Link href="/editor/formularios">
+              <Link style={{ width: "100%" }} href="/editor/formularios">
                 <div className="flex items-center gap-2">
                   <ContentPasteSearchOutlined />
                   <span>Formulários</span>
                 </div>
               </Link>
             </li>
-            <li className={activePage === "eventos" ? "active" : ""}>
-              <Link href="/editor/secoes">
+            <li className={activePage === "secoes" ? "active" : ""}>
+              <Link style={{ width: "100%" }} href="/editor/secoes">
                 <div className="flex items-center gap-2">
                   <SplitscreenOutlined />
                   <span>Seções</span>
                 </div>
               </Link>
             </li>
-            <li className={activePage === "eventos" ? "active" : ""}>
-              <Link href="/editor/questoes">
+            <li className={activePage === "questoes" ? "active" : ""}>
+              <Link style={{ width: "100%" }} href="/editor/questoes">
                 <div className="flex items-center gap-2">
                   <QuizOutlined />
                   <span>Questões</span>
@@ -101,7 +101,7 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
       <div className="group absolute bottom-[25px]">
         <ul className="flex flex-col gap-2">
           <li>
-            <Link href="/admin/configuracoes">
+            <Link style={{ width: "100%" }} href="/admin/configuracoes">
               <div className="flex items-center gap-2">
                 <SettingsOutlined />
                 <span>Configurações</span>
@@ -109,7 +109,7 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
             </Link>
           </li>
           <li>
-            <Link href="/logout">
+            <Link style={{ width: "100%" }} href="/logout">
               <div className="flex items-center gap-2">
                 <LogoutOutlined />
                 <span>Sair</span>

@@ -85,7 +85,7 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
   const header = (
     <BaseTitle
       question={question}
-      kind={type}
+      type={type}
       onChange={handleQuestionChange}
       required={required}
     />

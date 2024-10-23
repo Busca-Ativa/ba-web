@@ -90,13 +90,13 @@ const ShortQuestion: React.FC<ShortQuestionProps> = ({
   const header = (
     <BaseTitle
       question={question}
-      kind={type}
+      type={type}
       onChange={handleTitleChange}
       required={required}
     />
   );
 
-  const content = <BaseContent kind={type} disabled={true} />;
+  const content = <BaseContent onChange={()=>{}} text={""} type={type} disabled={true} />;
   const footer = (
     <BaseFooter
       left={<LeftDropdown />}

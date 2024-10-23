@@ -4,7 +4,7 @@ import "survey-core/defaultV2.min.css";
 import "react-toastify/dist/ReactToastify.css";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, Suspense } from "react";
 import { Model, Survey } from "survey-react-ui";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Typography from "@mui/material/Typography";
@@ -23,6 +23,8 @@ import {
   addElement,
   updateQuestionOrder,
   selectAllElements,
+  removeAllElements,
+  initialState,
 } from "../../../redux/surveySlice";
 import {
   CheckBoxOutlined,
@@ -49,15 +51,17 @@ import BaseComponent from "@/components/FormCreator/BaseComponent";
 import { AuthService } from "@/services/auth/auth";
 import DropDownButton from "@/components/Buttons/DropdownButton";
 import ClickOrDropDownButton from "@/components/Buttons/ClickOrDropdownButton";
+import { OptionGroup } from "@/components/Buttons/ClickOrDropdownButton";
 import api from "@/services/api";
 import { surveyElements, surveyPageExample } from "../../utils/SurveyJS";
-import { FormContext } from "@/contexts/FormContext";
 import { Question } from "@/types/Question";
 import { getTime, getStatus } from "@/utils";
 import MultipleSelection from "@/components/FormCreator/MultipleSelection";
 import YesNotQuestion from "@/components/FormCreator/YesNotQuestion";
+import { UnknownAction } from "@reduxjs/toolkit";
+import ModalInsertions from "@/components/FormCreator/ModalInsertions";
 
-const Editor = () => {
+const EditorContent = () => {
   const dispatch = useDispatch();
 
   const surveyJson = useSelector((state: any) => state.survey.surveyJson);
@@ -72,7 +76,9 @@ const Editor = () => {
 
   const [tabSelected, setTabSelected] = useState(0);
   const [tagHover, setTagHover] = useState<null | number>(null);
-  const [user, setUser] = useState(AuthService.getUser());
+  const [user, setUser] = useState<any>(AuthService.getUser());
+
+  const [modalOpen, setModalOpen] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -80,23 +86,45 @@ const Editor = () => {
   const typeForm = searchParams.get("type") || "form";
 
   useEffect(() => {
+    return () => {
+      dispatch(setSurveyJson(initialState.surveyJson));
+      dispatch(setFormName(""));
+      dispatch(setFormDescription(""));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    console.log("user", user);
+  }, [user]);
+
+  useEffect(() => {
     const fetchForm = async () => {
       if (formId) {
         try {
-          const response = await api.get(`/editor/form/${formId}`, {
+          const response = await api.get(`/editor/${typeForm}/${formId}`, {
             withCredentials: true,
           });
           const formData = response.data;
           console.log(formData);
-          dispatch(setUpdatedAt(formData.data.updated_at));
-          dispatch(setCreatedAt(formData.data.created_at));
-          dispatch(setSurveyJson(formData.data.survey_schema || {}));
-          dispatch(setTags(formData.data.tags));
-          dispatch(setStatus(formData.data.status));
-          dispatch(setFormName(formData.data.survey_schema?.title || ""));
-          dispatch(
-            setFormDescription(formData.data.survey_schema?.description || "")
-          );
+          if (typeForm == "form") {
+            dispatch(setUpdatedAt(formData.data.updated_at));
+            dispatch(setCreatedAt(formData.data.created_at));
+            dispatch(setSurveyJson(formData.data.survey_schema || {}));
+            dispatch(setTags(formData.data.tags));
+            dispatch(setStatus(formData.data.status));
+            dispatch(setFormName(formData.data.survey_schema?.title || ""));
+            dispatch(
+              setFormDescription(formData.data.survey_schema?.description || "")
+            );
+          } else if (typeForm == "section") {
+            dispatch(setFormName(formData?.title || ""));
+            console.log("formData", formData);
+            dispatch(removeAllElements({ pageIndex: 0 }));
+            formData?.questions?.elements.forEach((question: any) => {
+              dispatch(addElement({ pageIndex: 0, element: question }));
+            });
+          }
         } catch (error) {
           toast.error(
             `Erro ao carregar o ${
@@ -105,18 +133,19 @@ const Editor = () => {
                 : typeForm === "section"
                 ? "seção"
                 : "questão"
-            }: ${error.response?.data || error.message}`
+            }: ${(error as any).response?.data || (error as any).message}`
           );
         }
       }
     };
 
     fetchForm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formId]);
 
   useEffect(() => {
     console.log(tags);
-  }, []);
+  }, [tags]);
 
   const breadcrumbs = [
     <Link
@@ -153,7 +182,7 @@ const Editor = () => {
     </Typography>,
   ];
 
-  const saveOptionsGroups: OptionGroups[] = [
+  const saveOptionsGroups: OptionGroup[] = [
     {
       groupLabel: "",
       options: [
@@ -181,7 +210,7 @@ const Editor = () => {
     },
   ];
 
-  const modifyOptionsGroups: OptionGroups = [
+  const modifyOptionsGroups: OptionGroup[] = [
     {
       groupLabel: "",
       options: [
@@ -237,8 +266,8 @@ const Editor = () => {
     text: ShortQuestion,
   };
 
-  const getType = (type: string) => {
-    return types[type] || null;
+  const getType = (type: string): any => {
+    return (types as any)[type] || null;
   };
 
   const handleSave = async () => {
@@ -249,20 +278,52 @@ const Editor = () => {
         dispatch(setStatus("done"));
         const status = "done";
         const newTags = [...tags];
-        const sendData = {
-          tags: newTags,
-          status: status,
-          schema: surveyJson,
-        };
-        response = await api.patch(`/editor/form/${formId}`, sendData, {
+        let sendData = {};
+        if (typeForm == "form") {
+          sendData = {
+            tags: newTags,
+            status: status,
+            schema: surveyJson,
+          };
+        } else if (typeForm == "section") {
+          sendData = {
+            title: formName,
+            questions: {
+              elements: surveyJson.pages[0].elements,
+            },
+          };
+        }
+
+        response = await api.patch(`/editor/${typeForm}/${formId}`, sendData, {
           withCredentials: true,
         });
+        if (response.data) {
+          toast.dismiss(toastId);
+          toast.success(
+            `${
+              typeForm == "form"
+                ? "Formulario salvo"
+                : typeForm == "section"
+                ? "Seção salva"
+                : "Questão salva"
+            } com sucesso!`
+          );
+          if (typeForm === "form") {
+            router.push("/editor/formularios");
+          } else if (typeForm === "section") {
+            router.push("/editor/secoes");
+          } else if (typeForm === "question") {
+            router.push("/editor/questoes");
+          }
+        }
       } else {
         let sendData;
         if (typeForm === "form") {
           sendData = {
             title: formName,
+            tags: tags,
             schema: surveyJson,
+            status: status,
           };
         } else if (typeForm === "section") {
           sendData = {
@@ -323,7 +384,7 @@ const Editor = () => {
     }
   };
 
-  const handleTagsHover = (i) => {
+  const handleTagsHover = (i: number) => {
     setTagHover(i);
   };
 
@@ -435,7 +496,7 @@ const Editor = () => {
       </div>
       {tabSelected == 0 && (
         <div className="flex">
-          <div className="flex items-start flex-col w-[23%] 2xl:w-[28%] px-[7px] gap-[12px] text-[#575757]">
+          <div className="flex items-start flex-col w-[24%] 2xl:w-[28%] px-[7px] gap-[12px] text-[#575757]">
             <button
               className="h-[34px] pl-[7px] pr-[15px] py-[5px] hover:bg-white rounded-[100px] hover:shadow justify-start items-center gap-2.5 inline-flex hover:text-[#19b394]"
               onMouseOver={() => handleTagsHover(0)}
@@ -533,6 +594,9 @@ const Editor = () => {
               className="mt-[38px] h-[34px] pl-[7px] pr-[15px] py-[5px] hover:bg-white rounded-[100px] hover:shadow justify-start items-center gap-2.5 inline-flex hover:text-[#19b394]"
               onMouseOver={() => handleTagsHover(6)}
               onMouseLeave={handleTagsLeave}
+              onClick={() => {
+                setModalOpen(true);
+              }}
             >
               <UploadFileOutlined />
               {tagHover === 6 && (
@@ -563,7 +627,7 @@ const Editor = () => {
               </div>
             )}
             <AnimatePresence>
-              {surveyJson?.pages?.map((page, pageIndex: number) => {
+              {surveyJson?.pages?.map((page: any, pageIndex: number) => {
                 return page.elements.map(
                   (question: Question, questionIndex: number) => {
                     const Component = getType(question.type);
@@ -582,7 +646,7 @@ const Editor = () => {
                       >
                         {Component && (
                           <Component
-                            onMove={(direction) =>
+                            onMove={(direction: string) =>
                               dispatch(
                                 updateQuestionOrder({
                                   pageIndex,
@@ -607,7 +671,16 @@ const Editor = () => {
       )}
       {tabSelected == 1 && <Survey model={new Model(surveyJson)} />}
       <ToastContainer />
+      {modalOpen && <ModalInsertions onClose={setModalOpen} />}
     </div>
+  );
+};
+
+const Editor = () => {
+  return (
+    <Suspense fallback={<div>Loading editor...</div>}>
+      <EditorContent />
+    </Suspense>
   );
 };
 

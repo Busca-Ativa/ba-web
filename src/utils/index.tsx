@@ -4,9 +4,11 @@ export type StatusObject = {
     editable: boolean;
     deletable: boolean;
   };
+  bcolor: string;
+  color: string;
 };
 
-export function getStatus(status: string) : StatusObject | string {
+export function getStatus(status: string) : StatusObject {
   switch (status) {
     case "done":
       return {name:"Pronto",config:{editable: true, deletable: true},bcolor:"#ADDBBA",color:"#008E20"};

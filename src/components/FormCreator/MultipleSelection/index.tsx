@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateElement } from "../../../../redux/surveySlice";
 
 interface EditableCheckbox {
-  id: string;
+  id: number;
   label: string;
   enabled: boolean;
 }
@@ -24,6 +24,7 @@ interface MultipleSelectionProps {
   onCopy: () => void;
   onDelete: () => void;
   onMove: () => void;
+  index: number;
 }
 
 const MultipleSelection: React.FC<MultipleSelectionProps> = ({
@@ -32,6 +33,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   onCopy,
   onDelete,
   onMove,
+  index,
 }) => {
   const dispatch = useDispatch();
 
@@ -44,13 +46,34 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   const [type, setType] = useState<string>(element?.type || "text");
   const [required, setRequired] = useState<boolean>(element?.required || false);
   const [options, setOptions] = useState<EditableCheckbox[]>(
-    element?.choices?.map((value, index) => ({
+    element?.choices?.map((value: any, index: number) => ({
       id: index,
       label: value,
       enabled: true,
     }))
   );
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [hasFirstRender, setHasFirstRender] = useState(false);
+
+  useEffect(() => {
+    if (
+      !hasFirstRender &&
+      element?.choices &&
+      JSON.stringify(element.choices) ==
+        JSON.stringify(["Muito Frequentemente", "Raramente"])
+    ) {
+      console.log("entrou");
+      const updatedOptions = element.choices.map(
+        (value: any, index: number) => ({
+          id: index,
+          label: value,
+          enabled: true,
+        })
+      );
+      setOptions(updatedOptions);
+      setHasFirstRender(true);
+    }
+  }, [element, hasFirstRender]);
 
   const updateElementChoices = () => {
     console.log("updateElementChoices", options);
@@ -71,12 +94,12 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
     );
   };
 
-  const updateChoices = (newChoices) => {
+  const updateChoices = (newChoices: any) => {
     const updatedElement = {
       ...element,
       choices: newChoices
-        .filter((option) => option.enabled)
-        .map((option) => option.label),
+        .filter((option: any) => option.enabled)
+        .map((option: any) => option.label),
     };
 
     dispatch(
@@ -89,7 +112,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   };
 
   const updateChoice = (id: string, newLabel: string) => {
-    const updatedOptions = options.map((option) =>
+    const updatedOptions = options.map((option: any) =>
       option.id === id ? { ...option, label: newLabel } : option
     );
 
@@ -120,7 +143,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
       ];
       const missingCount = 5 - options.length;
       const toAdd = [...options, ...defaultOptions.slice(-missingCount)];
-      setOptions((prev) => [...toAdd]);
+      setOptions(toAdd);
     }
   }, [options]);
   // useEffect(() => {
@@ -148,8 +171,8 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   //   }
   // }, []);
 
-  const toggleOption = (id: string) => {
-    const newOptions = options?.map((option) =>
+  const toggleOption = (id: number) => {
+    const newOptions = options?.map((option: any) =>
       option.id === id ? { ...option, enabled: !option.enabled } : option
     );
     setOptions(newOptions);
@@ -157,7 +180,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   };
 
   const handleSelect = (id: string) => {
-    setSelectedOption(id);
+    setSelectedOptions([id]);
   };
 
   const handleChangeQuestion = (newQuestion: string) => {
@@ -184,7 +207,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
 
   const handleLabelChange = (id: string, newLabel: string) => {
     setOptions(
-      options?.map((option) =>
+      options?.map((option: any) =>
         option.id === id ? { ...option, label: newLabel } : option
       )
     );
@@ -192,7 +215,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   };
 
   const handleRemove = (id: string) => {
-    setOptions(options?.filter((option) => option.id !== id));
+    setOptions(options?.filter((option: any) => option.id !== id));
     updateElementChoices();
   };
 
@@ -216,7 +239,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
 
   const content = (
     <div className="flex flex-col gap-4 justify-center">
-      {options?.map((option, index) => (
+      {options?.map((option: any, index: number) => (
         <div key={option.id} className="flex items-center gap-4 relative group">
           {option.enabled ? (
             <CancelOutlined
@@ -234,7 +257,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
           <input
             type="checkbox"
             name="multiple-selection"
-            checked={selectedOptions.includes(option.id)}
+            checked={selectedOptions.includes(option.id.toString())}
             onChange={() => handleSelect(option.id)}
             disabled={!option.enabled}
             className={`m-custom-checkbox${option.enabled ? "-enabled" : ""}`}
@@ -250,12 +273,12 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
           <div className="flex gap-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
             {index > 0 && (
               <button onClick={() => moveOption(index, "up")}>
-                <SquaredUpArrow className="cursor-pointer" />
+                <SquaredUpArrow />
               </button>
             )}
             {index < options.length - 1 && (
               <button onClick={() => moveOption(index, "down")}>
-                <SquaredDownArrow className="cursor-pointer" />
+                <SquaredDownArrow />
               </button>
             )}
           </div>
@@ -282,13 +305,20 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   const footer = (
     <BaseFooter
       onRequire={handleRequired}
-      required={required}
       elementIndex={elementIndex}
       pageIndex={pageIndex}
     />
   );
 
-  return <BaseComponent header={header} content={content} footer={footer} />;
+  return (
+    <BaseComponent
+      header={header}
+      content={content}
+      footer={footer}
+      onMove={onMove}
+      index={index}
+    />
+  );
 };
 
 export default MultipleSelection;

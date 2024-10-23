@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateElement } from "../../../../redux/surveySlice";
 
 interface EditableCheckbox {
-  id: string;
+  id: number;
   label: string;
   enabled: boolean;
 }
@@ -41,16 +41,39 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     (state: any) =>
       state.survey.surveyJson.pages[pageIndex]?.elements[elementIndex]
   );
+
   const [question, setQuestion] = useState<string>(element?.title || "");
   const [type, setType] = useState<string>("comment");
   const [required, setRequired] = useState<boolean>(element?.required || false);
   const [options, setOptions] = useState<EditableCheckbox[]>(
-    element?.choices.map((value, index) => ({
+    element?.choices?.map((value: any, index: number) => ({
       id: index,
       label: value,
       enabled: true,
     }))
   );
+  const [hasFirstRender, setHasFirstRender] = useState(false);
+
+  useEffect(() => {
+    if (
+      !hasFirstRender &&
+      element?.choices &&
+      JSON.stringify(element.choices) ==
+        JSON.stringify(["Muito Frequentemente", "Raramente"])
+    ) {
+      console.log("entrou");
+      const updatedOptions = element.choices.map(
+        (value: any, index: number) => ({
+          id: index,
+          label: value,
+          enabled: true,
+        })
+      );
+      setOptions(updatedOptions);
+      setHasFirstRender(true);
+    }
+  }, [element, hasFirstRender]);
+
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const updateElementChoices = () => {
@@ -70,12 +93,12 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     );
   };
 
-  const updateChoices = (newChoices) => {
+  const updateChoices = (newChoices: any) => {
     const updatedElement = {
       ...element,
       choices: newChoices
-        .filter((option) => option.enabled)
-        .map((option) => option.label),
+        .filter((option: any) => option.enabled)
+        .map((option: any) => option.label),
     };
 
     dispatch(
@@ -87,16 +110,16 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     );
   };
 
-  const updateChoice = (id: string, newLabel: string) => {
-    const updatedOptions = options.map((option) =>
+  const updateChoice = (id: number, newLabel: string) => {
+    const updatedOptions = options?.map((option: any) =>
       option.id === id ? { ...option, label: newLabel } : option
     );
 
     const updatedElement = {
       ...element,
       choices: updatedOptions
-        .filter((option) => option.enabled)
-        .map((option) => option.label),
+        ?.filter((option) => option.enabled)
+        ?.map((option) => option.label),
     };
 
     dispatch(
@@ -109,7 +132,8 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   };
 
   useEffect(() => {
-    if (options.length < 5 && options) {
+    console.log(options);
+    if (options?.length < 5 && options) {
       const defaultOptions = [
         { id: 0, label: "Muito Frequentemente", enabled: false },
         { id: 1, label: "Raramente", enabled: false },
@@ -117,38 +141,15 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
         { id: 3, label: "Item 3", enabled: false },
         { id: 4, label: "Outro (Descreva)", enabled: false },
       ];
-      const missingCount = 5 - options.length;
-      const toAdd = [...options, ...defaultOptions.slice(-missingCount)];
-      setOptions((prev) => [...toAdd]);
+      const missingCount = 5 - options?.length;
+      const toAdd = [...options, ...defaultOptions?.slice(-missingCount)];
+      setOptions(toAdd);
     }
   }, [options]);
 
-  // useEffect(() => {
-  //   if (options.every(option => option.enabled)) {
-  //     setOptions([...options, { id: Date.now().toString(), label: `Option ${options.length + 1}`, enabled: false }]);
-  //   }
-  //   if (element) {
-  //     setQuestion(element.name);
-  //     setType(element.type);
-  //     setRequired(element.required);
-  //     console.log(element.choices);
-  //
-  //     const existingOptions = options.filter(
-  //       (option) =>
-  //         option.label !== "Nenhum" && option.label !== "Outro (Descreva)"
-  //     );
-  //
-  //     const updatedOptions = [
-  //       ...existingOptions,
-  //       { id: "5", label: "Nenhum", enabled: false },
-  //       { id: "6", label: "Outro (Descreva)", enabled: false },
-  //     ];
-  //     setOptions(updatedOptions);
-  //   }
-  // }, []);
-  //
-  const toggleOption = (id: string) => {
-    const newOptions = options?.map((option) =>
+  const toggleOption = (id: number) => {
+    console.log(options);
+    const newOptions = options?.map((option: any) =>
       option.id === id ? { ...option, enabled: !option.enabled } : option
     );
     console.log(newOptions);
@@ -182,9 +183,9 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
     );
   };
 
-  const handleLabelChange = (id: string, newLabel: string) => {
+  const handleLabelChange = (id: number, newLabel: string) => {
     setOptions(
-      options?.map((option) =>
+      options?.map((option: any) =>
         option.id === id ? { ...option, label: newLabel } : option
       )
     );
@@ -192,8 +193,8 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   };
 
   const handleRemove = (id: string) => {
-    setOptions(options?.filter((option) => option.id !== id));
-    const updatedOptions = options.map((option) =>
+    setOptions(options?.filter((option: any) => option.id !== id));
+    const updatedOptions = options?.map((option: any) =>
       option.id === id ? (option.enabled = false) : option.enabled
     );
     dispatch(
@@ -207,16 +208,16 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
 
   const moveOption = (index: number, direction: "up" | "down") => {
     const newOptions = [...options];
-    const [movedOption] = newOptions.splice(index, 1);
+    const [movedOption] = newOptions?.splice(index, 1);
     if (direction === "down") {
-      if (index <= newOptions.length && newOptions[index].enabled) {
-        newOptions.splice(index + 1, 0, movedOption);
+      if (index <= newOptions?.length && newOptions[index].enabled) {
+        newOptions?.splice(index + 1, 0, movedOption);
       } else {
         return;
       }
     } else if (direction === "up") {
       if (index - 1 >= 0 && newOptions[index - 1].enabled) {
-        newOptions.splice(index - 1, 0, movedOption);
+        newOptions?.splice(index - 1, 0, movedOption);
       }
     }
     setOptions(newOptions);
@@ -243,8 +244,8 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
           <input
             type="radio"
             name="unique-selection"
-            checked={selectedOption === option.id}
-            onChange={() => handleSelect(option.id)}
+            checked={selectedOption === option.id.toString()}
+            onChange={() => handleSelect(option.id.toString())}
             disabled={!option.enabled}
             className={`custom-checkbox${option.enabled ? "-enabled" : ""}`}
           />
@@ -259,12 +260,12 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
           <div className="flex gap-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
             {index > 0 && (
               <button onClick={() => moveOption(index, "up")}>
-                <SquaredUpArrow className="cursor-pointer" />
+                <SquaredUpArrow />
               </button>
             )}
             {index < options?.length - 1 && (
               <button onClick={() => moveOption(index, "down")}>
-                <SquaredDownArrow className="cursor-pointer" />
+                <SquaredDownArrow />
               </button>
             )}
           </div>
@@ -284,8 +285,6 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
       required={required}
       question={question}
       type={type}
-      onMove={onMove}
-      index={index}
       onChange={handleChangeQuestion}
     />
   );
@@ -293,7 +292,6 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   const footer = (
     <BaseFooter
       onRequire={handleRequired}
-      required={required}
       pageIndex={pageIndex}
       elementIndex={elementIndex}
     />

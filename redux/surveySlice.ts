@@ -50,13 +50,6 @@ const surveySlice = createSlice({
     setTags: (state, action) => {
       state.tags = action.payload;
     },
-    setStatusTag: (state, action) => {
-      if (state.tags.length < 1){
-        state.tags.push(action.payload);
-        return;
-      }
-      state.tags[1] = action.payload;
-    },
     setStatus: (state,action) => {
       state.status = action.payload;
     },
@@ -69,7 +62,11 @@ const surveySlice = createSlice({
     addElement: (state, action) => {
       const { pageIndex, element } = action.payload;
       if (state.surveyJson.pages[pageIndex]) {
-        state.surveyJson.pages[pageIndex].elements.push(element);
+        if (!state.surveyJson.pages[pageIndex].elements) {
+          state.surveyJson.pages[pageIndex].elements = [];
+        }
+
+        (state.surveyJson.pages[pageIndex].elements as any[]).push(element);
       }
     },
     removeElement: (state, action) => {
@@ -78,10 +75,16 @@ const surveySlice = createSlice({
         state.surveyJson.pages[pageIndex].elements.splice(elementIndex, 1);
       }
     },
-    updateElement: (state, action) => {
+    removeAllElements: (state, action) => {
+      const { pageIndex } = action.payload;
+      if (state.surveyJson.pages[pageIndex]) {
+        state.surveyJson.pages[pageIndex].elements = [];
+      }
+    },
+    updateElement: (state, action : { payload: { pageIndex: number, elementIndex: number, updatedElement: any } }) => {
       const { pageIndex, elementIndex, updatedElement } = action.payload;
       if (state.surveyJson.pages[pageIndex] && state.surveyJson.pages[pageIndex].elements[elementIndex]) {
-        state.surveyJson.pages[pageIndex].elements[elementIndex] = updatedElement;
+        (state.surveyJson.pages[pageIndex].elements[elementIndex ] as any) = updatedElement ;
       }
     },
     updateQuestionOrder: (state, action) => {
@@ -116,16 +119,16 @@ const surveySlice = createSlice({
     duplicateElement: (state, action) => {
       const { pageIndex, elementIndex } = action.payload;
       if (state.surveyJson.pages[pageIndex] && state.surveyJson.pages[pageIndex].elements[elementIndex]) {
-        const elementToDuplicate = state.surveyJson.pages[pageIndex].elements[elementIndex];
+        const elementToDuplicate: Object = state.surveyJson.pages[pageIndex].elements[elementIndex];
         const duplicatedElement = { ...elementToDuplicate };
-        state.surveyJson.pages[pageIndex].elements.splice(elementIndex + 1, 0, duplicatedElement);
+        (state.surveyJson.pages[pageIndex].elements as any).splice(elementIndex + 1, 0, duplicatedElement);
       }
     },
     setElementRequired: (state, action) => {
       const { pageIndex, elementIndex } = action.payload;
       if (state.surveyJson.pages[pageIndex] && state.surveyJson.pages[pageIndex].elements[elementIndex]) {
         const element = state.surveyJson.pages[pageIndex].elements[elementIndex];
-        element.isRequired = !element.isRequired;
+        (element as any).isRequired = !(element as any).isRequired;
       }
     }
   }
@@ -144,11 +147,14 @@ export const {
   removeElement,
   updateQuestionOrder,
   duplicateElement,
+  removeAllElements,
   setElementRequired
 } = surveySlice.actions;
 
-export const selectAllElements = (state) => {
-  return state.survey.surveyJson.pages.flatMap(page => page.elements);
+export const selectAllElements: any = (state : any) => {
+  return state.survey.surveyJson.pages.flatMap((page: any) => (page as any).elements);
 };
 
 export default surveySlice.reducer;
+
+export const initialState = initialSurveyState;

@@ -8,19 +8,19 @@ import { useDispatch } from "react-redux";
 import { duplicateElement, removeElement } from "../../../../redux/surveySlice";
 
 interface BaseFooterProps {
-  left: ReactNode;
-  pageIndex: number;
-  elementIndex: number;
-  onRequire: () => void;
-  onCopy: () => void;
-  onDelete: () => void;
+  left?: ReactNode;
+  pageIndex?: number;
+  elementIndex?: number;
+  onRequire?: () => void;
+  onCopy?: () => void;
+  onDelete?: () => void;
 }
 
 const BaseFooter: React.FC<BaseFooterProps> = ({
   left,
-  onRequire,
-  onCopy,
-  onDelete,
+  onRequire = () => {},
+  onCopy = () => {},
+  onDelete = () => {},
   pageIndex,
   elementIndex,
 }) => {
