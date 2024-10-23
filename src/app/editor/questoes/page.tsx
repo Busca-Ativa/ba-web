@@ -11,6 +11,8 @@ import { GetServerSidePropsContext } from "next";
 import { AuthService } from "@/services/auth/auth";
 import { getStatus, StatusObject } from "@/utils";
 import ModalQuestions from "@/components/FormCreator/ModalQuestions";
+import { useDispatch } from "react-redux";
+import { addElement, removeAllElements } from "../../../../redux/surveySlice";
 
 const Questoes = () => {
   const router = useRouter();
@@ -33,8 +35,19 @@ const Questoes = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [rowsConfig, setRowsConfig] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalEdit, setModalEdit] = useState(false);
   const [userData, setUserData] = useState<any>({});
+  const [editQuestion, setEditQuestion] = useState<any>({});
   const user: any = AuthService.getUser();
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!modalOpen) {
+      dispatch(removeAllElements({ pageIndex: 0 }));
+      setModalEdit(false);
+    }
+  }, [dispatch, modalOpen]);
 
   useEffect(() => {
     const getUserData = async () => {
@@ -44,9 +57,8 @@ const Questoes = () => {
         });
         if (response.data) {
           setUserData(response.data);
-          console.log("Dante",response.data)
+          console.log("Dante", response.data);
         }
-
       } catch (error: any) {
         if (error.response?.status === 401) {
           console.warn("Acesso não autorizado");
@@ -55,7 +67,7 @@ const Questoes = () => {
           throw error;
         }
       }
-    }
+    };
     const getForms = async () => {
       let list_forms: SetStateAction<any[]> = [];
       try {
@@ -70,19 +82,39 @@ const Questoes = () => {
         throw error;
       } finally {
         setForms(list_forms);
-        console.log(list_forms)
+        console.log(list_forms);
       }
     };
     getForms();
     getUserData();
   }, []);
 
+  const reloadQuestions = () => {
+    const getForms = async () => {
+      let list_forms: SetStateAction<any[]> = [];
+      try {
+        let response = await api.get("/editor/questions", {
+          withCredentials: true,
+        });
+        if (response.data) {
+          list_forms.push(...response.data);
+        }
+      } catch (error: any) {
+        console.error(error.response?.message);
+        throw error;
+      } finally {
+        setForms(list_forms);
+      }
+    };
+    getForms();
+  };
+
   const getType = (type: string) => {
     if (type == "text") return "Resposta Curta";
     if (type == "comment") return "Resposta Longa";
     if (type == "boolean") return "Sim/Não";
     if (type == "radiogroup") return "Seleção Única";
-    if (type == "chekbox") return "Seleção Multipla";
+    if (type == "checkbox") return "Seleção Multipla";
   };
   // TODO: Quando deletar apagar a linha da tabela e refresh do component
   useEffect(() => {
@@ -92,7 +124,7 @@ const Questoes = () => {
         const status: StatusObject = getStatus(value.tags[1]);
         return {
           id: value.id,
-          title: value.title,
+          title: value.title || value.question_data.name,
           creator: name,
           status: status.name,
           type: getType(value.type),
@@ -100,10 +132,7 @@ const Questoes = () => {
             value.creator.id !== user.id
               ? { editable: false, deletable: false }
               : { editable: true, deletable: true, duplicable: true },
-          origin:
-            value.origin
-              ? value?.origin?.name
-              : value?.unit?.name,
+          origin: value.origin ? value.origin.name : value.unit.name,
         };
       })
     );
@@ -129,7 +158,17 @@ const Questoes = () => {
   };
 
   const handleEdit = async (row: Record<string, string | number>) => {
-    router.push(`/editor/?id=${row.id}&type=question`);
+    setEditQuestion(row);
+    api.get(`/editor/question/${row.id}`).then((response) => {
+      if (response.status === 200) {
+        const data = response.data;
+        console.log(data.question_data);
+        dispatch(removeAllElements({ pageIndex: 0 }));
+        dispatch(addElement({ pageIndex: 0, element: data.question_data }));
+        setModalOpen(true);
+        setModalEdit(true);
+      }
+    });
   };
 
   const handleDuplicate = async (row: any, rowIndex: number) => {
@@ -197,7 +236,15 @@ const Questoes = () => {
         onDelete={handleDelete}
         onEdit={handleEdit}
       />
-      {modalOpen && <ModalQuestions onClose={setModalOpen} />}
+      {modalOpen && (
+        <ModalQuestions
+          onClose={setModalOpen}
+          modalEdit={modalEdit}
+          setModalEdit={setModalEdit}
+          editQuestion={editQuestion}
+          reloadQuestions={reloadQuestions}
+        />
+      )}
     </div>
   );
 };

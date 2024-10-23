@@ -23,6 +23,7 @@ import {
   FileCopyOutlined,
 } from "@mui/icons-material";
 import Status from "../Status";
+import { usePathname } from "next/navigation";
 
 interface Column {
   id: string;
@@ -127,6 +128,10 @@ const BATable: React.FC<BATableProps> = ({
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
 
+  const pathname = usePathname();
+  // Pega o último segmento da rota
+  const activePage = pathname.split("/").filter(Boolean).pop();
+
   useEffect(() => {
     setRows(initialRows);
     console.log("initialRows", initialRows);
@@ -221,7 +226,9 @@ const BATable: React.FC<BATableProps> = ({
                   <>
                     <TableCell sx={{ width: 10, paddingRight: "4px" }}>
                       <button
-                        onClick={() => onEdit && onEdit(row)}
+                        onClick={() => {
+                          onEdit && onEdit(row);
+                        }}
                         style={{
                           backgroundColor: "#FFF",
                           color: "#1D2432",

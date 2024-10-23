@@ -12,9 +12,19 @@ import "./styles.css";
 
 type ModalQuestionProps = {
   onClose: (value: boolean) => void;
+  setModalEdit: (value: boolean) => void;
+  reloadQuestions: () => void;
+  modalEdit: boolean;
+  editQuestion?: any;
 };
 
-const ModalQuestions = ({ onClose }: ModalQuestionProps) => {
+const ModalQuestions = ({
+  onClose,
+  modalEdit,
+  editQuestion,
+  setModalEdit,
+  reloadQuestions,
+}: ModalQuestionProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   const [selectedQuestion, setSelectedQuestion] = useState("ShortQuestion");
@@ -33,10 +43,25 @@ const ModalQuestions = ({ onClose }: ModalQuestionProps) => {
 
     if (data) {
       // Remover o elemento antes de adicionar um novo, respeitando a sequência
-      dispatch(removeElement({ pageIndex: 0, elementIndex: 0 }));
-      dispatch(addElement({ pageIndex: 0, element: data }));
+      if (!modalEdit) {
+        dispatch(removeElement({ pageIndex: 0, elementIndex: 0 }));
+        dispatch(addElement({ pageIndex: 0, element: data }));
+      } else if (modalEdit && question) {
+        if (question.type === "radiogroup") {
+          setSelectedQuestion("UniqueSelection");
+        } else if (question.type === "checkbox") {
+          setSelectedQuestion("MultipleSelection");
+        } else if (question.type === "boolean") {
+          setSelectedQuestion("YesNotQuestion");
+        } else if (question.type === "text") {
+          setSelectedQuestion("ShortQuestion");
+        } else if (question.type === "comment") {
+          setSelectedQuestion("LongQuestion");
+        }
+      }
     }
-  }, [dispatch, selectedQuestion]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, modalEdit, selectedQuestion]);
 
   const getQuestionData = (questionType: string) => {
     switch (questionType) {
@@ -132,15 +157,19 @@ const ModalQuestions = ({ onClose }: ModalQuestionProps) => {
 
   const saveQuestion = async () => {
     const questionData = {
-      title: question.title,
+      title: question.title || question.name,
       type: question.type,
       question_data: question,
       tags: "",
     };
-
     try {
-      await api.post("/editor/question", questionData);
+      if (modalEdit) {
+        await api.patch(`/editor/question/${editQuestion.id}`, questionData);
+      } else {
+        await api.post("/editor/question", questionData);
+      }
       toast.success("Questão salva com sucesso!");
+      reloadQuestions();
       onClose(false);
     } catch (error) {
       console.error("Erro ao salvar a questão:", error);
@@ -158,11 +187,12 @@ const ModalQuestions = ({ onClose }: ModalQuestionProps) => {
         <div className="modal max-w-[696px] h-fit flex flex-col items-center justify-center px-[60px] py-[50px] rounded-lg bg-white">
           <div ref={modalRef} className="flex w-full justify-between mb-[40px]">
             <div className="text-[#0e1113] text-3xl font-bold font-['Poppins'] leading-[38px]">
-              Nova Questão
+              {modalEdit ? "Editar Questão" : "Nova Questão"}
             </div>
             <select
               className="dropdown border rounded px-2 py-1"
               value={selectedQuestion}
+              disabled={modalEdit}
               onChange={(e) => setSelectedQuestion(e.target.value)}
             >
               <option value="ShortQuestion">Resposta curta</option>
@@ -175,7 +205,10 @@ const ModalQuestions = ({ onClose }: ModalQuestionProps) => {
           {renderQuestionComponent()}
           <div className="flex justify-between w-full mt-[40px]">
             <div
-              onClick={() => onClose(false)}
+              onClick={() => {
+                setModalEdit(false);
+                onClose(false);
+              }}
               className="h-[41px] px-10 py-2 rounded border border-[#ef4838] justify-center items-center gap-3 inline-flex cursor-pointer"
             >
               <div className="text-[#ef4838] text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
