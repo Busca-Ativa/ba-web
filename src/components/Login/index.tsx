@@ -5,6 +5,7 @@ import Image from "next/image";
 import { AuthService } from "@/services/auth/auth";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -16,16 +17,26 @@ const Login = () => {
   const handleLogin = async () => {
     setLoading(true);
     setError(null);
-    toast.loading("Entrando...");
     try {
-      await AuthService.login(email, password);
-      router.push("/admin/dashboard");
+      const auth = await AuthService.login(email, password);
+      const token = auth.data.access_token;
+      const decoded: any = jwtDecode(token);
+      console.log(decoded);
+      const role = decoded.role;
+      if (role == "editor") {
+        localStorage.setItem("role", role);
+        router.push("/editor/formularios");
+      } else if (role == "admin" || role == "superuser") {
+        localStorage.setItem("role", role);
+        router.push("/admin/dashboard");
+      }
     } catch (err) {
-      toast.dismiss();
       setError(
         "Erro ao realizar login. Verifique suas credenciais e tente novamente."
       );
-      toast.error(error);
+      toast.error(
+        "Erro ao realizar login. Verifique suas credenciais e tente novamente."
+      );
     } finally {
       setLoading(false);
     }
@@ -94,9 +105,32 @@ const Login = () => {
         disabled={loading}
         className="self-stretch h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[#13866F] rounded justify-center items-center gap-3 inline-flex"
       >
-        <div className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
-          {loading ? "Entrando..." : "Entrar"}
-        </div>
+        {loading ? (
+          <svg
+            className="animate-spin h-5 w-5 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+        ) : (
+          <div className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
+            Entrar
+          </div>
+        )}
       </button>
       <div className="self-stretch justify-center items-center gap-2.5 inline-flex">
         <div className="grow shrink basis-0 h-[0px] border border-[#d6d6d6]"></div>

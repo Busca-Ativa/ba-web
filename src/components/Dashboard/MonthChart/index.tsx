@@ -3,7 +3,7 @@ import { LineChart } from "@mui/x-charts/LineChart";
 import { useEffect, useRef, useState } from "react";
 
 export default function MonthChart() {
-  const chartContainerRef = useRef(null);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
   useEffect(() => {
