@@ -87,6 +87,13 @@ const surveySlice = createSlice({
         (state.surveyJson.pages[pageIndex].elements[elementIndex ] as any) = updatedElement ;
       }
     },
+    changeType: (state, action: { payload: { pageIndex: number, elementIndex: number, newType: string } }) => {
+      const { pageIndex, elementIndex, newType } = action.payload;
+      console.log("changeType", pageIndex, elementIndex, newType);
+      if (state.surveyJson.pages[pageIndex] && state.surveyJson.pages[pageIndex].elements[elementIndex]) {
+        (state.surveyJson.pages[pageIndex].elements[elementIndex] as any).inputType = newType;
+      }
+    },
     updateQuestionOrder: (state, action) => {
       const { pageIndex, questionIndex, direction } = action.payload;
       console.log(pageIndex, questionIndex, direction);
@@ -148,7 +155,8 @@ export const {
   updateQuestionOrder,
   duplicateElement,
   removeAllElements,
-  setElementRequired
+  setElementRequired,
+  changeType
 } = surveySlice.actions;
 
 export const selectAllElements: any = (state : any) => {

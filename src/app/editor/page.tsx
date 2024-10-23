@@ -99,6 +99,10 @@ const EditorContent = () => {
   }, [user]);
 
   useEffect(() => {
+    console.log(surveyJson);
+  }, [surveyJson]);
+
+  useEffect(() => {
     const fetchForm = async () => {
       if (formId) {
         try {
@@ -264,6 +268,11 @@ const EditorContent = () => {
     ranking: null,
     signaturepad: null,
     text: ShortQuestion,
+    number: ShortQuestion,
+    email: ShortQuestion,
+    password: ShortQuestion,
+    tel: ShortQuestion,
+    date: ShortQuestion,
   };
 
   const getType = (type: string): any => {

@@ -16,6 +16,7 @@ import "./style.css";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AuthService } from "@/services/auth/auth";
 
 const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
   const [expanded, setExpanded] = useState(false);
@@ -24,6 +25,12 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
   useEffect(() => {
     setRole(localStorage.getItem("role") || "");
   }, []);
+
+  const handlleLogout = () => {
+    localStorage.removeItem("role");
+    AuthService.logout();
+    window.location.href = "/";
+  };
 
   return (
     <div
@@ -101,15 +108,15 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
       <div className="group absolute bottom-[25px]">
         <ul className="flex flex-col gap-2">
           <li>
-            <Link style={{ width: "100%" }} href="/admin/configuracoes">
+            <Link style={{ width: "100%", cursor: "not-allowed" }} href="#">
               <div className="flex items-center gap-2">
                 <SettingsOutlined />
                 <span>Configurações</span>
               </div>
             </Link>
           </li>
-          <li>
-            <Link style={{ width: "100%" }} href="/logout">
+          <li onClick={handlleLogout}>
+            <Link style={{ width: "100%" }} href="#">
               <div className="flex items-center gap-2">
                 <LogoutOutlined />
                 <span>Sair</span>
