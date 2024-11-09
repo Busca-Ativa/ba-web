@@ -19,10 +19,6 @@ export default function MonthChart() {
     return () => window.removeEventListener("resize", updateWidth);
   }, []);
 
-  useEffect(() => {
-    console.log(containerWidth);
-  }, [containerWidth]);
-
   return (
     <div ref={chartContainerRef} style={{ width: "100%" }}>
       <LineChart

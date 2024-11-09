@@ -61,6 +61,7 @@ const surveySlice = createSlice({
     },
     addElement: (state, action) => {
       const { pageIndex, element } = action.payload;
+      console.log("addElement data: ", element);
       if (state.surveyJson.pages[pageIndex]) {
         if (!state.surveyJson.pages[pageIndex].elements) {
           state.surveyJson.pages[pageIndex].elements = [];
@@ -83,6 +84,7 @@ const surveySlice = createSlice({
     },
     updateElement: (state, action : { payload: { pageIndex: number, elementIndex: number, updatedElement: any } }) => {
       const { pageIndex, elementIndex, updatedElement } = action.payload;
+      console.log("updateElement",updatedElement)
       if (state.surveyJson.pages[pageIndex] && state.surveyJson.pages[pageIndex].elements[elementIndex]) {
         (state.surveyJson.pages[pageIndex].elements[elementIndex ] as any) = updatedElement ;
       }

@@ -96,12 +96,15 @@ const ShortQuestion: React.FC<ShortQuestionProps> = ({
     />
   );
 
-  const content = <BaseContent onChange={()=>{}} text={""} type={type} disabled={true} />;
+  const content = (
+    <BaseContent onChange={() => {}} text={""} type={type} disabled={true} />
+  );
   const footer = (
     <BaseFooter
       left={<LeftDropdown />}
       pageIndex={pageIndex}
       elementIndex={elementIndex}
+      onRequire={handleRequired}
     />
   );
 
