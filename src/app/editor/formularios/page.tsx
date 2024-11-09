@@ -42,7 +42,6 @@ const Formularios = () => {
           withCredentials: true,
         });
         if (response.data.data) {
-          console.log(response.data.data);
           list_forms.push(...response.data.data);
         }
 

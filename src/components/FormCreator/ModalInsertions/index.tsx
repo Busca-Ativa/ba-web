@@ -97,7 +97,6 @@ const ModalInsertions = ({ onClose }: ModalinsertionsProps) => {
       }
     });
 
-    console.log("Mapped Data:", mappedData);
     if (tabSelected === 0)
       mappedData[0].forEach((el: any) => {
         dispath(addElement({ pageIndex: 0, element: el }));
@@ -110,7 +109,6 @@ const ModalInsertions = ({ onClose }: ModalinsertionsProps) => {
   };
 
   const handleInsert = (id: string) => {
-    console.log("id", id);
     setInsertsSelected((prevInsertsSelected) =>
       prevInsertsSelected.map((insert) =>
         insert.id === id ? { ...insert, selected: !insert.selected } : insert

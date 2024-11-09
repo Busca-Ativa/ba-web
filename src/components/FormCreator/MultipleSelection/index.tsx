@@ -62,7 +62,6 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
       JSON.stringify(element.choices) ==
         JSON.stringify(["Muito Frequentemente", "Raramente"])
     ) {
-      console.log("entrou");
       const updatedOptions = element.choices.map(
         (value: any, index: number) => ({
           id: index,
@@ -76,8 +75,6 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   }, [element, hasFirstRender]);
 
   const updateElementChoices = () => {
-    console.log("updateElementChoices", options);
-
     const updatedElement = {
       ...element,
       choices: options
@@ -151,7 +148,6 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
   //     setQuestion(element.name);
   //     setType(element.type);
   //     setRequired(element.required);
-  //     console.log(element.choices);
   //
   //     const choices = element.choices || [];
   //

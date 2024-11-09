@@ -40,29 +40,30 @@ const ModalQuestions = ({
 
   useEffect(() => {
     const data = getQuestionData(selectedQuestion);
-    console.log("useEffect selectedQuestion data:", data);
+    console.log("data", data);
     if (data) {
-      // Remover o elemento antes de adicionar um novo, respeitando a sequência
       if (!modalEdit) {
         dispatch(removeElement({ pageIndex: 0, elementIndex: 0 }));
         dispatch(addElement({ pageIndex: 0, element: data }));
-        console.log("useEffect selectedQuestion question:", question);
       } else if (modalEdit) {
-        if (data.type === "radiogroup") {
+        if (question.type === "radiogroup") {
           setSelectedQuestion("UniqueSelection");
-        } else if (data.type === "checkbox") {
+        } else if (question.type === "checkbox") {
           setSelectedQuestion("MultipleSelection");
-        } else if (data.type == "boolean") {
+        } else if (question.type === "boolean") {
           setSelectedQuestion("YesNotQuestion");
-        } else if (data.type === "text") {
+        } else if (question.type === "text") {
           setSelectedQuestion("ShortQuestion");
-        } else if (data.type === "comment") {
+        } else if (question.type === "comment") {
           setSelectedQuestion("LongQuestion");
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, modalEdit, selectedQuestion]);
+
+  useEffect(() => {
+    if (question) console.log("question store:", question);
+  }, [question]);
 
   const getQuestionData = (questionType: string) => {
     switch (questionType) {
@@ -157,6 +158,7 @@ const ModalQuestions = ({
   };
 
   const saveQuestion = async () => {
+    console.log("saveQuestion question:", question);
     const questionData = {
       title: question.title || question.name,
       type: question.type,
