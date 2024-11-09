@@ -16,6 +16,8 @@ import "./style.css";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useDispatch } from "react-redux";
+import { AuthService } from "@/services/auth/auth";
 
 const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
   const [expanded, setExpanded] = useState(false);
@@ -108,8 +110,13 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
               </div>
             </Link>
           </li>
-          <li>
-            <Link style={{ width: "100%" }} href="/logout">
+          <li
+            onClick={() => {
+              AuthService.logout();
+              window.location.href = "/";
+            }}
+          >
+            <Link href="#" style={{ width: "100%" }}>
               <div className="flex items-center gap-2">
                 <LogoutOutlined />
                 <span>Sair</span>

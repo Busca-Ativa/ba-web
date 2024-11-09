@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { SetStateAction, useEffect, useState } from "react";
+import { SetStateAction, use, useEffect, useState } from "react";
 import { Add, PlusOne } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 
@@ -33,6 +33,7 @@ const Formularios = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [rowsConfig, setRowsConfig] = useState([]);
   const user: any = AuthService.getUser();
+  const [origin, setOrigin] = useState<any>();
 
   useEffect(() => {
     const getForms = async () => {
@@ -92,7 +93,9 @@ const Formularios = () => {
     rowIndex: number
   ) => {
     try {
-      let response = await api.delete(`/editor/form/${row.id}`);
+      let response = await api.delete(`/editor/form/${row.id}`, {
+        withCredentials: true,
+      });
       const updatedRows = rows.filter((_, index) => index !== rowIndex);
       setRows(updatedRows);
     } catch (error: any) {
