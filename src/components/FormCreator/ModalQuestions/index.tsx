@@ -40,22 +40,23 @@ const ModalQuestions = ({
 
   useEffect(() => {
     const data = getQuestionData(selectedQuestion);
-
+    console.log("useEffect selectedQuestion data:", data);
     if (data) {
       // Remover o elemento antes de adicionar um novo, respeitando a sequência
       if (!modalEdit) {
         dispatch(removeElement({ pageIndex: 0, elementIndex: 0 }));
         dispatch(addElement({ pageIndex: 0, element: data }));
-      } else if (modalEdit && question) {
-        if (question.type === "radiogroup") {
+        console.log("useEffect selectedQuestion question:", question);
+      } else if (modalEdit) {
+        if (data.type === "radiogroup") {
           setSelectedQuestion("UniqueSelection");
-        } else if (question.type === "checkbox") {
+        } else if (data.type === "checkbox") {
           setSelectedQuestion("MultipleSelection");
-        } else if (question.type === "boolean") {
+        } else if (data.type == "boolean") {
           setSelectedQuestion("YesNotQuestion");
-        } else if (question.type === "text") {
+        } else if (data.type === "text") {
           setSelectedQuestion("ShortQuestion");
-        } else if (question.type === "comment") {
+        } else if (data.type === "comment") {
           setSelectedQuestion("LongQuestion");
         }
       }
