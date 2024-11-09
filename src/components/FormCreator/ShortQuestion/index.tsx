@@ -104,6 +104,7 @@ const ShortQuestion: React.FC<ShortQuestionProps> = ({
       left={<LeftDropdown />}
       pageIndex={pageIndex}
       elementIndex={elementIndex}
+      onRequire={handleRequired}
     />
   );
 
