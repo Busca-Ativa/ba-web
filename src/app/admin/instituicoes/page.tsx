@@ -14,7 +14,7 @@ import { ToastContainer } from "react-toastify";
 const InstituicoesAdmin = () => {
   const router = useRouter();
   const [pass, setPass] = useState(false);
-  const [rows, setData] = useState([]);
+  const [rows, setData] = useState<any[]>([]);
 
   const [isModalOpen, setModalOpen] = useState(false);
 
@@ -36,7 +36,7 @@ const InstituicoesAdmin = () => {
       try {
         const response = await api.get('/admin/institutions', {withCredentials: true})
         const dataFromApi = response.data;
-        const rows = dataFromApi.data.map( (inst) => {
+        const rows = dataFromApi.data.map( (inst: any) => {
           return {
             ...inst,
             estado : getEstadoById(inst.code_state),
@@ -60,7 +60,7 @@ const InstituicoesAdmin = () => {
   ];
 
   const onAdd = (newInstitution: any) => {
-    setData( ( prev: any ) => [ ...prev, newInstitution ] )
+    setData( ( prev ) => [ ...prev, newInstitution ] )
   }
 
 

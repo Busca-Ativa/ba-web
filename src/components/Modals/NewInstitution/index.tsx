@@ -41,6 +41,7 @@ type CityProps = {
 type ModalProps = {
   open: boolean;
   onClose: () => void;
+  onSubmit: (cbk: any) => void;
 }
 
 

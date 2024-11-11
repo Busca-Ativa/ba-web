@@ -14,7 +14,7 @@ import { ToastContainer } from "react-toastify";
 const UsuariosAdmin = () => {
   const router = useRouter();
   const [pass, setPass] = useState(false);
-  const [rows, setData] = useState([]);
+  const [rows, setData] = useState<any[]>([]);
 
   const [isModalOpen, setModalOpen] = useState(false);
 
@@ -84,7 +84,6 @@ const UsuariosAdmin = () => {
           </div>
         </>
       )}
-      {/* <NewUserModal onSubmit={onAdd} open={isModalOpen} onClose={handleClose} /> */}
       <ToastContainer/>
     </>
   );
