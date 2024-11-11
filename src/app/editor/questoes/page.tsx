@@ -57,7 +57,6 @@ const Questoes = () => {
         });
         if (response.data) {
           setUserData(response.data);
-          console.log("Dante", response.data);
         }
       } catch (error: any) {
         if (error.response?.status === 401) {
@@ -82,7 +81,6 @@ const Questoes = () => {
         throw error;
       } finally {
         setForms(list_forms);
-        console.log(list_forms);
       }
     };
     getForms();
@@ -162,7 +160,6 @@ const Questoes = () => {
     api.get(`/editor/question/${row.id}`).then((response) => {
       if (response.status === 200) {
         const data = response.data;
-        console.log(data.question_data);
         dispatch(removeAllElements({ pageIndex: 0 }));
         dispatch(addElement({ pageIndex: 0, element: data.question_data }));
         setModalOpen(true);

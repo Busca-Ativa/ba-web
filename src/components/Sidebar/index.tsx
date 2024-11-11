@@ -16,6 +16,9 @@ import "./style.css";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+
+import { useDispatch } from "react-redux";
+
 import { AuthService } from "@/services/auth/auth";
 
 const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {

@@ -40,13 +40,12 @@ const ModalQuestions = ({
 
   useEffect(() => {
     const data = getQuestionData(selectedQuestion);
-
+    console.log("data", data);
     if (data) {
-      // Remover o elemento antes de adicionar um novo, respeitando a sequência
       if (!modalEdit) {
         dispatch(removeElement({ pageIndex: 0, elementIndex: 0 }));
         dispatch(addElement({ pageIndex: 0, element: data }));
-      } else if (modalEdit && question) {
+      } else if (modalEdit) {
         if (question.type === "radiogroup") {
           setSelectedQuestion("UniqueSelection");
         } else if (question.type === "checkbox") {
@@ -60,8 +59,11 @@ const ModalQuestions = ({
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, modalEdit, selectedQuestion]);
+
+  useEffect(() => {
+    if (question) console.log("question store:", question);
+  }, [question]);
 
   const getQuestionData = (questionType: string) => {
     switch (questionType) {
@@ -156,6 +158,7 @@ const ModalQuestions = ({
   };
 
   const saveQuestion = async () => {
+    console.log("saveQuestion question:", question);
     const questionData = {
       title: question.title || question.name,
       type: question.type,

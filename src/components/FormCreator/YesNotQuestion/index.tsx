@@ -31,7 +31,6 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
   );
 
   const [question, setQuestion] = useState(element?.name || "");
-  const [type, setType] = useState(element?.type || "boolean");
   const [required, setRequired] = useState(element?.required || false);
   const [labelYes, setLabelYes] = useState(element?.labelTrue || "Sim");
   const [labelNo, setLabelNo] = useState(element?.labelFalse || "Não");
@@ -43,25 +42,15 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
         elementIndex,
         updatedElement: {
           ...element,
+          name: question,
           labelTrue: labelYes,
           labelFalse: labelNo,
+          type: "boolean",
         },
       })
     );
-  }, [labelNo, labelYes]);
-
-  useEffect(() => {
-    dispatch(
-      updateElement({
-        pageIndex,
-        elementIndex,
-        updatedElement: {
-          ...element,
-          name: question,
-        },
-      })
-    );
-  }, [question]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [question, labelYes, labelNo, dispatch, pageIndex, elementIndex]);
 
   const handleRequired = () => {
     setRequired(!required);
@@ -93,7 +82,7 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
   const header = (
     <BaseTitle
       question={question}
-      type={type}
+      type={"text"}
       onChange={handleQuestion}
       required={required}
     />
@@ -132,7 +121,15 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
     />
   );
 
-  return <BaseComponent index={index} onMove={onMove} header={header} content={content} footer={footer} />;
+  return (
+    <BaseComponent
+      index={index}
+      onMove={onMove}
+      header={header}
+      content={content}
+      footer={footer}
+    />
+  );
 };
 
 export default YesNotQuestion;

@@ -44,9 +44,7 @@ const Secoes = () => {
         });
         if (response.data) {
           setUserData(response.data);
-          console.log("Dante",response.data)
         }
-
       } catch (error: any) {
         if (error.response?.status === 401) {
           console.warn("Acesso não autorizado");
@@ -55,7 +53,7 @@ const Secoes = () => {
           throw error;
         }
       }
-    }
+    };
     const getForms = async () => {
       let list_forms = [];
       try {
@@ -63,7 +61,6 @@ const Secoes = () => {
           withCredentials: true,
         });
         if (response.data) {
-          console.log("response", response);
           list_forms.push(...response.data);
         }
 
@@ -89,7 +86,6 @@ const Secoes = () => {
 
   // TODO: Quando deletar apagar a linha da tabela e refresh do component
   useEffect(() => {
-    console.log("user", user);
     return setRows(
       forms?.map((value) => {
         const name: string = value.creator.name + " " + value.creator.lastName;
@@ -102,18 +98,11 @@ const Secoes = () => {
             value.creator.id == user.id
               ? { editable: true, deletable: true }
               : { editable: false, deletable: false },
-          origin:
-            value.origin
-              ? value?.origin?.name
-              : value?.unit?.name,
+          origin: value.origin ? value?.origin?.name : value?.unit?.name,
         };
       })
     );
   }, [forms, user.id]);
-
-  useEffect(() => {
-    console.log(rows);
-  }, [rows]);
 
   const pushEditor = () => {
     router.push("/editor?type=section");
@@ -181,9 +170,16 @@ const Secoes = () => {
           <h1>Seções</h1>
           <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
             {userData?.unit
-              ? ( userData.unit.name + " - " + userData.institution.code_city + " - " + userData.institution.code_state)
-              :
-                (userData?.institution?.name + " - " + userData?.institution?.code_state + " - " + userData?.institution?.code_city) }
+              ? userData.unit.name +
+                " - " +
+                userData.institution.code_city +
+                " - " +
+                userData.institution.code_state
+              : userData?.institution?.name +
+                " - " +
+                userData?.institution?.code_state +
+                " - " +
+                userData?.institution?.code_city}
           </h2>
         </div>
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">

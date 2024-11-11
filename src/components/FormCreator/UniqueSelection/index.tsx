@@ -61,7 +61,6 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
       JSON.stringify(element.choices) ==
         JSON.stringify(["Muito Frequentemente", "Raramente"])
     ) {
-      console.log("entrou");
       const updatedOptions = element.choices.map(
         (value: any, index: number) => ({
           id: index,
@@ -132,7 +131,6 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   };
 
   useEffect(() => {
-    console.log(options);
     if (options?.length < 5 && options) {
       const defaultOptions = [
         { id: 0, label: "Muito Frequentemente", enabled: false },
@@ -148,11 +146,9 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
   }, [options]);
 
   const toggleOption = (id: number) => {
-    console.log(options);
     const newOptions = options?.map((option: any) =>
       option.id === id ? { ...option, enabled: !option.enabled } : option
     );
-    console.log(newOptions);
     setOptions(newOptions);
     updateChoices(newOptions);
   };
