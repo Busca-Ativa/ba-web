@@ -1,5 +1,6 @@
 import api from '../api';
-import nookies from 'nookies';
+import { destroyCookie } from 'nookies';
+import nookies  from 'nookies';
 import { jwtDecode } from 'jwt-decode'
 import { GetServerSidePropsContext } from 'next';
 
@@ -94,5 +95,8 @@ export const AuthService = {
     // Remover os tokens dos cookies
     nookies.destroy(ctx, 'access_token');
     nookies.destroy(ctx, 'refresh_token');
+    // ClientSide
+    destroyCookie(null, 'access_token', {path:'/'});
+    destroyCookie(null, 'refresh_token', {path:'/'});
   }
 };
