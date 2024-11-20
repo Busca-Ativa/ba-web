@@ -17,6 +17,7 @@ import { CssBaseline } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import {
   Add,
+  AnalyticsOutlined,
   Close,
   DeleteOutline,
   EditOutlined,
@@ -196,7 +197,12 @@ const BATable: React.FC<BATableProps> = ({
           </TableHead>
           <TableBody>
             {paginatedRows.map((row: any, rowIndex: number) => (
-              <TableRow key={rowIndex} onClick={() => {console.log("Clicou")}}>
+              <TableRow
+                key={rowIndex}
+                onClick={() => {
+                  console.log("Clicou");
+                }}
+              >
                 {columns.map((column) => (
                   <TableCell key={column.id}>
                     {column.id === "status" ? (
@@ -217,6 +223,22 @@ const BATable: React.FC<BATableProps> = ({
                             : "#43494E"
                         }
                       />
+                    ) : column.id == "progress" ? (
+                      <div className="flex items-center">
+                        <div className="w-3/4 h-5 bg-[#F1F3F9]">
+                          <div
+                            className="h-5 bg-[#EE8D10]"
+                            style={{
+                              width: `${
+                                (row[column.id].split("/")[0] /
+                                  row[column.id].split("/")[1]) *
+                                100
+                              }%`,
+                            }}
+                          ></div>
+                        </div>
+                        <div className="ml-2 text-xs">{row[column.id]}</div>
+                      </div>
                     ) : (
                       row[column.id]
                     )}
@@ -224,25 +246,49 @@ const BATable: React.FC<BATableProps> = ({
                 ))}
                 {rows[rowIndex]?.config?.editable == true ? (
                   <>
-                    <TableCell sx={{ width: 10, paddingRight: "4px" }}>
-                      <button
-                        onClick={() => {
-                          onEdit && onEdit(row);
-                        }}
-                        style={{
-                          backgroundColor: "#FFF",
-                          color: "#1D2432",
-                          padding: "8px 16px",
-                          borderRadius: "4px",
-                          border: "1px solid #CACDD5",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        <EditOutlined fontSize="small" />
-                        <span>Editar</span>
-                      </button>
-                    </TableCell>
+                    {rows[rowIndex]?.config?.analyseble == false && (
+                      <TableCell sx={{ width: 10, paddingRight: "4px" }}>
+                        <button
+                          onClick={() => {
+                            onEdit && onEdit(row);
+                          }}
+                          style={{
+                            backgroundColor: "#FFF",
+                            color: "#1D2432",
+                            padding: "8px 16px",
+                            borderRadius: "4px",
+                            border: "1px solid #CACDD5",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <EditOutlined fontSize="small" />
+                          <span>Editar</span>
+                        </button>
+                      </TableCell>
+                    )}
+                    {rows[rowIndex]?.config?.analyseble && (
+                      <TableCell sx={{ width: 10, paddingLeft: "4px" }}>
+                        <button
+                          onClick={() => {
+                            onEdit && onEdit(row);
+                          }}
+                          style={{
+                            backgroundColor: "#FFF",
+                            color: "#1D2432",
+                            padding: "8px 16px",
+                            borderRadius: "4px",
+                            border: "1px solid #CACDD5",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          <AnalyticsOutlined fontSize="small" />
+                          <span>Analisar</span>
+                        </button>
+                      </TableCell>
+                    )}
                     {rows[rowIndex]?.config?.deletable && (
                       <TableCell sx={{ width: 10, paddingLeft: "4px" }}>
                         <button
