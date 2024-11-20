@@ -8,10 +8,10 @@ import nookies from "nookies";
 import { Button } from "@mui/material";
 import { Add, PlusOne } from "@mui/icons-material";
 import BATable from "@/components/BATable";
-import NewCoordinatorModal from "@/components/Modals/NewCoordinator";
+import NewInstitutionModal from "@/components/Modals/NewInstitution";
 import { ToastContainer } from "react-toastify";
 
-const UsuariosAdmin = () => {
+const InstituicoesAdmin = () => {
   const router = useRouter();
   const [pass, setPass] = useState(false);
   const [rows, setData] = useState<any[]>([]);
@@ -34,14 +34,13 @@ const UsuariosAdmin = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await api.get('/admin/users', {withCredentials: true})
+        const response = await api.get('/admin/institutions', {withCredentials: true})
         const dataFromApi = response.data;
-        const rows = dataFromApi.data.map( (user: any) => {
-          console.log(user)
+        const rows = dataFromApi.data.map( (inst: any) => {
           return {
-            ...user,
-            institution: user.institution? user.institution.name : "Sem Instituição",
-            active: user.active? "Ativo" : "Inativo"
+            ...inst,
+            estado : getEstadoById(inst.code_state),
+            cidade : getCidadeById(inst.code_state,inst.code_city),
           }
         } )
         setData(rows);
@@ -55,14 +54,13 @@ const UsuariosAdmin = () => {
 
   const columns = [
     { id: "name", label: "Nome", numeric: false },
-    { id: "identificator", label: "Cód. Id.", numeric: false },
-    { id: "institution", label: "Instituição", numeric: false },
-    { id: "role", label: "Cargo", numeric: false },
-    { id: "active", label: "Status", numeric: true },
+    { id: "code", label: "Cód. Inst.", numeric: false },
+    { id: "estado", label: "UF", numeric: false },
+    { id: "cidade", label: "Cidade", numeric: false },
   ];
 
   const onAdd = (newInstitution: any) => {
-    setData( ( prev: any ) => [ ...prev, newInstitution ] )
+    setData( ( prev ) => [ ...prev, newInstitution ] )
   }
 
 
@@ -72,11 +70,11 @@ const UsuariosAdmin = () => {
         <>
           <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
             <div className="flex justify-between">
-              <h1>Usuários</h1>
+              <h1>Instituições</h1>
               <Button onClick={handleOpen} className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
                 <Add />
                 <div className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
-                  Novo Usuário
+                  Nova Instituição
                 </div>
               </Button>
             </div>
@@ -84,10 +82,10 @@ const UsuariosAdmin = () => {
           </div>
         </>
       )}
-      <NewCoordinatorModal onSubmit={onAdd} open={isModalOpen} onClose={handleClose} />
+      <NewInstitutionModal onSubmit={onAdd} open={isModalOpen} onClose={handleClose} />
       <ToastContainer/>
     </>
   );
 };
 
-export default UsuariosAdmin;
+export default InstituicoesAdmin;

@@ -69,6 +69,38 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
             </ul>
           </div>
         )}
+        {role == "coordinator" && (
+          <div className="group flex flex-col gap-[10px]">
+            <span>Administrativo</span>
+            <ul className="flex flex-col gap-2">
+              <li className={activePage === "dashboard" ? "active" : ""}>
+                <Link style={{ width: "100%" }} href="/coordinator/dashboard">
+                  <div className="flex items-center gap-2">
+                    <DashboardOutlined />
+                    <span>Dashboard</span>
+                  </div>
+                </Link>
+              </li>
+              <li className={activePage === "unidades" ? "active" : ""}>
+                <Link style={{ width: "100%" }} href="/coordinator/unidades">
+                  <div className="flex items-center gap-2">
+                    <DomainRounded />
+                    <span>Unidades</span>
+                  </div>
+                </Link>
+              </li>
+              <li className={activePage === "usuarios" ? "active" : ""}>
+                <Link style={{ width: "100%" }} href="/coordinator/usuarios">
+                  <div className="flex items-center gap-2">
+                    <Groups2Outlined />
+                    <span>Usuários</span>
+                  </div>
+                </Link>
+              </li>
+            </ul>
+          </div>
+        )}
+        {role == "editor" && (
         <div className="group flex flex-col gap-[10px] mt-[28px]">
           <span>Edição</span>
           <ul className="flex flex-col gap-2">
@@ -98,11 +130,12 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
             </li>
           </ul>
         </div>
+      )}
       </div>
       <div className="group absolute bottom-[25px]">
         <ul className="flex flex-col gap-2">
-          <li>
-            <Link style={{ width: "100%" }} href="/admin/configuracoes">
+          <li className={activePage === "config" ? "active" : ""}>
+            <Link style={{ width: "100%" }} href="/admin/config">
               <div className="flex items-center gap-2">
                 <SettingsOutlined />
                 <span>Configurações</span>

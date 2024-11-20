@@ -6,9 +6,9 @@ import { getEstadoById, getCidadeById } from "@/services/ibge/api";
 import { useEffect, useState } from "react";
 import nookies from "nookies";
 import { Button } from "@mui/material";
-import { Add, PlusOne } from "@mui/icons-material";
+import { HowToReg } from "@mui/icons-material";
 import BATable from "@/components/BATable";
-import NewCoordinatorModal from "@/components/Modals/NewCoordinator";
+import NewInstitutionModal from "@/components/Modals/NewInstitution";
 import { ToastContainer } from "react-toastify";
 
 const UsuariosAdmin = () => {
@@ -74,9 +74,9 @@ const UsuariosAdmin = () => {
             <div className="flex justify-between">
               <h1>Usuários</h1>
               <Button onClick={handleOpen} className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
-                <Add />
+                <HowToReg/>
                 <div className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
-                  Novo Usuário
+                  Aprovar Usuário
                 </div>
               </Button>
             </div>
@@ -84,7 +84,6 @@ const UsuariosAdmin = () => {
           </div>
         </>
       )}
-      <NewCoordinatorModal onSubmit={onAdd} open={isModalOpen} onClose={handleClose} />
       <ToastContainer/>
     </>
   );

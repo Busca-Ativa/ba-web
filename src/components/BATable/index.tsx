@@ -196,7 +196,7 @@ const BATable: React.FC<BATableProps> = ({
           </TableHead>
           <TableBody>
             {paginatedRows.map((row: any, rowIndex: number) => (
-              <TableRow key={rowIndex}>
+              <TableRow key={rowIndex} onClick={() => {console.log("Clicou")}}>
                 {columns.map((column) => (
                   <TableCell key={column.id}>
                     {column.id === "status" ? (

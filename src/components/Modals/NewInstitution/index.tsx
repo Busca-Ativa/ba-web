@@ -62,6 +62,13 @@ export default function NewInstitutionModal({ open, onClose, onSubmit }: ModalPr
     skip: false
   })
 
+  const loadMoreItems = (e:any) => {
+     const bottom = e.target.scrollHeight === e.target.scrollTop + e.target.clientHeight;
+       if(bottom){
+         // add your code here
+       }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -206,6 +213,23 @@ export default function NewInstitutionModal({ open, onClose, onSubmit }: ModalPr
                 value={formData.selectedUF}
                 onChange={handleSelectChange}
                 label="UF"
+                MenuProps={{
+                  anchorOrigin: {
+                    vertical: "bottom",
+                    horizontal: "left"
+                  },
+                  transformOrigin: {
+                    vertical: "top",
+                    horizontal: "left"
+                  },
+                  getContentAnchorEl: null,
+                  PaperProps: {
+                    onScroll: loadMoreItems,
+                  },
+                  style: {
+                    maxHeight: 500,
+                  },
+                }}
               >
               {ufs.map(uf => (
                 <MenuItem key={uf.value} value={uf.value}>
@@ -221,6 +245,23 @@ export default function NewInstitutionModal({ open, onClose, onSubmit }: ModalPr
                 value={formData.selectedCity}
                 onChange={handleSelectChange}
                 label="Cidade"
+                MenuProps={{
+                  anchorOrigin: {
+                    vertical: "bottom",
+                    horizontal: "left"
+                  },
+                  transformOrigin: {
+                    vertical: "top",
+                    horizontal: "left"
+                  },
+                  getContentAnchorEl: null,
+                  PaperProps: {
+                    onScroll: loadMoreItems,
+                  },
+                  style: {
+                    maxHeight: 500,
+                  },
+                }}
               >
               {cities.map(uf => (
                 <MenuItem key={uf.value} value={uf.value}>

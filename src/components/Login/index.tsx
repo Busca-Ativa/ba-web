@@ -23,12 +23,11 @@ const Login = () => {
       const decoded: any = jwtDecode(token);
       console.log(decoded);
       const role = decoded.role;
+      localStorage.setItem("role", role);
       if (role == "editor") {
-        localStorage.setItem("role", role);
         router.push("/editor/formularios");
-      } else if (role == "admin" || role == "superuser") {
-        localStorage.setItem("role", role);
-        router.push("/admin/dashboard");
+      } else {
+        router.push(`/${role}/dashboard`);
       }
     } catch (err) {
       setError(
