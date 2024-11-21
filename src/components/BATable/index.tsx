@@ -37,6 +37,7 @@ interface Config {
   deletable?: boolean;
   duplicable?: boolean;
   insertable?: boolean;
+  analyseble?: boolean;
 }
 
 interface InsertsSelected {
@@ -56,6 +57,7 @@ interface BATableProps {
     rowIndex: number
   ) => void;
   onInsert?: (selectedId: string) => void;
+  onAnalyse?: (row: Record<string, string | number>) => void;
 }
 
 // Customização do tema
@@ -122,6 +124,7 @@ const BATable: React.FC<BATableProps> = ({
   onDelete,
   onInsert,
   onDuplicate,
+  onAnalyse,
 }) => {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<string | undefined>(columns[0]?.id);
@@ -260,6 +263,9 @@ const BATable: React.FC<BATableProps> = ({
                             border: "1px solid #CACDD5",
                             display: "flex",
                             alignItems: "center",
+                            justifyContent: "center",
+                            gap: "4px",
+                            width: "120px", // Largura padrão igual ao botão "Analisar"
                           }}
                         >
                           <EditOutlined fontSize="small" />
@@ -268,10 +274,10 @@ const BATable: React.FC<BATableProps> = ({
                       </TableCell>
                     )}
                     {rows[rowIndex]?.config?.analyseble && (
-                      <TableCell sx={{ width: 10, paddingLeft: "4px" }}>
+                      <TableCell sx={{ width: 10, paddingRight: "4px" }}>
                         <button
                           onClick={() => {
-                            onEdit && onEdit(row);
+                            onAnalyse && onAnalyse(row);
                           }}
                           style={{
                             backgroundColor: "#FFF",
@@ -282,6 +288,7 @@ const BATable: React.FC<BATableProps> = ({
                             display: "flex",
                             alignItems: "center",
                             gap: "4px",
+                            width: "120px", // Mesma largura do botão "Editar"
                           }}
                         >
                           <AnalyticsOutlined fontSize="small" />

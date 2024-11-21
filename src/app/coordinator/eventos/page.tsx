@@ -10,6 +10,24 @@ import nookies from "nookies";
 import { GetServerSidePropsContext } from "next";
 import { AuthService } from "@/services/auth/auth";
 import { getStatus, StatusObject } from "@/utils";
+import NewEvent from "@/components/Modals/NewEvent";
+
+// Função para formatar datas no padrão dd/mm/aa
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+  });
+};
+
+// Função para verificar se um evento já passou
+const isPastEvent = (startDate: string) => {
+  const [day, month, year] = startDate.split("/");
+  const date = new Date(`20${year}-${month}-${day}`);
+  return date < new Date();
+};
 
 const Eventos = () => {
   const router = useRouter();
@@ -22,8 +40,12 @@ const Eventos = () => {
   ];
 
   const [evens, setEvents] = useState<any[]>([]);
+  const [origin, setOrigin] = useState<any>({});
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   interface Row {
+    id: string;
     title: string;
     city: string;
     duration: string;
@@ -35,51 +57,77 @@ const Eventos = () => {
   const user: any = AuthService.getUser();
 
   useEffect(() => {
-    api.get(`coordinator/institution/events`).then((res) => {
-      const data = res.data;
+    // Obtém os dados da instituição
+    const fetchInstitution = async () => {
+      const res = await api.get(`coordinator/institution`);
+      return res.data.data.institution;
+    };
 
-      // Função para formatar a data no padrão dd/mm/aa
-      const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString("pt-BR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "2-digit",
+    // Obtém os eventos e formata os dados
+    const fetchEvents = async () => {
+      const res = await api.get(`coordinator/institution/events`);
+      return res.data.data;
+    };
+
+    // Atualiza os estados com os dados formatados
+    const loadData = async () => {
+      try {
+        const [institution, eventsData] = await Promise.all([
+          fetchInstitution(),
+          fetchEvents(),
+        ]);
+        setOrigin(institution);
+
+        const formattedEvents = eventsData.map((event: any) => ({
+          id: event.id,
+          name: event.name,
+          city: "Fortaleza", // Pode ser atualizado para outro dado, se necessário
+          duration: `${formatDate(event.date_start)} - ${formatDate(
+            event.date_end
+          )}`,
+          progress: `${event.current_progress}/${event.meta}`,
+          origin: institution,
+        }));
+
+        setEvents(formattedEvents);
+
+        const formattedRows = formattedEvents.map((event: any) => {
+          const [start] = event.duration.split(" - ");
+          return {
+            id: event.id,
+            title: event.name,
+            city: event.city,
+            duration: event.duration,
+            progress: event.progress,
+            origin: event.origin,
+            config: {
+              analyseble: isPastEvent(start),
+              editable: true,
+              deletable: true,
+            },
+          };
         });
-      };
 
-      // Mapeando os dados recebidos da API para o formato do estado `events`
-      const formattedEvents = data.data.map((event: any) => ({
-        id: event.id,
-        name: event.name,
-        city: "Fortaleza", // Supondo que `city` esteja relacionado a `meta_description`
-        duration: `${formatDate(event.date_start)} - ${formatDate(
-          event.date_end
-        )}`, // Calculando a duração
-        progress: `${event.current_progress}/${event.meta}`, // Formatação de progresso
-        origin: event.description, // Adicionando o campo `origin`
-      }));
+        setRows(formattedRows);
+      } catch (error) {
+        console.error("Erro ao carregar os dados:", error);
+      }
+    };
 
-      // Atualizando o estado `events` com os dados formatados
-      setEvents(formattedEvents);
-
-      // Atualizando o estado `rows` com base nos dados formatados para tabelas
-      const formattedRows = formattedEvents.map((event: any) => ({
-        title: event.name,
-        city: event.city,
-        duration: event.duration,
-        progress: event.progress,
-        origin: event.origin,
-        config: {
-          analyseble: true,
-          editable: true,
-          deletable: true,
-        },
-      }));
-
-      setRows(formattedRows);
-    });
+    loadData();
   }, []);
+
+  const handleAnalyse = (row: Record<string, string | number>) => {
+    console.log("Analyzing row:", row);
+  };
+
+  const handleDelete = async (row: Record<string, string | number>) => {
+    console.log("Deleting row:", row);
+  };
+
+  const handleEdit = (row: Record<string, string | number>) => {
+    console.log("Editing row:", row);
+  };
 
   return (
     <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
@@ -89,18 +137,29 @@ const Eventos = () => {
           <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
             {/* Secretaria de Saúde - Fortaleza */}
             {(evens[0] as any)?.origin?.name} -{" "}
-            {(evens[0] as any)?.origin?.institution?.code_state} -{" "}
-            {(evens[0] as any)?.origin?.institution?.code_city}
+            {(evens[0] as any)?.origin?.institution?.code_city || "Fortaleza"}
           </h2>
         </div>
-        <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
+        <button
+          className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white"
+          onClick={() => setIsModalOpen(true)}
+        >
           <Add />
           <div className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
             Novo Evento
           </div>
         </button>
       </div>
-      <BATable columns={columns} initialRows={rows as any} />
+      <BATable
+        columns={columns}
+        initialRows={rows as any}
+        onAnalyse={handleAnalyse}
+        onDelete={handleDelete}
+        onEdit={handleDelete}
+      />
+      {isModalOpen && (
+        <NewEvent open={isModalOpen} onClose={() => {}} onSubmit={() => {}} />
+      )}
     </div>
   );
 };
