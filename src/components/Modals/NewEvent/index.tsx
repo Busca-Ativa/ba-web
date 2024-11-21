@@ -60,6 +60,40 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
   const [event, setEvent] = useState<Event>({});
 
   const handleNext = () => {
+    if (modalState === 0) {
+      if (
+        !event.title ||
+        !event.description ||
+        !event.date_start ||
+        !event.date_end ||
+        !event.meta ||
+        !event.meta_unit ||
+        !event.form
+      ) {
+        return;
+      }
+    }
+
+    if (modalState === 1) {
+      if (!event.unities || !event.times || !event.agents) {
+        return;
+      }
+    }
+
+    if (modalState === 2) {
+      if (!event.uf || !event.city || !event.segment_type) {
+        return;
+      }
+
+      if (event.segment_type === "bairros" && !event.bairros) {
+        return;
+      }
+
+      if (event.segment_type === "setores" && !event.setores) {
+        return;
+      }
+    }
+
     setModalState((prev) => prev + 1);
   };
 
@@ -168,6 +202,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                 fontFamily={"Poppins"}
                 variant="body2"
                 fontWeight="bold"
+                mb={2}
               >
                 Formulário
               </Typography>
@@ -188,8 +223,8 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
         return (
           <Box mb={4}>
             {/* Unidades */}
-            <Box display="flex" flexDirection="column" mb={3}>
-              <Typography variant="body2" fontWeight="bold">
+            <Box display="flex" flexDirection="column" mb={2}>
+              <Typography variant="body2" fontWeight="bold" mb={2}>
                 Unidades
               </Typography>
               <FormControl fullWidth>
@@ -242,8 +277,8 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
             </Box>
 
             {/* Times */}
-            <Box display="flex" flexDirection="column" mb={3}>
-              <Typography variant="body2" fontWeight="bold">
+            <Box display="flex" flexDirection="column" mb={2}>
+              <Typography variant="body2" fontWeight="bold" mb={2}>
                 Times
               </Typography>
               <FormControl fullWidth>
@@ -296,8 +331,8 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
             </Box>
 
             {/* Agentes */}
-            <Box display="flex" flexDirection="column" mb={3}>
-              <Typography variant="body2" fontWeight="bold">
+            <Box display="flex" flexDirection="column" mb={2}>
+              <Typography variant="body2" fontWeight="bold" mb={2}>
                 Agentes
               </Typography>
               <FormControl fullWidth>
@@ -364,7 +399,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
               {/* Linha 1: Select de UF e Cidade */}
               <Box display="flex" flexDirection="row" gap={2} mb={2}>
                 <FormControl fullWidth>
-                  <Typography variant="body2" fontWeight="bold">
+                  <Typography variant="body2" fontWeight="bold" mb={2}>
                     UF
                   </Typography>
                   <Select
@@ -377,7 +412,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                   </Select>
                 </FormControl>
                 <FormControl fullWidth>
-                  <Typography variant="body2" fontWeight="bold">
+                  <Typography variant="body2" fontWeight="bold" mb={2}>
                     Cidade
                   </Typography>
                   <Select
@@ -394,7 +429,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
               {/* Linha 2: Tipo de Segmento */}
               <Box mb={2}>
                 <FormControl fullWidth>
-                  <Typography variant="body2" fontWeight="bold">
+                  <Typography variant="body2" fontWeight="bold" mb={2}>
                     Tipo de Segmento
                   </Typography>
                   <Select
@@ -413,7 +448,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
               {event.segment_type === "bairros" && (
                 <Box mb={2}>
                   <FormControl fullWidth>
-                    <Typography variant="body2" fontWeight="bold">
+                    <Typography variant="body2" fontWeight="bold" mb={2}>
                       Bairros
                     </Typography>
                     <Select
@@ -468,7 +503,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
               {event.segment_type === "setores" && (
                 <Box mb={2}>
                   <FormControl fullWidth>
-                    <Typography variant="body2" fontWeight="bold">
+                    <Typography variant="body2" fontWeight="bold" mb={2}>
                       Setores
                     </Typography>
                     <Select
@@ -558,7 +593,40 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
       {[0, 1, 2].map((stage) => (
         <Button
           key={stage}
-          onClick={() => setModalState(stage)}
+          onClick={() => {
+            if (stage == 1) {
+              if (
+                !event.title ||
+                !event.description ||
+                !event.date_start ||
+                !event.date_end ||
+                !event.meta ||
+                !event.meta_unit ||
+                !event.form
+              ) {
+                return;
+              }
+              setModalState(1);
+            } else if (stage == 2) {
+              if (
+                !event.title ||
+                !event.description ||
+                !event.date_start ||
+                !event.date_end ||
+                !event.meta ||
+                !event.meta_unit ||
+                !event.form
+              ) {
+                return;
+              }
+              if (!event.unities || !event.times || !event.agents) {
+                return;
+              }
+              setModalState(2);
+            } else {
+              setModalState(stage);
+            }
+          }}
           sx={{
             minWidth: "10px",
             height: "10px",
@@ -648,7 +716,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                     backgroundColor: "#17A384",
                   },
                 }}
-                className="text-white"
+                className="!text-white"
                 onClick={() => onSubmit(event)}
               >
                 Finalizar
