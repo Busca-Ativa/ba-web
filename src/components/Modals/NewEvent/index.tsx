@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -14,6 +14,7 @@ import Image from "next/image";
 import { MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { LatLngExpression } from "leaflet";
+import axios from "axios";
 
 const style = {
   position: "absolute",
@@ -54,10 +55,110 @@ interface Event {
   setores?: any[];
   geometry?: any;
 }
+interface UF {
+  id: number;
+  sigla: string;
+  nome: string;
+}
+
+interface City {
+  id: number;
+  nome: string;
+}
 
 export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
   const [modalState, setModalState] = useState<number>(0);
   const [event, setEvent] = useState<Event>({});
+  const [ufs, setUfs] = useState<UF[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
+  const [currentLocation, setCurrentLocation] =
+    useState<LatLngExpression | null>(null);
+
+  useEffect(() => {
+    loadUFs(); // Carrega UFs ao montar o componente
+    getCurrentLocation(); // Obtém localização atual do dispositivo
+  }, []);
+
+  useEffect(() => {
+    if (event.uf) {
+      loadCities(event.uf); // Carrega cidades quando a UF é alterada
+    }
+  }, [event.uf]);
+
+  const loadUFs = async () => {
+    try {
+      const response = await axios.get(
+        "https://servicodados.ibge.gov.br/api/v1/localidades/estados"
+      );
+      const sortedUfs = response.data.sort((a: any, b: any) =>
+        a.nome.localeCompare(b.nome)
+      ); // Ordena alfabeticamente
+      setUfs(sortedUfs);
+    } catch (error) {
+      console.error("Erro ao carregar UFs:", error);
+    }
+  };
+
+  const loadCities = async (ufCode: any) => {
+    try {
+      const response = await axios.get(
+        `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${ufCode}/municipios`
+      );
+      const sortedCities = response.data.sort((a: any, b: any) =>
+        a.nome.localeCompare(b.nome)
+      ); // Ordena alfabeticamente
+      setCities(sortedCities);
+    } catch (error) {
+      console.error("Erro ao carregar cidades:", error);
+    }
+  };
+
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCurrentLocation([
+            position.coords.latitude,
+            position.coords.longitude,
+          ]);
+        },
+        (error) => {
+          console.error("Erro ao obter localização:", error);
+        }
+      );
+    }
+  };
+
+  const updateLocationByUF = async (ufCode: any) => {
+    try {
+      const ufData = ufs.find((uf) => uf.sigla === ufCode);
+      if (ufData) {
+        const response = await axios.get(
+          `https://nominatim.openstreetmap.org/search?q=${ufData.nome}&format=json`
+        );
+        if (response.data.length > 0) {
+          const { lat, lon } = response.data[0];
+          setCurrentLocation([parseFloat(lat), parseFloat(lon)]);
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar localização por UF:", error);
+    }
+  };
+
+  const updateLocationByCity = async (cityName: any) => {
+    try {
+      const response = await axios.get(
+        `https://nominatim.openstreetmap.org/search?city=${cityName}&state=${event.uf}&country=Brazil&format=json`
+      );
+      if (response.data.length > 0) {
+        const { lat, lon } = response.data[0];
+        setCurrentLocation([parseFloat(lat), parseFloat(lon)]);
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar localização por cidade:", error);
+    }
+  };
 
   const handleNext = () => {
     if (modalState === 0) {
@@ -101,11 +202,16 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
     setModalState((prev) => prev - 1);
   };
 
-  const handleChange = (field: keyof Event, value: any) => {
-    setEvent((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const handleChange = async (field: any, value: any) => {
+    setEvent((prev) => ({ ...prev, [field]: value }));
+
+    // Atualizar localização quando UF ou cidade forem alterados
+    if (field === "uf") {
+      await updateLocationByUF(value);
+    }
+    if (field === "city") {
+      await updateLocationByCity(value);
+    }
   };
 
   const renderStage = () => {
@@ -395,6 +501,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
             alignItems="flex-start"
           >
             {/* Coluna do Formulário */}
+            {/* Coluna do Formulário */}
             <Box flex={1}>
               {/* Linha 1: Select de UF e Cidade */}
               <Box display="flex" flexDirection="row" gap={2} mb={2}>
@@ -406,9 +513,11 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                     value={event.uf || ""}
                     onChange={(e) => handleChange("uf", e.target.value)}
                   >
-                    <MenuItem value="SP">São Paulo</MenuItem>
-                    <MenuItem value="RJ">Rio de Janeiro</MenuItem>
-                    <MenuItem value="MG">Minas Gerais</MenuItem>
+                    {ufs.map((uf) => (
+                      <MenuItem key={uf.id} value={uf.sigla}>
+                        {uf.nome}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
                 <FormControl fullWidth>
@@ -418,10 +527,13 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                   <Select
                     value={event.city || ""}
                     onChange={(e) => handleChange("city", e.target.value)}
+                    disabled={!event.uf} // Desabilita se nenhuma UF estiver selecionada
                   >
-                    <MenuItem value="São Paulo">São Paulo</MenuItem>
-                    <MenuItem value="Rio de Janeiro">Rio de Janeiro</MenuItem>
-                    <MenuItem value="Belo Horizonte">Belo Horizonte</MenuItem>
+                    {cities.map((city) => (
+                      <MenuItem key={city.id} value={city.nome}>
+                        {city.nome}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Box>
@@ -569,7 +681,14 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                 }}
               >
                 <MapContainer
-                  center={[51.505, -0.09] as LatLngExpression}
+                  key={
+                    currentLocation
+                      ? `${(currentLocation as [number, number])[0]},${
+                          (currentLocation as [number, number])[1]
+                        }`
+                      : "default"
+                  }
+                  center={currentLocation as LatLngExpression}
                   zoom={12}
                   style={{ height: "100%", width: "100%" }}
                 >

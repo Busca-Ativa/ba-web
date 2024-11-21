@@ -129,6 +129,11 @@ const Eventos = () => {
     console.log("Editing row:", row);
   };
 
+  const handleSubmitEvent = async (data: any) => {
+    console.log("Submitting event:", data);
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between">
@@ -158,7 +163,11 @@ const Eventos = () => {
         onEdit={handleDelete}
       />
       {isModalOpen && (
-        <NewEvent open={isModalOpen} onClose={() => {}} onSubmit={() => {}} />
+        <NewEvent
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleSubmitEvent}
+        />
       )}
     </div>
   );
