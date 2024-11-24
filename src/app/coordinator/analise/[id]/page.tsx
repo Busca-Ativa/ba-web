@@ -7,6 +7,7 @@ import { ZoomControl, Marker, Popup, Polygon } from "react-leaflet";
 import { Box } from "@mui/material";
 import EventAnalyticsControls from "../components/EventAnalyticsControls";
 import { LatLngExpression } from "leaflet";
+import Legend from "../components/Legend";
 
 // Importação dinâmica para evitar SSR no Leaflet
 const MapContainer = dynamic(
@@ -87,6 +88,11 @@ const EventAnalytics = () => {
 
       <div style={{ position: "absolute", top: 30, left: 30, zIndex: 1000 }}>
         <EventAnalyticsControls />
+      </div>
+      <div
+        style={{ position: "absolute", bottom: 30, right: 30, zIndex: 1000 }}
+      >
+        <Legend />
       </div>
     </div>
   );

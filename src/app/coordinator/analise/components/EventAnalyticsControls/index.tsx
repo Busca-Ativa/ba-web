@@ -12,7 +12,7 @@ const EventAnalyticsControls = () => {
   const selectStyles = {
     mb: 1,
     height: 24,
-    borderRadius: 4,
+    borderRadius: "4px",
     width: "231px",
     color: "#8a8a8a",
     fontSize: "10px",
@@ -79,11 +79,23 @@ const EventAnalyticsControls = () => {
               fontWeight: 300,
               fontFamily: "Poppins, sans-serif",
               lineHeight: "21px",
-              marginBottom: 2,
+              marginBottom: 0,
             }}
           >
             Seleção
           </Typography>
+          <Typography
+            sx={{
+              color: "#161616",
+              fontSize: "9px",
+              fontWeight: "600",
+              fontFamily: "Poppins",
+              lineHeight: "21px",
+            }}
+          >
+            Propriedade
+          </Typography>
+
           <Select
             value={propriedade}
             onChange={(e) => setPropriedade(e.target.value)}
@@ -107,11 +119,23 @@ const EventAnalyticsControls = () => {
               fontWeight: 300,
               fontFamily: "Poppins, sans-serif",
               lineHeight: "21px",
-              marginBottom: 2,
+              marginBottom: 0,
             }}
           >
             Filtros
           </Typography>
+          <Typography
+            sx={{
+              color: "#161616",
+              fontSize: "9px",
+              fontWeight: "600",
+              fontFamily: "Poppins",
+              lineHeight: "21px",
+            }}
+          >
+            Setor
+          </Typography>
+
           <Select
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
@@ -134,11 +158,23 @@ const EventAnalyticsControls = () => {
               fontWeight: 300,
               fontFamily: "Poppins, sans-serif",
               lineHeight: "21px",
-              marginBottom: 2,
+              marginBottom: 0,
             }}
           >
             Detalhes
           </Typography>
+          <Typography
+            sx={{
+              color: "#161616",
+              fontSize: "9px",
+              fontWeight: "600",
+              fontFamily: "Poppins",
+              lineHeight: "21px",
+            }}
+          >
+            Método de Escala
+          </Typography>
+
           <Select
             value={escala}
             onChange={(e) => setEscala(e.target.value)}
@@ -152,6 +188,18 @@ const EventAnalyticsControls = () => {
             <MenuItem value="Escala Logarítmica">Escala Logarítmica</MenuItem>
             <MenuItem value="Escala Exponencial">Escala Exponencial</MenuItem>
           </Select>
+          <Typography
+            sx={{
+              color: "#161616",
+              fontSize: "9px",
+              fontWeight: "600",
+              fontFamily: "Poppins",
+              lineHeight: "21px",
+            }}
+          >
+            Paleta de Cores
+          </Typography>
+
           <Select
             value={paleta}
             onChange={(e) => setPaleta(e.target.value)}
@@ -165,6 +213,18 @@ const EventAnalyticsControls = () => {
             <MenuItem value="Paleta 2">Paleta 2</MenuItem>
             <MenuItem value="Paleta 3">Paleta 3</MenuItem>
           </Select>
+          <Typography
+            sx={{
+              color: "#161616",
+              fontSize: "9px",
+              fontWeight: "600",
+              fontFamily: "Poppins",
+              lineHeight: "21px",
+            }}
+          >
+            Estilo de Mapa
+          </Typography>
+
           <Select
             value={mapa}
             onChange={(e) => setMapa(e.target.value)}
