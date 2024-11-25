@@ -11,10 +11,13 @@ import {
   Typography,
 } from "@mui/material";
 import Image from "next/image";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer, useMap, GeoJSON } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { LatLngExpression } from "leaflet";
 import axios from "axios";
+
+import api from '@/services/api';
+import { translateSegment } from '@/utils/index';
 
 const style = {
   position: "absolute",
@@ -33,6 +36,45 @@ type ModalProps = {
   onSubmit: (data: any) => void;
 };
 
+type SegmentContainer = {
+  segment_id: string,
+}
+
+type Segments = {
+  country?: SegmentContainer[],
+  state?: SegmentContainer[],
+  city?: SegmentContainer[],
+  sector?: SegmentContainer[],
+  neighborhood?: SegmentContainer[];
+};
+
+
+type BoundingBox = [number,number,number,number];
+type ParsedBounds = [[number,number],[number,number]];
+
+interface NominatimResponse {
+  boundingbox: BoundingBox;
+  display_name: string;
+  lat: string;
+  lon: string;
+}
+
+interface FitBoundsProps {
+  bounds: ParsedBounds | null;
+}
+
+const FitBounds: React.FC<FitBoundsProps> = ({ bounds }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (bounds) {
+      map.fitBounds(bounds);
+    }
+  }, [bounds, map]);
+
+  return null;
+};
+
 interface Event {
   id?: string;
   title?: string;
@@ -45,14 +87,10 @@ interface Event {
     id?: string;
     title?: string;
   };
-  unities?: any[];
-  times?: any[];
+  units?: any[];
+  teams?: any[];
   agents?: any[];
-  uf?: string;
-  city?: string;
-  segment_type?: string;
-  bairros?: any[];
-  setores?: any[];
+  segments?: Segments;
   geometry?: any;
 }
 interface UF {
@@ -62,33 +100,103 @@ interface UF {
 }
 
 interface City {
-  id: number;
+  id: string;
   nome: string;
 }
 
+const geoJsonCache = new Map<string, any>(); // In-memory cache
+
 export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
   const [modalState, setModalState] = useState<number>(0);
-  const [event, setEvent] = useState<Event>({});
-  const [ufs, setUfs] = useState<UF[]>([]);
-  const [cities, setCities] = useState<City[]>([]);
+
+  // Event Variables
+  const [event, setEvent] = useState<Event>({segments:{
+    country:[],
+    state:[],
+    city:[],
+    sector:[],
+    neighborhood:[],
+  }});
+
+  // Map Variables
   const [currentLocation, setCurrentLocation] =
     useState<LatLngExpression | null>(null);
+  const [bounds, setBounds] = useState<ParsedBounds | null>(null);
+  const [geojson, setGeojson] = useState<any[]>([]);
+
+  // Selects Fetched Data
+  const [ufs, setUfs] = useState<UF[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
+  const [availableSegmentsType, setAvailableSegmentsType] = useState<any[]>([]);
+  const [forms, setForms] = useState<any[]>([]);
+  const [units, setUnits] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
+  const [agents, setAgents] = useState<any[]>([]);
+
+
+  // Selects Controllers
+  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(200);
+  const [currentSegmentType, setCurrentSegmentType] = useState<string>();
+  const [currentState, setCurrentState] = useState<UF>();
+  const [currentCity, setCurrentCity] = useState<City>();
+
+  // Select Results
+  const [segments, setSegments] = useState<Segments>({});
 
   useEffect(() => {
     loadUFs(); // Carrega UFs ao montar o componente
+    loadForms(); // Carrega Formulários ao montar o componente
+    loadTeams(); // Carrega Times ao montar o componente
+    loadUnits(); // Carrega Unidades ao montar o componente
+    loadAgents(); // Carrega Agentes ao montar o componente
     getCurrentLocation(); // Obtém localização atual do dispositivo
   }, []);
 
   useEffect(() => {
-    if (event.uf) {
-      loadCities(event.uf); // Carrega cidades quando a UF é alterada
+    if (currentState) {
+      loadCities(currentState); // Carrega cidades quando a UF é alterada
     }
-  }, [event.uf]);
+  }, [currentState]);
+
+  useEffect(() => {
+    // console.log(segments)
+  }, [segments]);
+
+  useEffect(() => {
+    console.log(event)
+  }, [event]);
+
+  useEffect(() => {
+    console.log(currentSegmentType)
+    if (currentSegmentType) {
+      loadSegments(); // Carrega os segmentos
+    }
+  }, [currentSegmentType]);
+
+
+  useEffect(() => {
+    const fetchavailableSegmentsType = async () => {
+      try {
+        const response = await api.get(
+          `/all/kind?id_country=BR${currentState?.id?"&id_state="+currentState.id:""}${currentCity?.id?"&id_city="+currentCity.id:""}`
+        );
+        setAvailableSegmentsType(response.data)
+      } catch (error) {
+        console.error("Erro ao carregar UFs:", error);
+      }
+    }
+    fetchavailableSegmentsType();
+  }, [currentState, currentCity]);
 
   const loadUFs = async () => {
     try {
-      const response = await axios.get(
-        "https://servicodados.ibge.gov.br/api/v1/localidades/estados"
+      const response = await api.post(
+        "all/uf", {
+          filter: {
+            // nome: ""
+          }
+        }
       );
       const sortedUfs = response.data.sort((a: any, b: any) =>
         a.nome.localeCompare(b.nome)
@@ -99,11 +207,16 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
     }
   };
 
-  const loadCities = async (ufCode: any) => {
+  const loadCities = async (uf: UF) => {
     try {
-      const response = await axios.get(
-        `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${ufCode}/municipios`
+      const response = await api.post(
+        `all/uf/${uf.id}/city?offset=${offset}&limit=${limit}`, {
+          filter: {
+            // nome: ""
+          }
+        }
       );
+
       const sortedCities = response.data.sort((a: any, b: any) =>
         a.nome.localeCompare(b.nome)
       ); // Ordena alfabeticamente
@@ -112,6 +225,126 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
       console.error("Erro ao carregar cidades:", error);
     }
   };
+
+  const loadForms = async () => {
+    try {
+
+      const response = await api.get(
+        "/coordinator/institution/forms"
+      );
+      if (response.status === 200){
+        setForms(response.data.data);
+        return
+      }
+      setForms([]);
+
+    } catch (error) {
+      console.error("Erro ao carregar Formulários:", error);
+    }
+  };
+
+  const loadUnits = async () => {
+    try {
+
+      const response = await api.get(
+        "/coordinator/institution/units"
+      );
+      if (response.status === 200){
+        setUnits(response.data.data);
+        return
+      }
+      setUnits([]);
+
+    } catch (error) {
+      console.error("Erro ao carregar Unidades:", error);
+    }
+  };
+
+  const loadTeams = async () => {
+    try {
+
+      const response = await api.get(
+        "/coordinator/institution/teams"
+      );
+      if (response.status === 200){
+        setTeams(response.data.data);
+        return
+      }
+      setTeams([]);
+
+    } catch (error) {
+      console.error("Erro ao carregar Times:", error);
+    }
+  };
+
+  const loadAgents = async () => {
+    try {
+
+      const response = await api.get(
+        "/coordinator/institution/users"
+      );
+      if (response.status === 200){
+        setAgents(response.data.data);
+        return
+      }
+      setAgents([]);
+
+    } catch (error) {
+      console.error("Erro ao carregar Agentes:", error);
+    }
+  };
+
+  const loadSegments = async () => {
+    if (modalState === 2) {
+      try {
+
+          const response = await api.post(
+            `/all/uf${(currentState?.id?"/"+currentState.id+"/city":"") + (currentCity?.id?"/"+currentCity.id+"/"+currentSegmentType:"")}?offset=${offset}&limit=${limit}`, {filter:{}}
+          );
+          if (response.status === 200){
+            setSegments((prev) => ({
+                ...prev,
+                [currentSegmentType || "error"]:response.data
+            }));
+            return
+          }
+        } catch (error) {
+          console.error("Erro ao carregar Agentes:", error);
+        }
+    }
+  };
+
+  const loadGeoJson = async (segmentsID: string) => {
+    let stateString = currentState?.id?currentState.id:"";
+    let cityString = currentCity?.id?currentCity.id:"";
+    let countryString = "BR";
+    let segmentTypeString = currentSegmentType?currentSegmentType:"";
+    let segmentID = segmentsID[segmentsID.length - 1]
+
+    // Check if the result is already in the cache
+    if (segmentID && geoJsonCache.has(segmentID)) {
+      setGeojson((prev) => [...prev, geoJsonCache.get(segmentID)]);
+      return;
+    }
+
+    try {
+
+      const response = await api.get(
+        `/all/geojson?id_state=${stateString}&segment_type=${segmentTypeString}&id_city=${cityString}&id_segment=${segmentID}&id_country=${countryString}`
+      );
+
+      if (response.status === 200){
+        if (segmentID){
+          geoJsonCache.set(segmentID, response.data);
+        }
+        setGeojson( (prev) => [...prev, response.data]);
+        return
+      }
+    } catch (error) {
+      console.error("Erro ao carregar Agentes:", error);
+    }
+  };
+
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -137,7 +370,12 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
           `https://nominatim.openstreetmap.org/search?q=${ufData.nome}&format=json`
         );
         if (response.data.length > 0) {
-          const { lat, lon } = response.data[0];
+          const { lat, lon, boundingbox } = response.data[0];
+          const parsedBounds: ParsedBounds = [
+            [boundingbox[0], boundingbox[2]],
+            [boundingbox[1], boundingbox[3]],
+          ]
+          setBounds(parsedBounds)
           setCurrentLocation([parseFloat(lat), parseFloat(lon)]);
         }
       }
@@ -149,10 +387,15 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
   const updateLocationByCity = async (cityName: any) => {
     try {
       const response = await axios.get(
-        `https://nominatim.openstreetmap.org/search?city=${cityName}&state=${event.uf}&country=Brazil&format=json`
+        `https://nominatim.openstreetmap.org/search?city=${cityName}&state=${event.uf.nome}&country=Brazil&format=json`
       );
       if (response.data.length > 0) {
-        const { lat, lon } = response.data[0];
+        const { lat, lon, boundingbox } = response.data[0];
+        const parsedBounds: ParsedBounds = [
+          [boundingbox[0], boundingbox[2]],
+          [boundingbox[1], boundingbox[3]],
+        ]
+        setBounds(parsedBounds)
         setCurrentLocation([parseFloat(lat), parseFloat(lon)]);
       }
     } catch (error) {
@@ -176,21 +419,21 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
     }
 
     if (modalState === 1) {
-      if (!event.unities || !event.times || !event.agents) {
+      if (!event.units || !event.teams || !event.agents) {
         return;
       }
     }
 
     if (modalState === 2) {
-      if (!event.uf || !event.city || !event.segment_type) {
+      if (!event.uf || !event.city || !currentSegmentType) {
         return;
       }
 
-      if (event.segment_type === "bairros" && !event.bairros) {
+      if (currentSegmentType === "bairros" && !event.bairros) {
         return;
       }
 
-      if (event.segment_type === "setores" && !event.setores) {
+      if (currentSegmentType === "setores" && !event.setores) {
         return;
       }
     }
@@ -202,16 +445,60 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
     setModalState((prev) => prev - 1);
   };
 
+  const handleScroll = (e: React.UIEvent<HTMLSelectElement>) => {
+    const target = e.target as HTMLSelectElement;
+    if (target.scrollTop + target.clientHeight >= target.scrollHeight - 10) {
+      setOffset(offset+limit)
+    }
+  };
+
+  const onEachFeature = (feature: any, layer: L.Layer) => {
+    if (feature.properties && feature.properties.name) {
+      layer.bindPopup(feature.properties.name);
+    }
+  };
+
   const handleChange = async (field: any, value: any) => {
-    setEvent((prev) => ({ ...prev, [field]: value }));
 
     // Atualizar localização quando UF ou cidade forem alterados
     if (field === "uf") {
-      await updateLocationByUF(value);
+      const uf: UF | undefined = ufs.find((uf: UF) => uf.id.toString() === value.toString());
+      if (uf){
+        // setEvent((prev) => ({ ...prev, [field]: uf, ["city"]:"", ["segment_type"]:""}));
+        setCurrentState(uf);
+        setCurrentSegmentType("");
+        setCurrentCity({id:"", nome:""});
+        await updateLocationByUF(uf.sigla);
+        return
+      }
     }
-    if (field === "city") {
-      await updateLocationByCity(value);
+    else if (field === "city") {
+      const city = cities.find((city: City) => city.id.toString() === value.toString());
+      if (city){
+        setCurrentCity(city);
+        setCurrentSegmentType("");
+        await updateLocationByCity(city.nome);
+      }
     }
+    else if (field === "segment_type") {
+        setCurrentSegmentType(value);
+        return;
+    }
+
+    else if (["country","state","city","sector","neighborhood"].includes(field.split(" ")[1])){
+      setEvent((prev) => ({
+        ...prev,
+        segments: {
+          ...prev.segments,
+          [field.split(" ")[1]]:value
+        }
+      }));
+      loadGeoJson(value)
+      // console.log(value)
+      return
+    }
+
+    setEvent((prev) => ({ ...prev, [field]: value }));
   };
 
   const renderStage = () => {
@@ -318,8 +605,11 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                   value={event.form || ""}
                   onChange={(e) => handleChange("form", e.target.value)}
                 >
-                  <MenuItem value="form1">Formulário 1</MenuItem>
-                  <MenuItem value="form2">Formulário 2</MenuItem>
+                  {
+                    forms?.map( (form: any) => {
+                      return (<MenuItem key={form.id} value={form.id}>{form.name}</MenuItem>)
+                    } )
+                  }
                 </Select>
               </FormControl>
             </Box>
@@ -336,49 +626,53 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
               <FormControl fullWidth>
                 <Select
                   multiple
-                  value={event.unities || []}
+                  value={event.units || []}
                   onChange={(e) =>
-                    handleChange("unities", Array.from(e.target.value))
+                    handleChange("units", Array.from(e.target.value))
                   }
-                  renderValue={(selected) => selected.join(", ")}
                 >
-                  <MenuItem value="Unidade 1">Unidade 1</MenuItem>
-                  <MenuItem value="Unidade 2">Unidade 2</MenuItem>
-                  <MenuItem value="Unidade 3">Unidade 3</MenuItem>
+                  { units?.map( (unit:any) => {
+                    return (
+                      <MenuItem key={unit.id} value={unit.id}>{unit.name}</MenuItem>
+                    )
+                  } ) }
                 </Select>
               </FormControl>
               <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
-                {(event.unities || []).map((unit, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: 1,
-                      alignItems: "center",
-                      backgroundColor: "#FFE9CC",
-                      borderRadius: "8px",
-                      px: 2,
-                    }}
-                  >
-                    <Typography variant="body2" sx={{ mr: 1 }}>
-                      {unit}
-                    </Typography>
-                    <Button
-                      size="small"
-                      color="warning"
-                      sx={{ padding: 0, minWidth: 0 }}
-                      onClick={() =>
-                        handleChange(
-                          "unities",
-                          (event.unities || []).filter((u) => u !== unit)
-                        )
-                      }
+                {(event.units || []).map((unitId, index) => {
+                  const unit = units.find((u) => u.id === unitId);
+                  return (
+                    <Box
+                      key={unitId}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 1,
+                        alignItems: "center",
+                        backgroundColor: "#FFE9CC",
+                        borderRadius: "8px",
+                        px: 2,
+                      }}
                     >
-                      x
-                    </Button>
-                  </Box>
-                ))}
+                      <Typography variant="body2" sx={{ mr: 1 }}>
+                        {unit.name}
+                      </Typography>
+                      <Button
+                        size="small"
+                        color="warning"
+                        sx={{ padding: 0, minWidth: 0 }}
+                        onClick={() =>
+                          handleChange(
+                            "units",
+                            (event.units || []).filter((u) => u === unit)
+                          )
+                        }
+                      >
+                        x
+                      </Button>
+                    </Box>
+                  )
+                })}
               </Box>
             </Box>
 
@@ -390,49 +684,53 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
               <FormControl fullWidth>
                 <Select
                   multiple
-                  value={event.times || []}
+                  value={event.teams || []}
                   onChange={(e) =>
-                    handleChange("times", Array.from(e.target.value))
+                    handleChange("teams", Array.from(e.target.value))
                   }
-                  renderValue={(selected) => selected.join(", ")}
                 >
-                  <MenuItem value="Time 1">Time 1</MenuItem>
-                  <MenuItem value="Time 2">Time 2</MenuItem>
-                  <MenuItem value="Time 3">Time 3</MenuItem>
+                  {
+                    teams?.map( (agent: any) => {
+                      return (<MenuItem key={agent.id} value={agent.id}>{agent.name}</MenuItem>)
+                    } )
+                  }
                 </Select>
               </FormControl>
               <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
-                {(event.times || []).map((team, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: 1,
-                      alignItems: "center",
-                      backgroundColor: "#FFE9CC",
-                      borderRadius: "8px",
-                      px: 2,
-                    }}
-                  >
-                    <Typography variant="body2" sx={{ mr: 1 }}>
-                      {team}
-                    </Typography>
-                    <Button
-                      size="small"
-                      color="warning"
-                      sx={{ padding: 0, minWidth: 0 }}
-                      onClick={() =>
-                        handleChange(
-                          "times",
-                          (event.times || []).filter((t) => t !== team)
-                        )
-                      }
+                {(event.teams || []).map((teamId, index) => {
+                  const team = teams.find((t) => t.id === teamId);
+                  return (
+                    <Box
+                      key={teamId}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 1,
+                        alignItems: "center",
+                        backgroundColor: "#FFE9CC",
+                        borderRadius: "8px",
+                        px: 2,
+                      }}
                     >
-                      x
-                    </Button>
-                  </Box>
-                ))}
+                      <Typography variant="body2" sx={{ mr: 1 }}>
+                        {team.name}
+                      </Typography>
+                      <Button
+                        size="small"
+                        color="warning"
+                        sx={{ padding: 0, minWidth: 0 }}
+                        onClick={() =>
+                          handleChange(
+                            "teams",
+                            (event.teams || []).filter((t) => t === team)
+                          )
+                        }
+                      >
+                        x
+                      </Button>
+                    </Box>
+                  )
+                })}
               </Box>
             </Box>
 
@@ -448,11 +746,12 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                   onChange={(e) =>
                     handleChange("agents", Array.from(e.target.value))
                   }
-                  renderValue={(selected) => selected.join(", ")}
                 >
-                  <MenuItem value="Agente 1">Agente 1</MenuItem>
-                  <MenuItem value="Agente 2">Agente 2</MenuItem>
-                  <MenuItem value="Agente 3">Agente 3</MenuItem>
+                  {
+                    agents?.map( (agent: any) => {
+                      return (<MenuItem key={agent.id} value={agent.id}>{agent.name}</MenuItem>)
+                    } )
+                  }
                 </Select>
               </FormControl>
               <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
@@ -479,7 +778,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                       onClick={() =>
                         handleChange(
                           "agents",
-                          (event.agents || []).filter((a) => a !== agent)
+                          (event.agents || []).filter((a) => a === agent)
                         )
                       }
                     >
@@ -510,11 +809,14 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                     UF
                   </Typography>
                   <Select
-                    value={event.uf || ""}
+                    value={currentState?.id || ""}
                     onChange={(e) => handleChange("uf", e.target.value)}
                   >
-                    {ufs.map((uf) => (
-                      <MenuItem key={uf.id} value={uf.sigla}>
+                      <MenuItem key={-1} value={""}>
+                        Nenhum
+                      </MenuItem>
+                    {ufs?.map((uf:any) => (
+                      <MenuItem key={uf.id} value={uf.id}>
                         {uf.nome}
                       </MenuItem>
                     ))}
@@ -525,12 +827,12 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                     Cidade
                   </Typography>
                   <Select
-                    value={event.city || ""}
+                    value={currentCity?.id || ""}
                     onChange={(e) => handleChange("city", e.target.value)}
-                    disabled={!event.uf} // Desabilita se nenhuma UF estiver selecionada
+                    disabled={!currentState} // Desabilita se nenhuma UF estiver selecionada
                   >
                     {cities.map((city) => (
-                      <MenuItem key={city.id} value={city.nome}>
+                      <MenuItem key={city.id} value={city.id}>
                         {city.nome}
                       </MenuItem>
                     ))}
@@ -545,127 +847,83 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                     Tipo de Segmento
                   </Typography>
                   <Select
-                    value={event.segment_type || ""}
+                    value={currentSegmentType || ""}
                     onChange={(e) =>
                       handleChange("segment_type", e.target.value)
                     }
                   >
-                    <MenuItem value="bairros">Bairros</MenuItem>
-                    <MenuItem value="setores">Setores</MenuItem>
+                    {availableSegmentsType.map((segment: any, index: number) => (
+                      <MenuItem key={index} value={segment}>
+                        {translateSegment(segment)}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Box>
 
               {/* Linha 3: Select de Bairros ou Setores */}
-              {event.segment_type === "bairros" && (
-                <Box mb={2}>
-                  <FormControl fullWidth>
-                    <Typography variant="body2" fontWeight="bold" mb={2}>
-                      Bairros
-                    </Typography>
-                    <Select
-                      multiple
-                      value={event.bairros || []}
-                      onChange={(e) =>
-                        handleChange("bairros", Array.from(e.target.value))
-                      }
-                      renderValue={(selected) => selected.join(", ")}
+              {currentSegmentType && <Box mb={2}>
+                <FormControl fullWidth>
+                  <Typography variant="body2" fontWeight="bold" mb={2}>
+                  {translateSegment(currentSegmentType)}
+                  </Typography>
+                  <Select
+                    multiple
+                    value={event.segments?event.segments[currentSegmentType]:[]}
+                    onScroll={handleScroll}
+                    onChange={(e) =>
+                      handleChange("segments " + currentSegmentType, Array.from(e.target.value))
+                    }
+                  >
+                    {currentSegmentType === "sector" ? (segments[currentSegmentType || "error"] || []).map((segment: any, index: number) => (
+                      <MenuItem key={index} value={segment._id}>
+                        {segment.properties.CD_SETOR}
+s                      </MenuItem>
+                    )):
+                    ( segments[currentSegmentType] || []).map( (segment: any, index: number) =>
+                        (
+                          <MenuItem key={index} value={segment.id}>
+                            {segment.nome}
+                          </MenuItem>
+                        )
+                      )
+                    }
+                  </Select>
+                </FormControl>
+                <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
+                  {(event.segments?Object.values(event.segments).flat():[]).map((segment: any, index: number) => {
+                    return ( <Box
+                      key={index}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 1,
+                        alignItems: "center",
+                        backgroundColor: "#FFE9CC",
+                        borderRadius: "8px",
+                        px: 2,
+                      }}
                     >
-                      <MenuItem value="Centro">Centro</MenuItem>
-                      <MenuItem value="Vila Madalena">Vila Madalena</MenuItem>
-                      <MenuItem value="Moema">Moema</MenuItem>
-                    </Select>
-                  </FormControl>
-                  <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
-                    {(event.bairros || []).map((bairro, index) => (
-                      <Box
-                        key={index}
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          gap: 1,
-                          alignItems: "center",
-                          backgroundColor: "#FFE9CC",
-                          borderRadius: "8px",
-                          px: 2,
-                        }}
+                      <Typography variant="body2" sx={{ mr: 1 }}>
+                        {segment?.nome?segment.nome:segment}
+                      </Typography>
+                      <Button
+                        size="small"
+                        color="warning"
+                        sx={{ padding: 0, minWidth: 0 }}
+                        onClick={() =>
+                          handleChange(
+                            currentSegmentType,
+                            (event.segments[currentSegmentType]|| []).filter((b) => b !== segment)
+                          )
+                        }
                       >
-                        <Typography variant="body2" sx={{ mr: 1 }}>
-                          {bairro}
-                        </Typography>
-                        <Button
-                          size="small"
-                          color="warning"
-                          sx={{ padding: 0, minWidth: 0 }}
-                          onClick={() =>
-                            handleChange(
-                              "bairros",
-                              (event.bairros || []).filter((b) => b !== bairro)
-                            )
-                          }
-                        >
-                          x
-                        </Button>
-                      </Box>
-                    ))}
-                  </Box>
+                        x
+                      </Button>
+                    </Box>
+                  )})}
                 </Box>
-              )}
-
-              {event.segment_type === "setores" && (
-                <Box mb={2}>
-                  <FormControl fullWidth>
-                    <Typography variant="body2" fontWeight="bold" mb={2}>
-                      Setores
-                    </Typography>
-                    <Select
-                      multiple
-                      value={event.setores || []}
-                      onChange={(e) =>
-                        handleChange("setores", Array.from(e.target.value))
-                      }
-                      renderValue={(selected) => selected.join(", ")}
-                    >
-                      <MenuItem value="Setor 1">Setor 1</MenuItem>
-                      <MenuItem value="Setor 2">Setor 2</MenuItem>
-                      <MenuItem value="Setor 3">Setor 3</MenuItem>
-                    </Select>
-                  </FormControl>
-                  <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
-                    {(event.setores || []).map((setor, index) => (
-                      <Box
-                        key={index}
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          gap: 1,
-                          alignItems: "center",
-                          backgroundColor: "#FFE9CC",
-                          borderRadius: "8px",
-                          px: 2,
-                        }}
-                      >
-                        <Typography variant="body2" sx={{ mr: 1 }}>
-                          {setor}
-                        </Typography>
-                        <Button
-                          size="small"
-                          color="warning"
-                          sx={{ padding: 0, minWidth: 0 }}
-                          onClick={() =>
-                            handleChange(
-                              "setores",
-                              (event.setores || []).filter((s) => s !== setor)
-                            )
-                          }
-                        >
-                          x
-                        </Button>
-                      </Box>
-                    ))}
-                  </Box>
-                </Box>
-              )}
+              </Box>}
             </Box>
 
             {/* Coluna do Mapa */}
@@ -688,14 +946,22 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                         }`
                       : "default"
                   }
-                  center={currentLocation as LatLngExpression}
-                  zoom={12}
+                  center={
+                    currentLocation
+                      ? (currentLocation as LatLngExpression)
+                      : [-14.235, -51.9253] // Center of Brazil (latitude and longitude)
+                  }
+                  zoom={currentLocation ? 13 : 4} // Adjust zoom for Brazil
                   style={{ height: "100%", width: "100%" }}
                 >
                   <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   />
+                  {geojson.map((geoJson, index) => (
+                    <GeoJSON key={index} data={geoJson} onEachFeature={onEachFeature} />
+                  ))}
+                  {bounds && <FitBounds bounds={bounds} />}
                 </MapContainer>
               </Box>
             </Box>
@@ -738,7 +1004,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
               ) {
                 return;
               }
-              if (!event.unities || !event.times || !event.agents) {
+              if (!event.units || !event.teams || !event.agents) {
                 return;
               }
               setModalState(2);

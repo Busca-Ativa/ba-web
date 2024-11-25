@@ -5,7 +5,7 @@ import { SetStateAction, useEffect, useState } from "react";
 import { Add, PlusOne } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 
-import api from "../../../services/api";
+import api from "@/services/api";
 import nookies from "nookies";
 import { GetServerSidePropsContext } from "next";
 import { AuthService } from "@/services/auth/auth";
@@ -131,6 +131,16 @@ const Eventos = () => {
 
   const handleSubmitEvent = async (data: any) => {
     console.log("Submitting event:", data);
+    try {
+      const response = await api.post("/coordinator/event", data);
+
+      if (response.status === 200){
+        console.log(response.data.data)
+      }
+    } catch ( error: any ) {
+
+    }
+
     setIsModalOpen(false);
   };
 

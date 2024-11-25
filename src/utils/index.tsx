@@ -31,3 +31,19 @@ export function getTime(dateStr: string) : string {
     timeZone: timeZone
   })} às ${date.toLocaleTimeString("pt-BR",{timeZone: timeZone})}`;
 }
+
+export function translateSegment(segmentName: string): string {
+  const dict: Record<string, string> = {
+    country: "País",
+    state: "Estado",
+    city: "Cidade",
+    sector: "Setor",
+    neighborhood: "Bairro",
+  };
+
+  if (segmentName in dict) {
+    return dict[segmentName];
+  }
+
+  return `Tipo desconhecido: ${segmentName}`;
+}
