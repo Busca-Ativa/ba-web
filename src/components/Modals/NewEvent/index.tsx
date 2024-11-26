@@ -16,8 +16,8 @@ import "leaflet/dist/leaflet.css";
 import { LatLngExpression } from "leaflet";
 import axios from "axios";
 
-import api from '@/services/api';
-import { translateSegment } from '@/utils/index';
+import api from "@/services/api";
+import { translateSegment } from "@/utils/index";
 
 const style = {
   position: "absolute",
@@ -37,20 +37,19 @@ type ModalProps = {
 };
 
 type SegmentContainer = {
-  segment_id: string,
-}
+  segment_id: string;
+};
 
 type Segments = {
-  country?: SegmentContainer[],
-  state?: SegmentContainer[],
-  city?: SegmentContainer[],
-  sector?: SegmentContainer[],
+  country?: SegmentContainer[];
+  state?: SegmentContainer[];
+  city?: SegmentContainer[];
+  sector?: SegmentContainer[];
   neighborhood?: SegmentContainer[];
 };
 
-
-type BoundingBox = [number,number,number,number];
-type ParsedBounds = [[number,number],[number,number]];
+type BoundingBox = [number, number, number, number];
+type ParsedBounds = [[number, number], [number, number]];
 
 interface NominatimResponse {
   boundingbox: BoundingBox;
@@ -110,13 +109,15 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
   const [modalState, setModalState] = useState<number>(0);
 
   // Event Variables
-  const [event, setEvent] = useState<Event>({segments:{
-    country:[],
-    state:[],
-    city:[],
-    sector:[],
-    neighborhood:[],
-  }});
+  const [event, setEvent] = useState<Event>({
+    segments: {
+      country: [],
+      state: [],
+      city: [],
+      sector: [],
+      neighborhood: [],
+    },
+  });
 
   // Map Variables
   const [currentLocation, setCurrentLocation] =
@@ -132,7 +133,6 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
   const [units, setUnits] = useState<any[]>([]);
   const [teams, setTeams] = useState<any[]>([]);
   const [agents, setAgents] = useState<any[]>([]);
-
 
   // Selects Controllers
   const [offset, setOffset] = useState(0);
@@ -164,40 +164,39 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
   }, [segments]);
 
   useEffect(() => {
-    console.log(event)
+    console.log(event);
   }, [event]);
 
   useEffect(() => {
-    console.log(currentSegmentType)
+    console.log(currentSegmentType);
     if (currentSegmentType) {
       loadSegments(); // Carrega os segmentos
     }
   }, [currentSegmentType]);
 
-
   useEffect(() => {
     const fetchavailableSegmentsType = async () => {
       try {
         const response = await api.get(
-          `/all/kind?id_country=BR${currentState?.id?"&id_state="+currentState.id:""}${currentCity?.id?"&id_city="+currentCity.id:""}`
+          `/all/kind?id_country=BR${
+            currentState?.id ? "&id_state=" + currentState.id : ""
+          }${currentCity?.id ? "&id_city=" + currentCity.id : ""}`
         );
-        setAvailableSegmentsType(response.data)
+        setAvailableSegmentsType(response.data);
       } catch (error) {
         console.error("Erro ao carregar UFs:", error);
       }
-    }
+    };
     fetchavailableSegmentsType();
   }, [currentState, currentCity]);
 
   const loadUFs = async () => {
     try {
-      const response = await api.post(
-        "all/uf", {
-          filter: {
-            // nome: ""
-          }
-        }
-      );
+      const response = await api.post("all/uf", {
+        filter: {
+          // nome: ""
+        },
+      });
       const sortedUfs = response.data.sort((a: any, b: any) =>
         a.nome.localeCompare(b.nome)
       ); // Ordena alfabeticamente
@@ -210,10 +209,11 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
   const loadCities = async (uf: UF) => {
     try {
       const response = await api.post(
-        `all/uf/${uf.id}/city?offset=${offset}&limit=${limit}`, {
+        `all/uf/${uf.id}/city?offset=${offset}&limit=${limit}`,
+        {
           filter: {
             // nome: ""
-          }
+          },
         }
       );
 
@@ -228,16 +228,12 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
 
   const loadForms = async () => {
     try {
-
-      const response = await api.get(
-        "/coordinator/institution/forms"
-      );
-      if (response.status === 200){
+      const response = await api.get("/coordinator/institution/forms");
+      if (response.status === 200) {
         setForms(response.data.data);
-        return
+        return;
       }
       setForms([]);
-
     } catch (error) {
       console.error("Erro ao carregar Formulários:", error);
     }
@@ -245,16 +241,12 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
 
   const loadUnits = async () => {
     try {
-
-      const response = await api.get(
-        "/coordinator/institution/units"
-      );
-      if (response.status === 200){
+      const response = await api.get("/coordinator/institution/units");
+      if (response.status === 200) {
         setUnits(response.data.data);
-        return
+        return;
       }
       setUnits([]);
-
     } catch (error) {
       console.error("Erro ao carregar Unidades:", error);
     }
@@ -262,16 +254,12 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
 
   const loadTeams = async () => {
     try {
-
-      const response = await api.get(
-        "/coordinator/institution/teams"
-      );
-      if (response.status === 200){
+      const response = await api.get("/coordinator/institution/teams");
+      if (response.status === 200) {
         setTeams(response.data.data);
-        return
+        return;
       }
       setTeams([]);
-
     } catch (error) {
       console.error("Erro ao carregar Times:", error);
     }
@@ -279,16 +267,12 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
 
   const loadAgents = async () => {
     try {
-
-      const response = await api.get(
-        "/coordinator/institution/users"
-      );
-      if (response.status === 200){
+      const response = await api.get("/coordinator/institution/users");
+      if (response.status === 200) {
         setAgents(response.data.data);
-        return
+        return;
       }
       setAgents([]);
-
     } catch (error) {
       console.error("Erro ao carregar Agentes:", error);
     }
@@ -297,29 +281,34 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
   const loadSegments = async () => {
     if (modalState === 2) {
       try {
-
-          const response = await api.post(
-            `/all/uf${(currentState?.id?"/"+currentState.id+"/city":"") + (currentCity?.id?"/"+currentCity.id+"/"+currentSegmentType:"")}?offset=${offset}&limit=${limit}`, {filter:{}}
-          );
-          if (response.status === 200){
-            setSegments((prev) => ({
-                ...prev,
-                [currentSegmentType || "error"]:response.data
-            }));
-            return
-          }
-        } catch (error) {
-          console.error("Erro ao carregar Agentes:", error);
+        const response = await api.post(
+          `/all/uf${
+            (currentState?.id ? "/" + currentState.id + "/city" : "") +
+            (currentCity?.id
+              ? "/" + currentCity.id + "/" + currentSegmentType
+              : "")
+          }?offset=${offset}&limit=${limit}`,
+          { filter: {} }
+        );
+        if (response.status === 200) {
+          setSegments((prev) => ({
+            ...prev,
+            [currentSegmentType || "error"]: response.data,
+          }));
+          return;
         }
+      } catch (error) {
+        console.error("Erro ao carregar Agentes:", error);
+      }
     }
   };
 
   const loadGeoJson = async (segmentsID: string) => {
-    let stateString = currentState?.id?currentState.id:"";
-    let cityString = currentCity?.id?currentCity.id:"";
+    let stateString = currentState?.id ? currentState.id : "";
+    let cityString = currentCity?.id ? currentCity.id : "";
     let countryString = "BR";
-    let segmentTypeString = currentSegmentType?currentSegmentType:"";
-    let segmentID = segmentsID[segmentsID.length - 1]
+    let segmentTypeString = currentSegmentType ? currentSegmentType : "";
+    let segmentID = segmentsID[segmentsID.length - 1];
 
     // Check if the result is already in the cache
     if (segmentID && geoJsonCache.has(segmentID)) {
@@ -328,23 +317,21 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
     }
 
     try {
-
       const response = await api.get(
         `/all/geojson?id_state=${stateString}&segment_type=${segmentTypeString}&id_city=${cityString}&id_segment=${segmentID}&id_country=${countryString}`
       );
 
-      if (response.status === 200){
-        if (segmentID){
+      if (response.status === 200) {
+        if (segmentID) {
           geoJsonCache.set(segmentID, response.data);
         }
-        setGeojson( (prev) => [...prev, response.data]);
-        return
+        setGeojson((prev) => [...prev, response.data]);
+        return;
       }
     } catch (error) {
       console.error("Erro ao carregar Agentes:", error);
     }
   };
-
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -374,8 +361,8 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
           const parsedBounds: ParsedBounds = [
             [boundingbox[0], boundingbox[2]],
             [boundingbox[1], boundingbox[3]],
-          ]
-          setBounds(parsedBounds)
+          ];
+          setBounds(parsedBounds);
           setCurrentLocation([parseFloat(lat), parseFloat(lon)]);
         }
       }
@@ -394,8 +381,8 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
         const parsedBounds: ParsedBounds = [
           [boundingbox[0], boundingbox[2]],
           [boundingbox[1], boundingbox[3]],
-        ]
-        setBounds(parsedBounds)
+        ];
+        setBounds(parsedBounds);
         setCurrentLocation([parseFloat(lat), parseFloat(lon)]);
       }
     } catch (error) {
@@ -448,7 +435,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
   const handleScroll = (e: React.UIEvent<HTMLSelectElement>) => {
     const target = e.target as HTMLSelectElement;
     if (target.scrollTop + target.clientHeight >= target.scrollHeight - 10) {
-      setOffset(offset+limit)
+      setOffset(offset + limit);
     }
   };
 
@@ -459,43 +446,46 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
   };
 
   const handleChange = async (field: any, value: any) => {
-
     // Atualizar localização quando UF ou cidade forem alterados
     if (field === "uf") {
-      const uf: UF | undefined = ufs.find((uf: UF) => uf.id.toString() === value.toString());
-      if (uf){
+      const uf: UF | undefined = ufs.find(
+        (uf: UF) => uf.id.toString() === value.toString()
+      );
+      if (uf) {
         // setEvent((prev) => ({ ...prev, [field]: uf, ["city"]:"", ["segment_type"]:""}));
         setCurrentState(uf);
         setCurrentSegmentType("");
-        setCurrentCity({id:"", nome:""});
+        setCurrentCity({ id: "", nome: "" });
         await updateLocationByUF(uf.sigla);
-        return
+        return;
       }
-    }
-    else if (field === "city") {
-      const city = cities.find((city: City) => city.id.toString() === value.toString());
-      if (city){
+    } else if (field === "city") {
+      const city = cities.find(
+        (city: City) => city.id.toString() === value.toString()
+      );
+      if (city) {
         setCurrentCity(city);
         setCurrentSegmentType("");
         await updateLocationByCity(city.nome);
       }
-    }
-    else if (field === "segment_type") {
-        setCurrentSegmentType(value);
-        return;
-    }
-
-    else if (["country","state","city","sector","neighborhood"].includes(field.split(" ")[1])){
+    } else if (field === "segment_type") {
+      setCurrentSegmentType(value);
+      return;
+    } else if (
+      ["country", "state", "city", "sector", "neighborhood"].includes(
+        field.split(" ")[1]
+      )
+    ) {
       setEvent((prev) => ({
         ...prev,
         segments: {
           ...prev.segments,
-          [field.split(" ")[1]]:value
-        }
+          [field.split(" ")[1]]: value,
+        },
       }));
-      loadGeoJson(value)
+      loadGeoJson(value);
       // console.log(value)
-      return
+      return;
     }
 
     setEvent((prev) => ({ ...prev, [field]: value }));
@@ -605,11 +595,13 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                   value={event.form || ""}
                   onChange={(e) => handleChange("form", e.target.value)}
                 >
-                  {
-                    forms?.map( (form: any) => {
-                      return (<MenuItem key={form.id} value={form.id}>{form.name}</MenuItem>)
-                    } )
-                  }
+                  {forms?.map((form: any) => {
+                    return (
+                      <MenuItem key={form.id} value={form.id}>
+                        {form.name}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
             </Box>
@@ -631,11 +623,13 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                     handleChange("units", Array.from(e.target.value))
                   }
                 >
-                  { units?.map( (unit:any) => {
+                  {units?.map((unit: any) => {
                     return (
-                      <MenuItem key={unit.id} value={unit.id}>{unit.name}</MenuItem>
-                    )
-                  } ) }
+                      <MenuItem key={unit.id} value={unit.id}>
+                        {unit.name}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
               <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
@@ -671,7 +665,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                         x
                       </Button>
                     </Box>
-                  )
+                  );
                 })}
               </Box>
             </Box>
@@ -689,11 +683,13 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                     handleChange("teams", Array.from(e.target.value))
                   }
                 >
-                  {
-                    teams?.map( (agent: any) => {
-                      return (<MenuItem key={agent.id} value={agent.id}>{agent.name}</MenuItem>)
-                    } )
-                  }
+                  {teams?.map((agent: any) => {
+                    return (
+                      <MenuItem key={agent.id} value={agent.id}>
+                        {agent.name}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
               <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
@@ -729,7 +725,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                         x
                       </Button>
                     </Box>
-                  )
+                  );
                 })}
               </Box>
             </Box>
@@ -747,11 +743,13 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                     handleChange("agents", Array.from(e.target.value))
                   }
                 >
-                  {
-                    agents?.map( (agent: any) => {
-                      return (<MenuItem key={agent.id} value={agent.id}>{agent.name}</MenuItem>)
-                    } )
-                  }
+                  {agents?.map((agent: any) => {
+                    return (
+                      <MenuItem key={agent.id} value={agent.id}>
+                        {agent.name}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
               <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
@@ -812,10 +810,10 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                     value={currentState?.id || ""}
                     onChange={(e) => handleChange("uf", e.target.value)}
                   >
-                      <MenuItem key={-1} value={""}>
-                        Nenhum
-                      </MenuItem>
-                    {ufs?.map((uf:any) => (
+                    <MenuItem key={-1} value={""}>
+                      Nenhum
+                    </MenuItem>
+                    {ufs?.map((uf: any) => (
                       <MenuItem key={uf.id} value={uf.id}>
                         {uf.nome}
                       </MenuItem>
@@ -852,78 +850,96 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                       handleChange("segment_type", e.target.value)
                     }
                   >
-                    {availableSegmentsType.map((segment: any, index: number) => (
-                      <MenuItem key={index} value={segment}>
-                        {translateSegment(segment)}
-                      </MenuItem>
-                    ))}
+                    {availableSegmentsType.map(
+                      (segment: any, index: number) => (
+                        <MenuItem key={index} value={segment}>
+                          {translateSegment(segment)}
+                        </MenuItem>
+                      )
+                    )}
                   </Select>
                 </FormControl>
               </Box>
 
               {/* Linha 3: Select de Bairros ou Setores */}
-              {currentSegmentType && <Box mb={2}>
-                <FormControl fullWidth>
-                  <Typography variant="body2" fontWeight="bold" mb={2}>
-                  {translateSegment(currentSegmentType)}
-                  </Typography>
-                  <Select
-                    multiple
-                    value={event.segments?event.segments[currentSegmentType]:[]}
-                    onScroll={handleScroll}
-                    onChange={(e) =>
-                      handleChange("segments " + currentSegmentType, Array.from(e.target.value))
-                    }
-                  >
-                    {currentSegmentType === "sector" ? (segments[currentSegmentType || "error"] || []).map((segment: any, index: number) => (
-                      <MenuItem key={index} value={segment._id}>
-                        {segment.properties.CD_SETOR}
-s                      </MenuItem>
-                    )):
-                    ( segments[currentSegmentType] || []).map( (segment: any, index: number) =>
-                        (
-                          <MenuItem key={index} value={segment.id}>
-                            {segment.nome}
-                          </MenuItem>
+              {currentSegmentType && (
+                <Box mb={2}>
+                  <FormControl fullWidth>
+                    <Typography variant="body2" fontWeight="bold" mb={2}>
+                      {translateSegment(currentSegmentType)}
+                    </Typography>
+                    <Select
+                      multiple
+                      value={
+                        event.segments ? event.segments[currentSegmentType] : []
+                      }
+                      onScroll={handleScroll}
+                      onChange={(e) =>
+                        handleChange(
+                          "segments " + currentSegmentType,
+                          Array.from(e.target.value)
                         )
-                      )
-                    }
-                  </Select>
-                </FormControl>
-                <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
-                  {(event.segments?Object.values(event.segments).flat():[]).map((segment: any, index: number) => {
-                    return ( <Box
-                      key={index}
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: 1,
-                        alignItems: "center",
-                        backgroundColor: "#FFE9CC",
-                        borderRadius: "8px",
-                        px: 2,
-                      }}
+                      }
                     >
-                      <Typography variant="body2" sx={{ mr: 1 }}>
-                        {segment?.nome?segment.nome:segment}
-                      </Typography>
-                      <Button
-                        size="small"
-                        color="warning"
-                        sx={{ padding: 0, minWidth: 0 }}
-                        onClick={() =>
-                          handleChange(
-                            currentSegmentType,
-                            (event.segments[currentSegmentType]|| []).filter((b) => b !== segment)
+                      {currentSegmentType === "sector"
+                        ? (segments[currentSegmentType || "error"] || []).map(
+                            (segment: any, index: number) => (
+                              <MenuItem key={index} value={segment._id}>
+                                {segment.properties.CD_SETOR}s{" "}
+                              </MenuItem>
+                            )
                           )
-                        }
-                      >
-                        x
-                      </Button>
-                    </Box>
-                  )})}
+                        : (segments[currentSegmentType] || []).map(
+                            (segment: any, index: number) => (
+                              <MenuItem key={index} value={segment.id}>
+                                {segment.nome}
+                              </MenuItem>
+                            )
+                          )}
+                    </Select>
+                  </FormControl>
+                  <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
+                    {(event.segments
+                      ? Object.values(event.segments).flat()
+                      : []
+                    ).map((segment: any, index: number) => {
+                      return (
+                        <Box
+                          key={index}
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            gap: 1,
+                            alignItems: "center",
+                            backgroundColor: "#FFE9CC",
+                            borderRadius: "8px",
+                            px: 2,
+                          }}
+                        >
+                          <Typography variant="body2" sx={{ mr: 1 }}>
+                            {segment?.nome ? segment.nome : segment}
+                          </Typography>
+                          <Button
+                            size="small"
+                            color="warning"
+                            sx={{ padding: 0, minWidth: 0 }}
+                            onClick={() =>
+                              handleChange(
+                                currentSegmentType,
+                                (
+                                  event.segments[currentSegmentType] || []
+                                ).filter((b) => b !== segment)
+                              )
+                            }
+                          >
+                            x
+                          </Button>
+                        </Box>
+                      );
+                    })}
+                  </Box>
                 </Box>
-              </Box>}
+              )}
             </Box>
 
             {/* Coluna do Mapa */}
@@ -959,7 +975,11 @@ s                      </MenuItem>
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   />
                   {geojson.map((geoJson, index) => (
-                    <GeoJSON key={index} data={geoJson} onEachFeature={onEachFeature} />
+                    <GeoJSON
+                      key={index}
+                      data={geoJson}
+                      onEachFeature={onEachFeature}
+                    />
                   ))}
                   {bounds && <FitBounds bounds={bounds} />}
                 </MapContainer>
@@ -1004,7 +1024,7 @@ s                      </MenuItem>
               ) {
                 return;
               }
-              if (!event.units || !event.teams || !event.agents) {
+              if (!event.units || (!event.teams && !event.agents)) {
                 return;
               }
               setModalState(2);

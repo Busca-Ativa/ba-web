@@ -31,10 +31,11 @@ export default function RootLayout({
         }}
       >
         <div className="flex">
-          {(pathname !== "/" && pathname !== "/register") ||
-            (!pathname.includes("/analise/") && (
+          {pathname !== "/" &&
+            pathname !== "/register" &&
+            !pathname.includes("/analise/") && (
               <SideBar user={""} activePage={activePage || "dashboard"} />
-            ))}
+            )}
           <Provider store={store}>{children}</Provider>
         </div>
       </body>
