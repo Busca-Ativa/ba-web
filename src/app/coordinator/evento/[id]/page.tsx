@@ -18,7 +18,9 @@ import {
 } from "@mui/material";
 import { LatLngExpression } from "leaflet";
 import { MapOutlined } from "@mui/icons-material";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
+import api from "@/services/api";
+import { useRouter } from "next/navigation";
 
 // Componentes dinâmicos para evitar SSR no Leaflet
 const MapContainer = dynamic(
@@ -41,7 +43,9 @@ export default function Event({
   const [currentLocation, setCurrentLocation] = useState<LatLngExpression>([
     0, 0,
   ]);
-
+  const [event, setEvent] = useState<any>({});
+  const [formattedDateRange, setFormattedDateRange] = useState<string>("");
+  const router = useRouter();
   // Handle geolocation asynchronously inside useEffect
   useEffect(() => {
     if (navigator.geolocation) {
@@ -59,6 +63,17 @@ export default function Event({
     }
   }, []);
 
+  useEffect(() => {
+    api
+      .get(`/coordinator/institution/event/${id}`)
+      .then((response) => {
+        setEvent(response.data.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, [id]);
+
   // Dados fictícios de exemplo
   const eventDetails = {
     title: "Evento #1",
@@ -70,6 +85,26 @@ export default function Event({
       { name: "Pedro", team: "Equipe A", collections: 5 },
     ],
   };
+
+  useEffect(() => {
+    if (event) {
+      console.log("Event:", event);
+      const formatDate = (dateString: string) => {
+        const options: Intl.DateTimeFormatOptions = {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        };
+        return new Date(dateString).toLocaleDateString("pt-BR", options);
+      };
+
+      const formattedDateRange = `${formatDate(
+        event?.date_start
+      )} - ${formatDate(event?.date_end)}`;
+
+      setFormattedDateRange(formattedDateRange);
+    }
+  }, [event]);
 
   return (
     <Box width={"100%"}>
@@ -131,7 +166,7 @@ export default function Event({
                   lineHeight: "21px",
                 }}
               >
-                {eventDetails.title}
+                {event?.name}
               </Typography>
             </Breadcrumbs>
           </Box>
@@ -156,6 +191,9 @@ export default function Event({
               },
             }}
             startIcon={<MapOutlined />}
+            onClick={() => {
+              router.push(`/coordinator/analise/${id}`);
+            }}
           >
             Análise em Mapa
           </Button>
@@ -178,7 +216,7 @@ export default function Event({
               fontFamily: "Poppins",
             }}
           >
-            {eventDetails.title}
+            {event?.name}
           </Typography>
           <Typography
             sx={{
@@ -188,7 +226,7 @@ export default function Event({
               fontFamily: "Poppins",
             }}
           >
-            {eventDetails.description}
+            {event?.description}
           </Typography>
           <Typography
             sx={{
@@ -198,7 +236,7 @@ export default function Event({
               fontFamily: "Poppins",
             }}
           >
-            <strong>Data:</strong> {eventDetails.date}
+            {formattedDateRange}
           </Typography>
         </Box>
         {/* Meta */}
@@ -239,7 +277,11 @@ export default function Event({
             >
               <Box
                 sx={{
-                  width: "10%",
+                  width: `${
+                    (parseInt(event?.current_progress) /
+                      parseInt(event?.meta)) *
+                    100
+                  }%`,
                   height: "100%",
                   backgroundColor: "#ee8d10",
                   borderRadius: "0",
@@ -255,7 +297,7 @@ export default function Event({
                 lineHeight: "21px",
               }}
             >
-              100/100
+              {parseInt(event?.current_progress)}/{parseInt(event?.meta)}
             </Typography>
           </Box>
         </Box>

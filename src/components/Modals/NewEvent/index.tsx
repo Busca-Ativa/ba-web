@@ -406,7 +406,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
     }
 
     if (modalState === 1) {
-      if (!event.units || !event.teams || !event.agents) {
+      if (!event.units || (!event.teams && !event.agents)) {
         return;
       }
     }

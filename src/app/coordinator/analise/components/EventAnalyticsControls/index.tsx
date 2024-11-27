@@ -1,13 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography, Select, MenuItem } from "@mui/material";
 import Image from "next/image";
 
-const EventAnalyticsControls = () => {
+interface EventAnalyticsControlsProps {
+  data: any;
+  handleChange: (event: React.ChangeEvent<{ value: unknown }>) => void;
+}
+
+const EventAnalyticsControls = ({
+  data,
+  handleChange,
+}: EventAnalyticsControlsProps) => {
   const [propriedade, setPropriedade] = useState("");
-  const [filtro, setFiltro] = useState("");
+  const [filtro, setFiltro] = useState<string[]>([]);
   const [escala, setEscala] = useState("");
   const [paleta, setPaleta] = useState("");
-  const [mapa, setMapa] = useState("");
+  const [mapa, setMapa] = useState("1");
+
+  const [properties, setProperties] = useState<string[]>([]);
 
   const selectStyles = {
     mb: 1,
@@ -20,6 +30,25 @@ const EventAnalyticsControls = () => {
     fontFamily: "Poppins, sans-serif",
     lineHeight: "21px",
   };
+
+  useEffect(() => {
+    handleChange({
+      target: {
+        value: {
+          propriedade,
+          filtro,
+          escala,
+          paleta,
+          mapa,
+        },
+      },
+    } as React.ChangeEvent<{ value: unknown }>);
+  }, [propriedade, filtro, escala, paleta, mapa, handleChange]);
+
+  useEffect(() => {
+    console.log(data);
+    setProperties(Object.keys(data.features[0].properties));
+  }, [data]);
 
   return (
     <Box
@@ -105,9 +134,11 @@ const EventAnalyticsControls = () => {
             <MenuItem value="" disabled>
               Propriedade
             </MenuItem>
-            <MenuItem value="Propriedade 1">Propriedade 1</MenuItem>
-            <MenuItem value="Propriedade 2">Propriedade 2</MenuItem>
-            <MenuItem value="Propriedade 3">Propriedade 3</MenuItem>
+            {properties.map((property) => (
+              <MenuItem key={property} value={property}>
+                {property}
+              </MenuItem>
+            ))}
           </Select>
         </Box>
         <Box>
@@ -133,21 +164,29 @@ const EventAnalyticsControls = () => {
               lineHeight: "21px",
             }}
           >
-            Setor
+            {/* Setor */}
+            Bairro
           </Typography>
 
           <Select
+            multiple
             value={filtro}
-            onChange={(e) => setFiltro(e.target.value)}
+            onChange={(e) => setFiltro(e.target.value as string[])}
             displayEmpty
             sx={selectStyles}
+            renderValue={(selected) =>
+              (selected as unknown as string[]).join(", ")
+            }
           >
             <MenuItem value="" disabled>
-              Setor
+              Bairro
             </MenuItem>
             <MenuItem value="Setor 1">Setor 1</MenuItem>
-            <MenuItem value="Setor 2">Setor 2</MenuItem>
-            <MenuItem value="Setor 3">Setor 3</MenuItem>
+            {data.features.map((feature: any, index: number) => (
+              <MenuItem key={index} value={feature.properties.nome_bairro}>
+                {feature.properties.nome_bairro}
+              </MenuItem>
+            ))}
           </Select>
         </Box>
         <Box>
@@ -234,9 +273,8 @@ const EventAnalyticsControls = () => {
             <MenuItem value="" disabled>
               Estilo de mapa
             </MenuItem>
-            <MenuItem value="Mapa 1">Mapa 1</MenuItem>
-            <MenuItem value="Mapa 2">Mapa 2</MenuItem>
-            <MenuItem value="Mapa 3">Mapa 3</MenuItem>
+            <MenuItem value="1">Colorido</MenuItem>
+            <MenuItem value="2">Preto e Branco</MenuItem>
           </Select>
         </Box>
       </Box>

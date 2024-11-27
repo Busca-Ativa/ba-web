@@ -119,6 +119,7 @@ const Eventos = () => {
 
   const handleAnalyse = (row: Record<string, string | number>) => {
     console.log("Analyzing row:", row);
+    router.push(`/coordinator/evento/${row.id}`);
   };
 
   const handleDelete = async (row: Record<string, string | number>) => {
@@ -134,12 +135,10 @@ const Eventos = () => {
     try {
       const response = await api.post("/coordinator/event", data);
 
-      if (response.status === 200){
-        console.log(response.data.data)
+      if (response.status === 200) {
+        console.log(response.data.data);
       }
-    } catch ( error: any ) {
-
-    }
+    } catch (error: any) {}
 
     setIsModalOpen(false);
   };

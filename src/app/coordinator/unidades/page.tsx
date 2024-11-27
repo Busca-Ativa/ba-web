@@ -75,8 +75,9 @@ const InstituicoesAdmin = () => {
     code: string;
     estado: string;
     cidade: string;
-    active: boolean;
-    config: { editable: boolean; deletable: boolean; analyseble: boolean };
+    active: string;
+    config: string;
+    [key: string]: string | number;
   }
 
   const onAdd = (newInstitution: any) => {
@@ -140,6 +141,7 @@ const InstituicoesAdmin = () => {
         },
         { withCredentials: true }
       );
+
       const updatedData = rows.map((unit) => {
         if (unit.id === editedUnit.id) {
           return editedUnit;
@@ -147,6 +149,14 @@ const InstituicoesAdmin = () => {
         return unit;
       });
       setData(updatedData);
+
+      if (!selectedUnit.active && editedUnit.active) {
+        await api.post(
+          "coordinator/unit/active",
+          { id_unit: selectedUnit.id, active: true },
+          { withCredentials: true }
+        );
+      }
     } catch (error) {
       console.log(error);
     }
@@ -161,7 +171,7 @@ const InstituicoesAdmin = () => {
               <h1>Unidades</h1>
               <Button
                 onClick={handleOpen}
-                className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white"
+                className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white normal-case"
               >
                 <Add />
                 <div className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
