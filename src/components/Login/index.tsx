@@ -23,7 +23,11 @@ const Login = () => {
       const decoded: any = jwtDecode(token);
       console.log(decoded);
       const role = decoded.role;
+      const userId = decoded.sub.id;
+
       localStorage.setItem("role", role);
+      localStorage.setItem("user_id", userId);
+
       if (role == "editor") {
         router.push("/editor/formularios");
       } else {

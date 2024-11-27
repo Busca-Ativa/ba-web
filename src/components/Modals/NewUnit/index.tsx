@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Key } from "react";
+import React, { useState, useEffect, Key, act } from "react";
 import api from "@/services/api";
 import { toast } from "react-toastify";
 import { getEstadoById, getCidadeById } from "@/services/ibge/api";
@@ -42,9 +42,17 @@ type ModalProps = {
   open: boolean;
   onClose: () => void;
   onSubmit: (cbk: any) => void;
+  edit?: boolean;
+  data?: any;
 };
 
-export default function NewUnitModal({ open, onClose, onSubmit }: ModalProps) {
+export default function NewUnitModal({
+  open,
+  onClose,
+  onSubmit,
+  edit,
+  data,
+}: ModalProps) {
   const [supervisors, setSupervisors] = useState<
     {
       id: Key | null | undefined;
@@ -53,33 +61,57 @@ export default function NewUnitModal({ open, onClose, onSubmit }: ModalProps) {
     }[]
   >([]);
   const [formData, setFormData] = useState({
-    unitName: "",
-    unitCode: "",
-    idSupervisor: "",
+    unitName: data?.name || "",
+    unitCode: data?.code || "",
+    idSupervisor: data?.id_supervisor || "",
+    active: data?.active || true,
   });
 
   useEffect(() => {
-    api.get("/coordinator/institution/users").then((response) => {
+    if (edit) {
+      setFormData({
+        unitName: data?.name,
+        unitCode: data?.code,
+        idSupervisor: data?.id_supervisor,
+        active: data?.active,
+      });
+    }
+  }, [data?.active, data?.code, data?.id_supervisor, data?.name, edit]);
+
+  useEffect(() => {
+    api.get("/coordinator/supervisors").then((response) => {
       const supervisors = response.data.filter(
         (user: any) => user.role === "supervisor"
       );
-      setSupervisors(
-        supervisors.map((supervisor: any) => ({
+      setSupervisors([
+        {
+          value: localStorage.getItem("user_id"),
+          label: "Coordenador",
+        } as any,
+        ...supervisors.map((supervisor: any) => ({
           value: supervisor.id,
           label: supervisor.name,
-        }))
-      );
+        })),
+      ]);
     });
   }, []);
+
+  useEffect(() => {
+    console.log("formData", formData);
+  }, [formData]);
+
+  useEffect(() => {
+    console.log("supervisors", supervisors);
+  }, [supervisors]);
 
   return (
     <div>
       <Modal open={open} onClose={onClose}>
-        <Box className="w-[600px] h-[482px]" sx={style}>
+        <Box className="w-[600px] " sx={style}>
           <Box className="flex flex-col" alignItems="left" mb={2} gap={1}>
             <Image src="/next.svg" alt="Logo" width={30} height={30} />
             <Typography fontFamily={"Poppins"} variant="h4" fontWeight="bold">
-              Nova Unidade
+              {edit ? `${data?.name}` : "Nova Unidade"}
             </Typography>
           </Box>
 
@@ -89,7 +121,10 @@ export default function NewUnitModal({ open, onClose, onSubmit }: ModalProps) {
             fullWidth
             variant="outlined"
             margin="normal"
-            onChange={() => {}}
+            onChange={(event) =>
+              setFormData({ ...formData, unitName: event.target.value })
+            }
+            value={formData.unitName}
             id="unitName"
           />
           <TextField
@@ -98,7 +133,10 @@ export default function NewUnitModal({ open, onClose, onSubmit }: ModalProps) {
             fullWidth
             variant="outlined"
             margin="normal"
-            onChange={() => {}}
+            onChange={(event) =>
+              setFormData({ ...formData, unitCode: event.target.value })
+            }
+            value={formData.unitCode}
             id="unitCode"
           />
 
@@ -110,36 +148,67 @@ export default function NewUnitModal({ open, onClose, onSubmit }: ModalProps) {
               value={formData.idSupervisor}
               label="Supervisor"
               onChange={(event: SelectChangeEvent) => {
+                console.log(event.target.value);
                 setFormData({ ...formData, idSupervisor: event.target.value });
               }}
             >
               {supervisors.map((supervisor) => (
-                <MenuItem key={supervisor.id} value={supervisor.value}>
+                <MenuItem key={supervisor.value} value={supervisor.value}>
                   {supervisor.label}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          <Box display={"flex"} justifyContent={"space-between"} gap={"80px"}>
+          {edit && data?.active == false && (
+            <FormControl fullWidth margin="normal">
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.active}
+                    onChange={(event) =>
+                      setFormData({ ...formData, active: event.target.checked })
+                    }
+                    name="active"
+                  />
+                }
+                label="Ativar unidade"
+              />
+            </FormControl>
+          )}
+
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            gap="16px"
+            mt={4}
+          >
             <Button
               variant="outlined"
-              fullWidth
-              sx={{ mt: 3, textTransform: "capitalize" }}
+              sx={{
+                textTransform: "capitalize",
+                width: "48%",
+                height: "41px",
+              }}
               color="error"
               onClick={() => {
+                setFormData({} as any);
                 onClose();
               }}
             >
               Cancelar
             </Button>
             <Button
-              onClick={() => {}}
-              fullWidth
+              onClick={() => {
+                onSubmit(formData);
+              }}
               sx={{
                 textTransform: "capitalize",
                 background: "#19b394",
+                width: "48%",
+                height: "41px",
               }}
-              className="h-[41px] px-4 py-2  hover:bg-[--primary-dark] mt-6 rounded justify-center items-center gap-3 inline-flex text-white"
+              className="hover:bg-[--primary-dark] rounded text-white"
             >
               <div className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
                 Concluir
