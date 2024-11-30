@@ -95,10 +95,6 @@ const EditorContent = () => {
   }, []);
 
   useEffect(() => {
-    console.log("user", user);
-  }, [user]);
-
-  useEffect(() => {
     const fetchForm = async () => {
       if (formId) {
         try {
@@ -106,7 +102,6 @@ const EditorContent = () => {
             withCredentials: true,
           });
           const formData = response.data;
-          console.log(formData);
           if (typeForm == "form") {
             dispatch(setUpdatedAt(formData.data.updated_at));
             dispatch(setCreatedAt(formData.data.created_at));
@@ -119,7 +114,6 @@ const EditorContent = () => {
             );
           } else if (typeForm == "section") {
             dispatch(setFormName(formData?.title || ""));
-            console.log("formData", formData);
             dispatch(removeAllElements({ pageIndex: 0 }));
             formData?.questions?.elements.forEach((question: any) => {
               dispatch(addElement({ pageIndex: 0, element: question }));
@@ -142,10 +136,6 @@ const EditorContent = () => {
     fetchForm();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formId]);
-
-  useEffect(() => {
-    console.log(tags);
-  }, [tags]);
 
   const breadcrumbs = [
     <Link

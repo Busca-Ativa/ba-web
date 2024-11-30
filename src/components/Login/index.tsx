@@ -21,7 +21,6 @@ const Login = () => {
       const auth = await AuthService.login(email, password);
       const token = auth.data.access_token;
       const decoded: any = jwtDecode(token);
-      console.log(decoded);
       const role = decoded.role;
       const userId = decoded.sub.id;
 

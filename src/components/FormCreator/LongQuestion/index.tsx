@@ -54,7 +54,6 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
   const [required, setRequired] = useState<boolean>(element?.required || false);
 
   useEffect(() => {
-    console.log(element);
     if (element) {
       setQuestion(element.title);
       setType(element.type);

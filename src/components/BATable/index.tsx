@@ -139,8 +139,8 @@ const BATable: React.FC<BATableProps> = ({
 
   useEffect(() => {
     setRows(initialRows);
-    console.log("initialRows", initialRows);
   }, [initialRows]);
+
   const handleRequestSort = (property: string) => {
     const isAsc = order === "asc";
     const newOrder = orderBy === property ? (isAsc ? "desc" : "asc") : "asc";

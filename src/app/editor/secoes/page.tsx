@@ -45,7 +45,6 @@ const Secoes = () => {
         });
         if (response.data) {
           setUserData(response.data);
-          console.log("Dante", response.data);
         }
       } catch (error: any) {
         if (error.response?.status === 401) {
@@ -63,7 +62,6 @@ const Secoes = () => {
           withCredentials: true,
         });
         if (response.data) {
-          console.log("response", response);
           list_forms.push(...response.data);
         }
 
@@ -89,7 +87,6 @@ const Secoes = () => {
 
   // TODO: Quando deletar apagar a linha da tabela e refresh do component
   useEffect(() => {
-    console.log("user", user);
     return setRows(
       forms?.map((value) => {
         const name: string = value.creator.name + " " + value.creator.lastName;
@@ -106,10 +103,6 @@ const Secoes = () => {
       })
     );
   }, [forms, user.id]);
-
-  useEffect(() => {
-    console.log(rows);
-  }, [rows]);
 
   const pushEditor = () => {
     router.push("/editor?type=section");

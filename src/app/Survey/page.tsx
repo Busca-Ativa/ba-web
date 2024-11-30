@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import "survey-core/defaultV2.min.css";
 import { Model } from "survey-react-ui";
 import { Survey } from "survey-react-ui";
-import api from '../../services/api'
+import api from "../../services/api";
 
 const surveyJson = {
   title: "Teste",
@@ -29,35 +29,35 @@ const surveyJson = {
 
 const surveySchema = {
   name: "Teste",
-  json: surveyJson
-}
-
+  json: surveyJson,
+};
 
 function App() {
   const survey = new Model(surveyJson);
   const alertResults = useCallback(async (sender: any) => {
     try {
-      const response = await api.post('/editor/form',
+      const response = await api.post(
+        "/editor/form",
         JSON.stringify(surveyJson),
         {
-          withCredentials:true,
+          withCredentials: true,
           // headers: {
           //   'Access-Control-Allow-Origin': '*',
           //   'Content-Type': 'application/json'
           // }
         }
-      )
-      if ( response.data.data  ){
-        console.log(response.data.data)
-      }
+      );
     } catch (error: any) {
-      console.error("Erro ao enviar formulário", error.response?.data || error.message)
+      console.error(
+        "Erro ao enviar formulário",
+        error.response?.data || error.message
+      );
       throw error;
     }
     const results = JSON.stringify(sender.data);
   }, []);
 
-  survey.onComplete.add(alertResults)
+  survey.onComplete.add(alertResults);
   return <Survey model={survey} />;
 }
 
