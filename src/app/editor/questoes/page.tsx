@@ -130,8 +130,8 @@ const Questoes = () => {
           type: getType(value.type),
           config:
             value.creator.id !== user.id
-              ? { editable: false, deletable: false }
-              : { editable: true, deletable: true, duplicable: true },
+              ? { editable: false, deletable: false, duplicable: true }
+              : { editable: true, deletable: true, duplicable: false },
           origin: value.origin ? value.origin.name : value.unit.name,
         };
       })

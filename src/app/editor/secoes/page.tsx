@@ -27,6 +27,7 @@ const Secoes = () => {
     config: {
       editable: boolean;
       deletable: boolean;
+      duplicable: boolean;
     };
     origin: string;
   }
@@ -44,9 +45,8 @@ const Secoes = () => {
         });
         if (response.data) {
           setUserData(response.data);
-          console.log("Dante",response.data)
+          console.log("Dante", response.data);
         }
-
       } catch (error: any) {
         if (error.response?.status === 401) {
           console.warn("Acesso não autorizado");
@@ -55,7 +55,7 @@ const Secoes = () => {
           throw error;
         }
       }
-    }
+    };
     const getForms = async () => {
       let list_forms = [];
       try {
@@ -97,15 +97,11 @@ const Secoes = () => {
           id: value.id,
           title: value.title,
           creator: name,
-          // WARN: Apenas se for o mesmo criado pode deletar e editar.
           config:
             value.creator.id == user.id
-              ? { editable: true, deletable: true }
-              : { editable: false, deletable: false },
-          origin:
-            value.origin
-              ? value?.origin?.name
-              : value?.unit?.name,
+              ? { editable: true, deletable: true, duplicable: false }
+              : { editable: false, deletable: false, duplicable: true },
+          origin: value.origin ? value?.origin?.name : value?.unit?.name,
         };
       })
     );
@@ -152,10 +148,13 @@ const Secoes = () => {
           title: data.name,
           creator: data.editor.name + " " + data.editor.lastName,
           status: status.name,
-          config:
-            data.creator.id !== user.id
-              ? { editable: false, deletable: false }
-              : status.config,
+          config: {
+            editable:
+              data.creator.id !== user.id ? false : status.config.editable,
+            deletable:
+              data.creator.id !== user.id ? false : status.config.deletable,
+            duplicable: false,
+          },
           origin:
             data.tags[0] === "institution"
               ? data.institution?.name
@@ -181,9 +180,16 @@ const Secoes = () => {
           <h1>Seções</h1>
           <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
             {userData?.unit
-              ? ( userData.unit.name + " - " + userData.institution.code_city + " - " + userData.institution.code_state)
-              :
-                (userData?.institution?.name + " - " + userData?.institution?.code_state + " - " + userData?.institution?.code_city) }
+              ? userData.unit.name +
+                " - " +
+                userData.institution.code_city +
+                " - " +
+                userData.institution.code_state
+              : userData?.institution?.name +
+                " - " +
+                userData?.institution?.code_state +
+                " - " +
+                userData?.institution?.code_city}
           </h2>
         </div>
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
