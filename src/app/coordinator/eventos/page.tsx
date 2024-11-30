@@ -102,7 +102,7 @@ const Eventos = () => {
             origin: event.origin,
             config: {
               analyseble: isPastEvent(start),
-              editable: true,
+              editable: !isPastEvent(start),
               deletable: true,
             },
           };
