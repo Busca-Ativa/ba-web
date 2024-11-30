@@ -26,7 +26,7 @@ const Formularios = () => {
     title: any;
     creator: string;
     status: string;
-    config: { editable: boolean; deletable: boolean };
+    config: { editable: boolean; deletable: boolean; duplicable: boolean };
     origin: any;
   }
 
@@ -75,8 +75,8 @@ const Formularios = () => {
           // WARN: Apenas se for o mesmo criado pode deletar e editar.
           config:
             value.editor.id !== user.id
-              ? { editable: false, deletable: false }
-              : status.config,
+              ? { editable: false, deletable: false, duplicable: true }
+              : { editable: true, deletable: true, duplicable: false },
           origin: value?.origin?.name,
         };
       })
@@ -125,10 +125,10 @@ const Formularios = () => {
           status: status.name,
           config:
             data.editor.id !== user.id
-              ? { editable: false, deletable: false }
-              : status.config,
+              ? { editable: false, deletable: false, duplicable: true }
+              : { editable: true, deletable: true, duplicable: false },
           origin:
-            data.tags[0] === "institution"
+            data?.tags[0] === "institution"
               ? data.institution.name
               : data.unit.name,
         };

@@ -17,6 +17,7 @@ import { CssBaseline } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import {
   Add,
+  AnalyticsOutlined,
   Close,
   DeleteOutline,
   EditOutlined,
@@ -24,6 +25,7 @@ import {
 } from "@mui/icons-material";
 import Status from "../Status";
 import { usePathname } from "next/navigation";
+import ButtonActions from "./ButtonActions";
 
 interface Column {
   id: string;
@@ -36,6 +38,7 @@ interface Config {
   deletable?: boolean;
   duplicable?: boolean;
   insertable?: boolean;
+  analyseble?: boolean;
 }
 
 interface InsertsSelected {
@@ -55,6 +58,7 @@ interface BATableProps {
     rowIndex: number
   ) => void;
   onInsert?: (selectedId: string) => void;
+  onAnalyse?: (row: Record<string, string | number>) => void;
 }
 
 // Customização do tema
@@ -121,6 +125,7 @@ const BATable: React.FC<BATableProps> = ({
   onDelete,
   onInsert,
   onDuplicate,
+  onAnalyse,
 }) => {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<string | undefined>(columns[0]?.id);
@@ -196,7 +201,12 @@ const BATable: React.FC<BATableProps> = ({
           </TableHead>
           <TableBody>
             {paginatedRows.map((row: any, rowIndex: number) => (
-              <TableRow key={rowIndex}>
+              <TableRow
+                key={rowIndex}
+                onClick={() => {
+                  console.log("Clicou");
+                }}
+              >
                 {columns.map((column) => (
                   <TableCell key={column.id}>
                     {column.id === "status" ? (
@@ -217,107 +227,45 @@ const BATable: React.FC<BATableProps> = ({
                             : "#43494E"
                         }
                       />
+                    ) : column.id == "progress" ? (
+                      <div className="flex items-center">
+                        <div className="w-3/4 h-5 bg-[#F1F3F9]">
+                          <div
+                            className="h-5 bg-[#EE8D10]"
+                            style={{
+                              width: `${
+                                (row[column.id].split("/")[0] /
+                                  row[column.id].split("/")[1]) *
+                                100
+                              }%`,
+                            }}
+                          ></div>
+                        </div>
+                        <div className="ml-2 text-xs">{row[column.id]}</div>
+                      </div>
                     ) : (
                       row[column.id]
                     )}
                   </TableCell>
                 ))}
-                {rows[rowIndex]?.config?.editable == true ? (
-                  <>
-                    <TableCell sx={{ width: 10, paddingRight: "4px" }}>
-                      <button
-                        onClick={() => {
-                          onEdit && onEdit(row);
-                        }}
-                        style={{
-                          backgroundColor: "#FFF",
-                          color: "#1D2432",
-                          padding: "8px 16px",
-                          borderRadius: "4px",
-                          border: "1px solid #CACDD5",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        <EditOutlined fontSize="small" />
-                        <span>Editar</span>
-                      </button>
-                    </TableCell>
-                    {rows[rowIndex]?.config?.deletable && (
-                      <TableCell sx={{ width: 10, paddingLeft: "4px" }}>
-                        <button
-                          onClick={() => onDelete && onDelete(row, rowIndex)}
-                          style={{
-                            backgroundColor: "#FFF",
-                            color: "#1D2432",
-                            padding: "8px 16px",
-                            borderRadius: "4px",
-                            border: "1px solid #CACDD5",
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <DeleteOutline fontSize="small" />
-                        </button>
-                      </TableCell>
-                    )}
-                  </>
+                {rows[rowIndex]?.config ? (
+                  <ButtonActions
+                    config={rows[rowIndex]?.config}
+                    row={row}
+                    rowIndex={rowIndex}
+                    actions={{
+                      onEdit,
+                      onAnalyse,
+                      onDelete,
+                      onInsert,
+                      onDuplicate,
+                      insertsSelected,
+                    }}
+                  />
                 ) : (
                   <TableCell colSpan={2} sx={{ width: 20 }}>
-                    {rows[rowIndex]?.config?.editable == false &&
-                      rows[rowIndex]?.config?.insertable != true && (
-                        <button
-                          onClick={() =>
-                            onDuplicate && onDuplicate(row, rowIndex)
-                          }
-                          style={{
-                            backgroundColor: "#FFF",
-                            color: "#1D2432",
-                            padding: "8px 16px",
-                            borderRadius: "4px",
-                            border: "1px solid #CACDD5",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "12px",
-                            width: "100%",
-                          }}
-                        >
-                          <FileCopyOutlined fontSize="small" />
-                          <span>Duplicar</span>
-                        </button>
-                      )}
                     <div className="w-full flex justify-end">
-                      {rows[rowIndex]?.config?.insertable == true &&
-                        insertsSelected?.find((i) => i.id == rows[rowIndex].id)
-                          ?.selected == false && (
-                          <button
-                            className="h-7 px-[15px] py-[5px] bg-white rounded border border-[#40c156] justify-center items-center gap-[5px] inline-flex"
-                            onClick={() => {
-                              onInsert && onInsert(rows[rowIndex].id);
-                            }}
-                          >
-                            <Add fontSize="small" sx={{ color: "#40c156" }} />
-                            <div className="text-[#40c156] text-xs font-semibold font-['Source Sans Pro'] leading-[18px]">
-                              Adicionar
-                            </div>
-                          </button>
-                        )}
-                      {rows[rowIndex]?.config?.insertable == true &&
-                        insertsSelected?.find((i) => i.id == rows[rowIndex].id)
-                          ?.selected && (
-                          <button
-                            className="h-7 px-[15px] py-[5px] bg-[#ef4838] rounded border border-[#ef4838] justify-center items-center gap-[5px] inline-flex"
-                            onClick={() => {
-                              onInsert && onInsert(rows[rowIndex].id);
-                            }}
-                          >
-                            <Close fontSize="small" sx={{ color: "#fff" }} />
-                            <div className="text-white text-xs font-semibold font-['Source Sans Pro'] leading-[18px]">
-                              Remover
-                            </div>
-                          </button>
-                        )}
+                      {/* Botões de adicionar/remover já estão no mapeamento */}
                     </div>
                   </TableCell>
                 )}
