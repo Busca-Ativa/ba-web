@@ -1,8 +1,9 @@
 "use client";
+import "survey-core/defaultV2.min.css";
 
 import { useRouter } from "next/navigation";
 import { SetStateAction, useEffect, useState } from "react";
-import { Add, PlusOne } from "@mui/icons-material";
+import { Add, Close, PlusOne } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 
 import api from "../../../services/api";
@@ -10,6 +11,7 @@ import nookies from "nookies";
 import { GetServerSidePropsContext } from "next";
 import { AuthService } from "@/services/auth/auth";
 import { getStatus, StatusObject } from "@/utils";
+import { Model, Survey } from "survey-react-ui";
 
 const Formularios = () => {
   const router = useRouter();
@@ -26,19 +28,18 @@ const Formularios = () => {
     title: any;
     creator: string;
     status: string;
-    config: { editable: boolean; deletable: boolean };
+    config: { analyseble: boolean };
     origin: any;
   }
 
   const [rows, setRows] = useState<Row[]>([]);
-  const [rowsConfig, setRowsConfig] = useState([]);
-  const user: any = AuthService.getUser();
+  const [form, setForm] = useState<any>();
 
   useEffect(() => {
     const getForms = async () => {
       let list_forms = [];
       try {
-        let response = await api.get("/editor/unit/forms", {
+        let response = await api.get("/coordinator/institution/forms", {
           withCredentials: true,
         });
         if (response.data.data) {
@@ -73,10 +74,7 @@ const Formularios = () => {
           creator: name,
           status: status.name,
           // WARN: Apenas se for o mesmo criado pode deletar e editar.
-          config:
-            value.editor.id !== user.id
-              ? { editable: false, deletable: false }
-              : status.config,
+          config: { analyseble: true },
           origin: value?.origin?.name,
         };
       })
@@ -88,54 +86,17 @@ const Formularios = () => {
     router.push("/editor");
   };
 
-  const handleDelete = async (
-    row: Record<string, string | number>,
-    rowIndex: number
-  ) => {
-    try {
-      let response = await api.delete(`/editor/form/${row.id}`);
-      const updatedRows = rows.filter((_, index) => index !== rowIndex);
-      setRows(updatedRows);
-    } catch (error: any) {
-      console.error(error.response?.message);
-      throw error;
-    }
+  const handleSee = (row: Record<string, string | number>) => {
+    fetchFormById(row.id);
   };
 
-  const handleEdit = async (row: Record<string, string | number>) => {
-    router.push(`/editor/?id=${row.id}`);
-  };
-
-  const handleDuplicate = async (row: any, rowIndex: number) => {
+  const fetchFormById = async (id: any) => {
     try {
-      let response = await api.post(
-        `/editor/form/${row.id}`,
-        {},
-        { withCredentials: true }
-      );
-      if (response.status === 200) {
-        const data = response.data.data;
-        const status = getStatus(data.tags[1]) as StatusObject;
-        const duplicatedRow = {
-          id: data.id,
-          title: data.name,
-          creator: data.editor.name + " " + data.editor.lastName,
-          status: status.name,
-          config:
-            data.editor.id !== user.id
-              ? { editable: false, deletable: false }
-              : status.config,
-          origin:
-            data.tags[0] === "institution"
-              ? data.institution.name
-              : data.unit.name,
-        };
-        const updatedRows = [
-          ...rows.slice(0, rowIndex + 1),
-          duplicatedRow,
-          ...rows.slice(rowIndex + 1),
-        ];
-        setRows(updatedRows);
+      const response = await api.get(`/coordinator/institution/form/${id}`, {
+        withCredentials: true,
+      });
+      if (response.data) {
+        setForm(response.data);
       }
     } catch (error: any) {
       console.error(error.response?.message);
@@ -168,10 +129,23 @@ const Formularios = () => {
       <BATable
         columns={columns}
         initialRows={rows as any}
-        onDuplicate={handleDuplicate}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
+        onAnalyse={handleSee}
       />
+      {form && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 pb-16 rounded shadow-lg w-[80%] max-w-[800px] h-[80%]">
+            <div className="flex justify-end items-center">
+              <button
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => setForm(null)}
+              >
+                <Close />
+              </button>
+            </div>
+            <Survey model={new Model(form?.data?.survey_schema)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
