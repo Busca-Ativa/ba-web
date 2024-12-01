@@ -59,6 +59,8 @@ interface BATableProps {
   ) => void;
   onInsert?: (selectedId: string) => void;
   onAnalyse?: (row: Record<string, string | number>) => void;
+  onApprove?: (row: Record<string, string | number>, rowIndex: number) => void;
+  onDisapprove?: (row: Record<string, string | number>, rowIndex: number) => void;
 }
 
 // Customização do tema
@@ -126,6 +128,8 @@ const BATable: React.FC<BATableProps> = ({
   onInsert,
   onDuplicate,
   onAnalyse,
+  onApprove,
+  onDisapprove,
 }) => {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<string | undefined>(columns[0]?.id);
@@ -204,7 +208,7 @@ const BATable: React.FC<BATableProps> = ({
               <TableRow
                 key={rowIndex}
                 onClick={() => {
-                  console.log("Clicou");
+                  // console.log("Clicou");
                 }}
               >
                 {columns.map((column) => (
@@ -259,6 +263,8 @@ const BATable: React.FC<BATableProps> = ({
                       onDelete,
                       onInsert,
                       onDuplicate,
+                      onApprove,
+                      onDisapprove,
                       insertsSelected,
                     }}
                   />

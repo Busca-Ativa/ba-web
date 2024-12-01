@@ -38,7 +38,7 @@ const Formularios = () => {
     const getForms = async () => {
       let list_forms = [];
       try {
-        let response = await api.get("/editor/unit/forms", {
+        let response = await api.get("/coordinator/institution/forms", {
           withCredentials: true,
         });
         if (response.data.data) {

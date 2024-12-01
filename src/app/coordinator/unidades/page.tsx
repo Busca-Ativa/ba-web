@@ -93,7 +93,7 @@ const InstituicoesAdmin = () => {
           withCredentials: true,
         }
       );
-      setData((prev) => [
+      setData((prev : any) => [
         ...prev,
         {
           name: newInstitution.unitName,

@@ -47,3 +47,21 @@ export function translateSegment(segmentName: string): string {
 
   return `Tipo desconhecido: ${segmentName}`;
 }
+
+export function translateRole(roleName: string): string {
+  const dict: Record<string, string> = {
+    admin: "Administrador",
+    coordinator: "Coordenador",
+    supervisor: "Supervisor",
+    agent: "Agente",
+    user: "Usuário",
+    superuser: "Super Usuário",
+    editor: "Editor",
+  };
+
+  if (roleName in dict) {
+    return dict[roleName];
+  }
+
+  return `Tipo desconhecido: ${roleName}`;
+}
