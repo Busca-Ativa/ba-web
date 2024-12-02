@@ -3,6 +3,7 @@
 import {
   ContentPasteSearchOutlined,
   DashboardOutlined,
+  Diversity3Outlined,
   DomainRounded,
   EventNoteOutlined,
   EventOutlined,
@@ -99,6 +100,14 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
                     <div className="flex items-center gap-2">
                       <Groups2Outlined />
                       <span>Usuários</span>
+                    </div>
+                  </Link>
+                </li>
+                <li className={activePage === "times" ? "active" : ""}>
+                  <Link style={{ width: "100%" }} href="/coordinator/times">
+                    <div className="flex items-center gap-2">
+                      <Diversity3Outlined />
+                      <span>Times</span>
                     </div>
                   </Link>
                 </li>

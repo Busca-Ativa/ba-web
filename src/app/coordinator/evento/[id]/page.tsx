@@ -69,10 +69,20 @@ export default function Event({
   useEffect(() => {
     if (geojsons.length > 0) {
       const bounds = geojsons.reduce((acc: any, geo: any) => {
-        const polygonBounds = geo.geometry.coordinates.map((polygon: any) =>
-          polygon.map((coordinate: any) => [coordinate[1], coordinate[0]])
-        );
-        acc.extend(polygonBounds.flat());
+        if (geo.features) {
+          geo.features.forEach((feature: any) => {
+            const polygonBounds = feature.geometry.coordinates.map(
+              (polygon: any) =>
+                polygon.map((coordinate: any) => [coordinate[1], coordinate[0]])
+            );
+            acc.extend(polygonBounds.flat());
+          });
+        } else {
+          const polygonBounds = geo.geometry.coordinates.map((polygon: any) =>
+            polygon.map((coordinate: any) => [coordinate[1], coordinate[0]])
+          );
+          acc.extend(polygonBounds.flat());
+        }
         return acc;
       }, new L.LatLngBounds([]));
 
@@ -83,6 +93,10 @@ export default function Event({
       const center = bounds.getCenter();
       setCurrentLocation(center);
     }
+  }, [geojsons]);
+
+  useEffect(() => {
+    console.log("goejsons:", geojsons);
   }, [geojsons]);
 
   useEffect(() => {
@@ -145,17 +159,36 @@ export default function Event({
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-            {geojsons.map((geo) => (
-              <Polygon
-                key={geo._id}
-                positions={geo.geometry.coordinates.map((polygon: any) =>
-                  polygon.map((coordinate: any) => [
-                    coordinate[1],
-                    coordinate[0],
-                  ])
-                )}
-              />
-            ))}
+            {geojsons.map((geo, geoIndex) =>
+              geo.features ? (
+                geo.features.map(
+                  (
+                    feature: { geometry: { coordinates: any[] } },
+                    featureIndex: any
+                  ) => (
+                    <Polygon
+                      key={`${geoIndex}-${featureIndex}`}
+                      positions={feature.geometry.coordinates.map((polygon) =>
+                        polygon.map((coordinate: any[]) => [
+                          coordinate[1],
+                          coordinate[0],
+                        ])
+                      )}
+                    />
+                  )
+                )
+              ) : (
+                <Polygon
+                  key={geoIndex}
+                  positions={geo.geometry.coordinates.map((polygon: any[]) =>
+                    polygon.map((coordinate: any[]) => [
+                      coordinate[1],
+                      coordinate[0],
+                    ])
+                  )}
+                />
+              )
+            )}
           </MapContainer>
         )}
       </Box>
