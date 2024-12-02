@@ -116,7 +116,7 @@ const Formularios = () => {
             {(forms[0] as any)?.origin?.institution?.code_city}
           </h2>
         </div>
-        <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
+        {/* <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
           <Add />
           <div
             className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]"
@@ -124,7 +124,7 @@ const Formularios = () => {
           >
             Novo Formulário
           </div>
-        </button>
+        </button> */}
       </div>
       <BATable
         columns={columns}

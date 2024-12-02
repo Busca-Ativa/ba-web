@@ -136,7 +136,7 @@ const Eventos = () => {
       const response = await api.post("/coordinator/event", data);
 
       if (response.status === 200) {
-        console.log(response.data.data);
+        setEvents((prevEvents) => [...prevEvents, response.data.data]);
       }
     } catch (error: any) {}
 

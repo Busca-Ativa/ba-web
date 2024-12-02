@@ -190,6 +190,9 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
     fetchavailableSegmentsType();
   }, [currentState, currentCity]);
 
+  useEffect(() => {
+    console.log("geojson", geojson);
+  }, [geojson]);
   const loadUFs = async () => {
     try {
       const response = await api.post("all/uf", {
@@ -371,10 +374,10 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
     }
   };
 
-  const updateLocationByCity = async (cityName: any) => {
+  const updateLocationByCity = async (cityName: any, ufCode: any) => {
     try {
       const response = await axios.get(
-        `https://nominatim.openstreetmap.org/search?city=${cityName}&state=${event.uf.nome}&country=Brazil&format=json`
+        `https://nominatim.openstreetmap.org/search?city=${cityName}&state=${ufCode}&country=Brazil&format=json`
       );
       if (response.data.length > 0) {
         const { lat, lon, boundingbox } = response.data[0];
@@ -466,7 +469,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
       if (city) {
         setCurrentCity(city);
         setCurrentSegmentType("");
-        await updateLocationByCity(city.nome);
+        await updateLocationByCity(city.nome, currentState?.sigla);
       }
     } else if (field === "segment_type") {
       setCurrentSegmentType(value);

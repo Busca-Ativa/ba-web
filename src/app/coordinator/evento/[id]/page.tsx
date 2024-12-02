@@ -16,11 +16,12 @@ import {
   Box,
   Button,
 } from "@mui/material";
-import { LatLngExpression } from "leaflet";
+import L, { LatLngExpression } from "leaflet";
 import { MapOutlined } from "@mui/icons-material";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import api from "@/services/api";
 import { useRouter } from "next/navigation";
+import { Polygon } from "react-leaflet";
 
 // Componentes dinâmicos para evitar SSR no Leaflet
 const MapContainer = dynamic(
@@ -40,12 +41,14 @@ export default function Event({
   params: { id: string }; // Pass the param synchronously
 }) {
   const { id } = params; // Destructure `id` from params
-  const [currentLocation, setCurrentLocation] = useState<LatLngExpression>([
+  const mapRef = useRef<any>(null); // Referência para o mapa
+  const [currentLocation, setCurrentLocation] = useState<[number, number]>([
     0, 0,
   ]);
   const [event, setEvent] = useState<any>({});
   const [formattedDateRange, setFormattedDateRange] = useState<string>("");
   const router = useRouter();
+  const [geojsons, setGeojsons] = useState<any[]>([]);
   // Handle geolocation asynchronously inside useEffect
   useEffect(() => {
     if (navigator.geolocation) {
@@ -62,6 +65,28 @@ export default function Event({
       console.error("Geolocalização não suportada pelo navegador.");
     }
   }, []);
+
+  useEffect(() => {
+    if (geojsons.length > 0) {
+      const bounds = geojsons.reduce((acc: any, geo: any) => {
+        const polygonBounds = geo.geometry.coordinates.map((polygon: any) =>
+          polygon.map((coordinate: any) => [coordinate[1], coordinate[0]])
+        );
+        acc.extend(polygonBounds.flat());
+        return acc;
+      }, new L.LatLngBounds([]));
+
+      // Ajuste as opções de padding para um "fit content"
+      const fitOptions = {
+        padding: [20, 20], // Pixels de margem (top/bottom, left/right)
+      };
+
+      mapRef?.current?.fitBounds(bounds, fitOptions);
+
+      const center = bounds.getCenter();
+      setCurrentLocation(center);
+    }
+  }, [geojsons]);
 
   useEffect(() => {
     api
@@ -87,22 +112,24 @@ export default function Event({
   };
 
   useEffect(() => {
-    if (event) {
-      console.log("Event:", event);
-      const formatDate = (dateString: string) => {
-        const options: Intl.DateTimeFormatOptions = {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        };
-        return new Date(dateString).toLocaleDateString("pt-BR", options);
+    if (event && event.full_geometry_ref) {
+      const fetchGeojsons = async () => {
+        try {
+          const requests = event.full_geometry_ref.map((geometry: any) =>
+            api.get(
+              `/all/geojson?segment_type=${geometry.type}&id_segment=${geometry.ref}`
+            )
+          );
+
+          const responses = await Promise.all(requests);
+          const geojsonData = responses.map((res) => res.data);
+          setGeojsons(geojsonData);
+        } catch (error) {
+          console.error("Erro ao buscar geojsons:", error);
+        }
       };
 
-      const formattedDateRange = `${formatDate(
-        event?.date_start
-      )} - ${formatDate(event?.date_end)}`;
-
-      setFormattedDateRange(formattedDateRange);
+      fetchGeojsons();
     }
   }, [event]);
 
@@ -110,17 +137,30 @@ export default function Event({
     <Box width={"100%"}>
       {/* Mapa */}
       <Box sx={{ width: "100%", height: 300 }}>
-        <MapContainer
-          center={currentLocation}
-          zoom={12}
-          style={{ height: "100%", width: "100%" }}
-          key={`map-${currentLocation}`}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-        </MapContainer>
+        {currentLocation[0] !== 0 && geojsons.length > 0 && (
+          <MapContainer
+            center={currentLocation}
+            zoom={12}
+            style={{ height: "100%", width: "100%" }}
+            ref={mapRef}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            {geojsons.map((geo) => (
+              <Polygon
+                key={geo._id}
+                positions={geo.geometry.coordinates.map((polygon: any) =>
+                  polygon.map((coordinate: any) => [
+                    coordinate[1],
+                    coordinate[0],
+                  ])
+                )}
+              />
+            ))}
+          </MapContainer>
+        )}
       </Box>
       <Box sx={{ padding: "40px" }}>
         {/* Breadcrumbs */}
