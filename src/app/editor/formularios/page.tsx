@@ -39,7 +39,7 @@ const Formularios = () => {
     const getForms = async () => {
       let list_forms = [];
       try {
-        let response = await api.get("/editor/unit/forms", {
+        let response = await api.get("/editor/institution/forms", {
           withCredentials: true,
         });
         if (response.data.data) {
@@ -47,10 +47,10 @@ const Formularios = () => {
         }
 
         // WARN: Pegar unidades pega alguns forms que ja vem no da instituição fazendo eles ficarem repetidos
-        // response = await api.get('/editor/unit/forms')
-        // if (response.data.data){
-        //   list_forms.push(...response.data.data)
-        // }
+        response = await api.get('/editor/unit/forms')
+        if (response.data.data){
+          list_forms.push(...response.data.data)
+        }
       } catch (error: any) {
         console.error(error.response?.message);
         throw error;

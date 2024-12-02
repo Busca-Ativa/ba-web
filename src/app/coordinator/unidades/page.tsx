@@ -93,7 +93,7 @@ const InstituicoesAdmin = () => {
           withCredentials: true,
         }
       );
-      setData((prev) => [
+      setData((prev: any) => [
         ...prev,
         {
           name: newInstitution.unitName,
@@ -130,35 +130,46 @@ const InstituicoesAdmin = () => {
 
   const onEdit = async (editedUnit: any) => {
     try {
-      await api.patch(
-        `/coordinator/unit`,
-        {
-          active: editedUnit.active,
-          name: editedUnit.unitName,
-          code: editedUnit.unitCode,
-          id_supervisor: editedUnit.idSupervisor,
-          unit_id: selectedUnit.id,
-        },
-        { withCredentials: true }
-      );
+      const updatedFields: any = {};
+      if (editedUnit.active !== selectedUnit.active)
+        updatedFields.active = editedUnit.active;
+      if (editedUnit.unitName !== selectedUnit.name)
+        updatedFields.name = editedUnit.unitName;
+      if (editedUnit.unitCode !== selectedUnit.code)
+        updatedFields.code = editedUnit.unitCode;
+      if (editedUnit.idSupervisor !== selectedUnit.id_supervisor)
+        updatedFields.id_supervisor = editedUnit.idSupervisor;
 
-      const updatedData = rows.map((unit) => {
-        if (unit.id === editedUnit.id) {
-          return editedUnit;
-        }
-        return unit;
-      });
-      setData(updatedData);
-
-      if (!selectedUnit.active && editedUnit.active) {
-        await api.post(
-          "coordinator/unit/active",
-          { id_unit: selectedUnit.id, active: true },
+      if (Object.keys(updatedFields).length > 0) {
+        await api.patch(
+          `/coordinator/unit`,
+          {
+            id: selectedUnit.id, // Altere 'unit_id' para 'id'
+            ...updatedFields,
+          },
           { withCredentials: true }
         );
+
+        const updatedData = rows.map((unit) => {
+          if (unit.id === editedUnit.id) {
+            return { ...unit, ...updatedFields };
+          }
+          return unit;
+        });
+        setData(updatedData);
+
+        if (!selectedUnit.active && editedUnit.active) {
+          await api.post(
+            "coordinator/unit/active",
+            { id_unit: selectedUnit.id, active: true },
+            { withCredentials: true }
+          );
+        }
       }
+      handleClose();
     } catch (error) {
-      console.log(error);
+      console.error("Error updating unit:", error);
+      // Exiba um erro para o usuário
     }
   };
 

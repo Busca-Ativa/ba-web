@@ -22,7 +22,7 @@ export async function getCidadeById(estadoId: number, cidadeId: number): Promise
   }
   if (!cidadesCache[estadoId][cidadeId]) {
     const response = await axios.get(`${IBGE_API_URL}/estados/${estadoId}/municipios/`);
-    cidadesCache[estadoId][cidadeId] = response.data.filter( (municipio: any) => {if (municipio.id == cidadeId) return true} )[0].nome;
+    cidadesCache[estadoId][cidadeId] = response.data.filter( (municipio: any) => {if (municipio.id == cidadeId) return true} )[0]?.nome;
   }
   return cidadesCache[estadoId][cidadeId];
 }

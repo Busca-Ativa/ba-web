@@ -7,6 +7,8 @@ import {
   Add,
   Close,
   FileCopyOutlined,
+  HowToRegRounded,
+  PersonOffRounded,
 } from "@mui/icons-material";
 
 interface InsertsSelected {
@@ -24,6 +26,8 @@ interface ActionProps {
   onDelete?: (row: Row, rowIndex: number) => void;
   onInsert?: (selectedId: string) => void;
   onDuplicate?: (row: Row, rowIndex: number) => void;
+  onApprove?: (row: Row, rowIndex: number) => void;
+  onDisapprove?: (row: Row, rowIndex: number) => void;
   insertsSelected?: InsertsSelected[];
 }
 
@@ -37,6 +41,8 @@ interface ButtonActionsProps {
     deletable?: boolean;
     insertable?: boolean;
     duplicable?: boolean;
+    disapproved?: boolean;
+    approved?: boolean;
   };
 }
 
@@ -64,6 +70,20 @@ const ButtonActions: React.FC<ButtonActionsProps> = ({
       label: null,
       icon: <DeleteOutline fontSize="small" />,
       onClick: () => actions.onDelete && actions.onDelete(row, rowIndex),
+    },
+    {
+      condition: config.approved,
+      label: "Aprovar",
+      icon: <HowToRegRounded fontSize="small" sx={{ color: "#084407" }} />,
+      style: { color: "#084407", backgroundColor: "#B7F7C4", border: "1px solid #B7F7C4" },
+      onClick: () => actions.onApprove && actions.onApprove(row, rowIndex),
+    },
+    {
+      condition: config.disapproved,
+      label: "Reprovar",
+      icon: <PersonOffRounded fontSize="small" sx={{ color: "#440B07" }} />,
+      style: { backgroundColor: "#FF9B9B", color: "#440B07", border: "#FF9B9B", },
+      onClick: () => actions.onDisapprove && actions.onDisapprove(row, rowIndex),
     },
     {
       condition: config.duplicable,
@@ -97,7 +117,7 @@ const ButtonActions: React.FC<ButtonActionsProps> = ({
 
   useEffect(() => {
     console.log(config);
-  }, []);
+  }, [ ]);
 
   return (
     <div
