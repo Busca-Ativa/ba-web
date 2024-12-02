@@ -76,13 +76,10 @@ export default function Event({
         return acc;
       }, new L.LatLngBounds([]));
 
-      // Ajuste as opções de padding para um "fit content"
-      const fitOptions = {
-        padding: [20, 20], // Pixels de margem (top/bottom, left/right)
-      };
+      // Ajusta o mapa para que as geometrias estejam completamente visíveis
+      mapRef?.current?.fitBounds(bounds);
 
-      mapRef?.current?.fitBounds(bounds, fitOptions);
-
+      // Calcula o centro e atualiza o estado
       const center = bounds.getCenter();
       setCurrentLocation(center);
     }
