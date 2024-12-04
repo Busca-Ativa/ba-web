@@ -176,7 +176,7 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
               <li className={activePage === "formularios" ? "active" : ""}>
                 <Link
                   style={{ width: "100%" }}
-                  href="/coordinator/formularios"
+                  href="/supervisor/formularios"
                 >
                   <div className="flex items-center gap-2">
                     <ContentPasteSearchOutlined />
