@@ -9,9 +9,10 @@ import { Button } from "@mui/material";
 import { Add, PlusOne } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 import NewInstitutionModal from "@/components/Modals/NewInstitution";
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import NewUnitModal from "@/components/Modals/NewUnit";
 import { on } from "events";
+import "react-toastify/dist/ReactToastify.css";
 
 const InstituicoesAdmin = () => {
   const router = useRouter();
@@ -23,7 +24,10 @@ const InstituicoesAdmin = () => {
   const [selectedUnit, setSelectedUnit] = useState<any>({});
 
   const handleOpen = () => setModalOpen(true);
-  const handleClose = () => setModalOpen(false);
+  const handleClose = () => {
+    setSelectedUnit({});
+    setModalOpen(false);
+  };
 
   useEffect(() => {
     const token = nookies.get(null).access_token;
@@ -41,15 +45,14 @@ const InstituicoesAdmin = () => {
           withCredentials: true,
         });
         const dataFromApi = response.data;
+        console.log("dataFromApi", dataFromApi);
         const rows = dataFromApi.data.map((unit: any) => {
           return {
             ...unit,
+            supervisor: unit.supervisor
+              ? unit.supervisor.name
+              : "Sem supervisor",
             active: unit.active ? "Sim" : "Não",
-            estado: getEstadoById(unit.institution.code_state),
-            cidade: getCidadeById(
-              unit.institution.code_state,
-              unit.institution.code_city
-            ),
             config: { analyseble: false, editable: true, deletable: true },
           };
         });
@@ -64,9 +67,7 @@ const InstituicoesAdmin = () => {
   const columns = [
     { id: "name", label: "Nome", numeric: false },
     { id: "code", label: "Cód. Uni.", numeric: false },
-    { id: "estado", label: "UF", numeric: false },
-    { id: "cidade", label: "Cidade", numeric: false },
-    { id: "active", label: "Ativo", numeric: false },
+    { id: "supervisor", label: "Supervisor", numeric: false },
   ];
 
   interface Row {
@@ -101,6 +102,8 @@ const InstituicoesAdmin = () => {
           id_supervisor: newInstitution.idSupervisor,
         },
       ]);
+      toast.success("Unidade cadastrada com sucesso!");
+      handleClose();
     } catch (error) {
       console.log(error);
     }
@@ -113,7 +116,8 @@ const InstituicoesAdmin = () => {
         withCredentials: true,
       });
       setData((prev) => prev.filter((unit) => unit.id !== row.id));
-    } catch (error) {
+    } catch (error: any) {
+      toast.error(error.response.data.message);
       console.log(error);
     }
   };
@@ -144,7 +148,7 @@ const InstituicoesAdmin = () => {
         await api.patch(
           `/coordinator/unit`,
           {
-            id: selectedUnit.id, // Altere 'unit_id' para 'id'
+            id_unit: selectedUnit.id, // Altere 'unit_id' para 'id'
             ...updatedFields,
           },
           { withCredentials: true }
