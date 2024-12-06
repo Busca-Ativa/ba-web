@@ -30,7 +30,6 @@ const Times = () => {
     { id: "name", label: "Nome", numeric: false },
     { id: "unitName", label: "Unidade", numeric: false },
     { id: "agents", label: "Agentes", numeric: false },
-    { id: "active", label: "Ativo", numeric: false },
   ];
 
   useEffect(() => {
@@ -54,13 +53,16 @@ const Times = () => {
 
               return {
                 ...team,
-                agents: team.agents.map((agent: any) => agent.name).join(", "),
+                agents:
+                  team.agents.length > 0
+                    ? team.agents.map((agent: any) => agent.name).join(", ")
+                    : "sem agentes",
                 unitName,
                 active: team.active ? "Sim" : "Não",
                 config: {
                   analyseble: false,
                   editable: false,
-                  deletable: false,
+                  deletable: true,
                 },
               };
             } catch (unitError) {
@@ -116,8 +118,18 @@ const Times = () => {
     console.log("Edit team");
   };
 
-  const handleDeleteTeam = () => {
-    console.log("Delete team");
+  const handleDeleteTeam = async (row: any) => {
+    try {
+      const response = await api.post(
+        "coordinator/team/active",
+        { id_team: row.id, active: false },
+        { withCredentials: true }
+      );
+      toast.success("Time deletado com sucesso.");
+      setRow((prevRows) => prevRows.filter((team) => team.id !== row.id));
+    } catch (error) {
+      toast.error("Erro ao deletar time.");
+    }
   };
 
   return (

@@ -37,6 +37,8 @@ type ModalProps = {
 };
 
 type SegmentContainer = {
+  id: any;
+  _id: any;
   segment_id: string;
 };
 
@@ -46,6 +48,7 @@ type Segments = {
   city?: SegmentContainer[];
   sector?: SegmentContainer[];
   neighborhood?: SegmentContainer[];
+  [key: string]: SegmentContainer[] | undefined;
 };
 
 type BoundingBox = [number, number, number, number];
@@ -311,9 +314,33 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
     let cityString = currentCity?.id ? currentCity.id : "";
     let countryString = "BR";
     let segmentTypeString = currentSegmentType ? currentSegmentType : "";
-    let segmentID = segmentsID[segmentsID.length - 1];
 
-    // Check if the result is already in the cache
+    if (segmentsID.includes("all")) {
+      const allSegments = segments[segmentTypeString] || [];
+      for (const segment of allSegments) {
+        let segmentID = segment._id || segment.id;
+        if (segmentID && geoJsonCache.has(segmentID)) {
+          setGeojson((prev) => [...prev, geoJsonCache.get(segmentID)]);
+        } else {
+          try {
+            const response = await api.get(
+              `/all/geojson?id_state=${stateString}&segment_type=city&id_city=${cityString}&id_segment=${segmentID}&id_country=${countryString}`
+            );
+            if (response.status === 200) {
+              if (segmentID) {
+                geoJsonCache.set(segmentID, response.data);
+              }
+              setGeojson((prev) => [...prev, response.data]);
+            }
+          } catch (error) {
+            console.error("Erro ao carregar GeoJSON:", error);
+          }
+        }
+      }
+      return;
+    }
+
+    let segmentID = segmentsID[segmentsID.length - 1];
     if (segmentID && geoJsonCache.has(segmentID)) {
       setGeojson((prev) => [...prev, geoJsonCache.get(segmentID)]);
       return;
@@ -329,10 +356,9 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
           geoJsonCache.set(segmentID, response.data);
         }
         setGeojson((prev) => [...prev, response.data]);
-        return;
       }
     } catch (error) {
-      console.error("Erro ao carregar Agentes:", error);
+      console.error("Erro ao carregar GeoJSON:", error);
     }
   };
 
@@ -470,6 +496,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
         setCurrentCity(city);
         setCurrentSegmentType("");
         await updateLocationByCity(city.nome, currentState?.sigla);
+        setCurrentSegmentType("sector");
       }
     } else if (field === "segment_type") {
       setCurrentSegmentType(value);
@@ -842,7 +869,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
               </Box>
 
               {/* Linha 2: Tipo de Segmento */}
-              <Box mb={2}>
+              {/* <Box mb={2}>
                 <FormControl fullWidth>
                   <Typography variant="body2" fontWeight="bold" mb={2}>
                     Tipo de Segmento
@@ -862,7 +889,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                     )}
                   </Select>
                 </FormControl>
-              </Box>
+              </Box> */}
 
               {/* Linha 3: Select de Bairros ou Setores */}
               {currentSegmentType && (
@@ -884,11 +911,32 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                         )
                       }
                     >
+                      {currentSegmentType === "sector" && (
+                        <MenuItem
+                          value="all"
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevenir o comportamento padrão de seleção
+                            const allIds = (
+                              segments[currentSegmentType] ?? []
+                            ).map((segment: any) => segment._id);
+                            const isAllSelected = allIds.every((id) =>
+                              (
+                                event.segments?.[currentSegmentType] || []
+                              ).includes(id)
+                            );
+                            if (!isAllSelected) {
+                              handleChange("segments sector", allIds);
+                            }
+                          }}
+                        >
+                          Todos os Setores
+                        </MenuItem>
+                      )}
                       {currentSegmentType === "sector"
-                        ? (segments[currentSegmentType || "error"] || []).map(
+                        ? (segments[currentSegmentType] || []).map(
                             (segment: any, index: number) => (
                               <MenuItem key={index} value={segment._id}>
-                                {segment.properties.CD_SETOR}s{" "}
+                                {segment.features[0].properties.CD_SETOR}s{" "}
                               </MenuItem>
                             )
                           )

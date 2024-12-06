@@ -2,13 +2,15 @@
 
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ZoomControl, Polygon, Tooltip } from "react-leaflet";
-import { LatLngExpression } from "leaflet";
+import { LatLngBounds, LatLngExpression, map } from "leaflet";
 import * as d3 from "d3";
 import EventAnalyticsControls from "../components/EventAnalyticsControls";
 import Legend from "../components/Legend";
 import geojsonData from "../../../data/fortaleza.json";
+import { useRouter } from "next/navigation";
+import api from "@/services/api";
 
 // Importação dinâmica para evitar SSR no Leaflet
 const MapContainer = dynamic(
@@ -20,19 +22,29 @@ const TileLayer = dynamic(
   { ssr: false }
 );
 
-const EventAnalytics = () => {
+const EventAnalytics = ({ params }: { params: { id: string } }) => {
+  const router = useRouter();
+
+  const { id } = params;
   const [currentLocation, setCurrentLocation] = useState<[number, number]>([
     0, 0,
   ]);
-  const geojson: GeoJson = geojsonData as GeoJson;
+  const data: GeoJson = geojsonData as GeoJson;
   const [mapStyle, setMapStyle] = useState("1");
   const [propertie, setPropertie] = useState("");
   const [activePolygon, setActivePolygon] = useState<number | null>(null);
   const [filtro, setFiltro] = useState<string[]>([]);
   const [features, setFeatures] = useState<string[]>([]);
 
+  const [event, setEvent] = useState<any>(null);
+  const [geojson, setGeojson] = useState<GeoJson>({
+    type: "FeatureCollection",
+    features: [],
+  });
+  const mapRef = useRef<any>(null);
+
   useEffect(() => {
-    setFeatures(Object.keys(geojson.features[0].properties));
+    // setFeatures(Object.keys(geojson.features[0].properties));
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -47,7 +59,57 @@ const EventAnalytics = () => {
     }
   }, []);
 
+  useEffect(() => {
+    api
+      .get(`/coordinator/institution/event/${id}`)
+      .then((response) => {
+        setEvent(response.data.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, [id]);
+
+  const loadSegments = async (id_segment: any, type_segment: any) => {
+    try {
+      const response = await api.get(
+        `/all/geojson?id_segment=${id_segment}&segment_type=${type_segment}`
+      );
+
+      if (response.status === 200) {
+        setGeojson((prev) => ({
+          ...prev,
+          features: [...prev.features, ...response.data.features],
+        }));
+        return;
+      }
+    } catch (error) {
+      console.error("Erro ao carregar Agentes:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (event) {
+      event.full_geometry_ref.forEach((segment: any) => {
+        loadSegments(segment.ref, segment.type);
+      });
+    }
+  }, [event]);
+
+  useEffect(() => {
+    if (mapRef.current) {
+      console.log("Map reference:", mapRef.current);
+    } else {
+      console.error("Map reference is not set.");
+    }
+  }, [mapRef.current]);
+
+  useEffect(() => {
+    console.log(geojson);
+  }, [geojson]);
+
   interface GeoJsonFeature {
+    features: any;
     type: string;
     geometry: {
       type: string;
@@ -88,6 +150,11 @@ const EventAnalytics = () => {
     setFiltro(filtro);
   };
 
+  const handleMapLoad = (mapInstance: any) => {
+    console.log("Map loaded:", mapInstance);
+    mapRef.current = mapInstance; // Atribuir ao ref manualmente
+  };
+
   return (
     <div
       style={{
@@ -98,6 +165,8 @@ const EventAnalytics = () => {
       }}
     >
       <MapContainer
+        whenReady={() => handleMapLoad(mapRef.current)}
+        ref={mapRef}
         center={currentLocation}
         zoom={12}
         style={{ height: "100%", width: "100%" }}
@@ -114,49 +183,45 @@ const EventAnalytics = () => {
         />
 
         {/* Renderizar os polígonos */}
-        {geojson.features
-          .filter((feature) =>
-            filtro.length > 0
-              ? filtro.includes(feature.properties.nome_bairro)
-              : true
-          )
-          .map((feature, index) => (
-            <Polygon
-              key={index}
-              pathOptions={{
-                color: colorScale ? "#000000" : "#FF9814", // Cor da borda preta
-                fillColor: colorScale
-                  ? colorScale(feature.properties[propertie])
-                  : "#FF9814",
-                opacity: colorScale ? 1 : 1,
-                stroke: true,
-                fillOpacity: colorScale ? 0.9 : 0.5,
-                weight: colorScale ? 1 : 1,
-              }}
-              positions={feature.geometry.coordinates[0].map((latlng) => {
+        {geojson.features.map((feature, index) => (
+          <Polygon
+            key={index}
+            // pathOptions={{
+            //   color: colorScale ? "#000000" : "#FF9814", // Cor da borda preta
+            //   fillColor: colorScale
+            //     ? colorScale(feature.properties[propertie])
+            //     : "#FF9814",
+            //   opacity: colorScale ? 1 : 1,
+            //   stroke: true,
+            //   fillOpacity: colorScale ? 0.9 : 0.5,
+            //   weight: colorScale ? 1 : 1,
+            // }}
+            positions={feature?.geometry?.coordinates[0].map(
+              (latlng: LatLngExpression) => {
                 const [lng, lat] = latlng as [number, number];
                 return [lat, lng];
-              })}
-              eventHandlers={{
-                click: () => {
-                  console.log(index);
-                  setActivePolygon(index);
-                },
-              }}
-            >
-              {propertie && activePolygon === index && (
-                <Tooltip permanent>
-                  {feature.properties[propertie].toFixed(2)}
-                </Tooltip>
-              )}
-            </Polygon>
-          ))}
+              }
+            )}
+            eventHandlers={{
+              click: () => {
+                console.log(index);
+                setActivePolygon(index);
+              },
+            }}
+          >
+            {propertie && activePolygon === index && (
+              <Tooltip permanent>
+                {feature.properties[propertie].toFixed(2)}
+              </Tooltip>
+            )}
+          </Polygon>
+        ))}
 
         <ZoomControl position="topright" />
       </MapContainer>
 
       <div style={{ position: "absolute", top: 30, left: 30, zIndex: 1000 }}>
-        <EventAnalyticsControls data={geojson} handleChange={handleChange} />
+        <EventAnalyticsControls data={data} handleChange={handleChange} />
       </div>
       <div
         style={{ position: "absolute", bottom: 30, right: 30, zIndex: 1000 }}
