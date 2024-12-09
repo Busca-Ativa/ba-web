@@ -22,6 +22,7 @@ const UsuariosAdmin = () => {
   const [pass, setPass] = useState(false);
   const [userRows, setUserRows] = useState<any[]>([]);
   const [approvalRows, setApprovalRows] = useState<any[]>([]);
+  const [unitInfo, setUnitInfo] = useState("Loading...");
 
   const [showApprovalPage, setShowApprovalPage] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
@@ -34,7 +35,7 @@ const UsuariosAdmin = () => {
 
   const handleApproval = async (row: Record<string, string | number>, rowIndex: number, approval: boolean) => {
     try {
-      const response = await api.post('/coordinator/user/active', {id_user:row.id, active:approval},{withCredentials: true})
+      const response = await api.post('/supervisor/user/active', {id_user:row.id, active:approval},{withCredentials: true})
       const dataFromApi = response.data;
       if (response.status === 200) {
         if (approval){
@@ -43,7 +44,7 @@ const UsuariosAdmin = () => {
           newRows.push(
             {
               ...user,
-              unit: user.unit? user.unit.name : "Pertence a essa instituição",
+              unit: user.unit? user.unit.name : "Pertence a essa unidade",
               role: translateRole(user.role),
               config: { analysable: false, editable: true, deletable: true },
             },
@@ -72,7 +73,7 @@ const UsuariosAdmin = () => {
 
   const handleDelete = async (row: Record<string, string | number>, rowIndex: number) => {
     try {
-      const response = await api.delete(`/coordinator/user/${row.id}` ,{withCredentials: true})
+      const response = await api.delete(`/supervisor/user/${row.id}` ,{withCredentials: true})
       const dataFromApi = response.data;
       if (response.status === 200) {
         const newApprovalRows = [...approvalRows];
@@ -84,8 +85,6 @@ const UsuariosAdmin = () => {
       console.log(error);
     }
   }
-
-
 
 
   useEffect(() => {
@@ -119,20 +118,36 @@ const UsuariosAdmin = () => {
   }, []);
 
   useEffect(() => {
+    if (showApprovalPage) {
+      const getData = async () => {
+        try {
+          const response = await api.get('/supervisor/users?active=0', {withCredentials: true})
+          const dataFromApi = response.data;
+          const rows = dataFromApi.data.map( (user: any) => {
+            console.log(user)
+            return {
+              ...user,
+              unit: user.unit? user.unit.name : "Pertence a essa instituição",
+              role: translateRole(user.role),
+              config: { disapproved: true, approved: true },
+            }
+          } )
+          setApprovalRows(rows);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      getData();
+    }
+  }, [showApprovalPage]);
+
+  useEffect(() => {
     const getData = async () => {
       try {
-        const response = await api.get('/supervisor/users?active=0', {withCredentials: true})
+        const response = await api.get('/all/user', {withCredentials: true})
         const dataFromApi = response.data;
-        const rows = dataFromApi.data.map( (user: any) => {
-          console.log(user)
-          return {
-            ...user,
-            unit: user.unit? user.unit.name : "Pertence a essa instituição",
-            role: translateRole(user.role),
-            config: { disapproved: true, approved: true },
-          }
-        } )
-        setApprovalRows(rows);
+        const unit = dataFromApi.unit;
+        setUnitInfo(unit.name);
       } catch (error) {
         console.log(error);
       }
@@ -140,11 +155,10 @@ const UsuariosAdmin = () => {
     getData();
   }, []);
 
-
   const handleEdit = async (row: Record<string, string | number>) => {
     api
       .patch(
-        `/coordinator/user`,
+        `/supervisor/user`,
         {
           body: {
             id_user: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -164,31 +178,6 @@ const UsuariosAdmin = () => {
       });
   };
 
-  // INFO: Anteriormente não foi definido que podia deletar o usuário e sim inativá-lo
-  // const handleDelete= async (row: Record<string, string | number>) => {
-  //   api
-  //     .patch(
-  //       `/coordinator/user`,
-  //       {
-  //         body: {
-  //           id_user: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  //           name: "string",
-  //           last_name: "string",
-  //           email: "string",
-  //           identificator: "string",
-  //           role: "string",
-  //           active: 0,
-  //           id_institution: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  //           id_unit: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-  //         },
-  //       },
-  //       {withCredentials: true},
-  //     )
-  //     .then((response) => {
-  //     });
-  // };
-
-
   const columns = [
     { id: "name", label: "Nome", numeric: false },
     { id: "identificator", label: "Cód. Id.", numeric: false },
@@ -201,18 +190,20 @@ const UsuariosAdmin = () => {
       {!showApprovalPage && (
         <>
           <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-1">
-            <div className="flex justify-between">
-              <h1>Usuários</h1>
-              <Button onClick={handleShowApproval} className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
+            <div className="flex justify-between mb-7 items-center">
+              <div className="flex flex-col gap-1">
+                <h1>Usuários</h1>
+                <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
+                  {unitInfo}
+                </h2>
+              </div>
+              <Button onClick={handleShowApproval} className="h-[41px] px-4 py-2 bg-[#19B394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
                 <HowToReg/>
                 <div className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
                   Aprovar Usuário
                 </div>
               </Button>
             </div>
-            <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {"Teste"}
-            </h2>
             <BATable columns={columns} initialRows={userRows} onEdit={handleOpen} onDelete={(row: Record<string, string | number>, rowIndex: number) => {handleApproval(row,rowIndex,false)}} />
           </div>
         </>
