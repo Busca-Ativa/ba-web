@@ -68,10 +68,6 @@ const Formularios = () => {
     );
   }, [forms]);
 
-  const pushEditor = () => {
-    router.push("/editor");
-  };
-
   const handleSee = (row: Record<string, string | number>) => {
     fetchFormById(row.id);
   };
