@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import { SetStateAction, useEffect, useRef, useState } from "react";
-import { ZoomControl, Polygon, Tooltip } from "react-leaflet";
+import { ZoomControl, Polygon, Tooltip, useMap } from "react-leaflet";
 import { LatLngBounds, LatLngExpression, map } from "leaflet";
 import * as d3 from "d3";
 import EventAnalyticsControls from "../components/EventAnalyticsControls";
@@ -11,6 +11,7 @@ import Legend from "../components/Legend";
 import geojsonData from "../../../data/fortaleza.json";
 import { useRouter } from "next/navigation";
 import api from "@/services/api";
+import FitBoundsComponent from "../components/FitBoundsMap";
 
 // Importação dinâmica para evitar SSR no Leaflet
 const MapContainer = dynamic(
@@ -42,8 +43,6 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
     features: [],
   });
   const [questions, setQuestions] = useState<any[]>([]);
-
-  const mapRef = useRef<any>(null);
 
   useEffect(() => {
     // setFeatures(Object.keys(geojson.features[0].properties));
@@ -111,18 +110,6 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
     }
   }, [event]);
 
-  useEffect(() => {
-    if (mapRef.current) {
-      console.log("Map reference:", mapRef.current);
-    } else {
-      console.error("Map reference is not set.");
-    }
-  }, [mapRef.current]);
-
-  useEffect(() => {
-    console.log(geojson);
-  }, [geojson]);
-
   interface GeoJsonFeature {
     features: any;
     type: string;
@@ -167,7 +154,6 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
 
   const handleMapLoad = (mapInstance: any) => {
     console.log("Map loaded:", mapInstance);
-    mapRef.current = mapInstance; // Atribuir ao ref manualmente
   };
 
   return (
@@ -180,8 +166,6 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
       }}
     >
       <MapContainer
-        whenReady={() => handleMapLoad(mapRef.current)}
-        ref={mapRef}
         center={currentLocation}
         zoom={12}
         style={{ height: "100%", width: "100%" }}
@@ -196,6 +180,7 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
           }
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
+        <FitBoundsComponent geojson={geojson} />
 
         {/* Renderizar os polígonos */}
         {geojson.features.map((feature, index) => (
