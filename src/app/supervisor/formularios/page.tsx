@@ -2,24 +2,21 @@
 import "survey-core/defaultV2.min.css";
 
 import { useRouter } from "next/navigation";
-import { SetStateAction, useEffect, useState } from "react";
-import { Add, Close, PlusOne } from "@mui/icons-material";
+import { useEffect, useState } from "react";
+import { Close } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 
-import api from "../../../services/api";
-import nookies from "nookies";
-import { GetServerSidePropsContext } from "next";
-import { AuthService } from "@/services/auth/auth";
+import api from "@/services/api";
 import { getStatus, StatusObject } from "@/utils";
 import { Model, Survey } from "survey-react-ui";
 
 const Formularios = () => {
   const router = useRouter();
+  const [unitInfo, setUnitInfo] = useState("Loading...");
   const columns = [
     { id: "title", label: "Título", numeric: false },
     { id: "creator", label: "Criador", numeric: false },
     { id: "status", label: "Status", numeric: false },
-    { id: "origin", label: "Origem", numeric: false },
   ];
 
   const [forms, setForms] = useState<any[]>([]);
@@ -29,40 +26,32 @@ const Formularios = () => {
     creator: string;
     status: string;
     config: { analyseble: boolean };
-    origin: any;
   }
 
   const [rows, setRows] = useState<Row[]>([]);
   const [form, setForm] = useState<any>();
 
-  // useEffect(() => {
-  //   const getForms = async () => {
-  //     let list_forms = [];
-  //     try {
-  //       let response = await api.get("/coordinator/institution/forms", {
-  //         withCredentials: true,
-  //       });
-  //       if (response.data.data) {
-  //         console.log(response.data.data);
-  //         list_forms.push(...response.data.data);
-  //       }
+  useEffect(() => {
+    const getForms = async () => {
+      let list_forms = [];
+      try {
+        let response = await api.get("/supervisor/unit/forms", {
+          withCredentials: true,
+        });
+        if (response.data.data) {
+          console.log(response.data.data);
+          list_forms.push(...response.data.data);
+        }
+      } catch (error: any) {
+        console.error(error.response?.message);
+        throw error;
+      } finally {
+        setForms(list_forms);
+      }
+    };
+    getForms();
+  }, []);
 
-  //       // WARN: Pegar unidades pega alguns forms que ja vem no da instituição fazendo eles ficarem repetidos
-  //       // response = await api.get('/editor/unit/forms')
-  //       // if (response.data.data){
-  //       //   list_forms.push(...response.data.data)
-  //       // }
-  //     } catch (error: any) {
-  //       console.error(error.response?.message);
-  //       throw error;
-  //     } finally {
-  //       setForms(list_forms);
-  //     }
-  //   };
-  //   getForms();
-  // }, []);
-
-  // TODO: Quando deletar apagar a linha da tabela e refresh do component
   useEffect(() => {
     return setRows(
       forms?.map((value: any) => {
@@ -73,13 +62,10 @@ const Formularios = () => {
           title: value.name,
           creator: name,
           status: status.name,
-          // WARN: Apenas se for o mesmo criado pode deletar e editar.
           config: { analyseble: true },
-          origin: value?.origin?.name,
         };
       })
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forms]);
 
   const pushEditor = () => {
@@ -92,7 +78,7 @@ const Formularios = () => {
 
   const fetchFormById = async (id: any) => {
     try {
-      const response = await api.get(`/coordinator/institution/form/${id}`, {
+      const response = await api.get(`/supervisor/unit/form/${id}`, {
         withCredentials: true,
       });
       if (response.data) {
@@ -104,27 +90,29 @@ const Formularios = () => {
     }
   };
 
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const response = await api.get("/all/user", { withCredentials: true });
+        const dataFromApi = response.data;
+        const unit = dataFromApi.unit;
+        setUnitInfo(unit.name);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    getData();
+  }, []);
+
   return (
-    <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
-      <div className="flex justify-between">
-        <div className="flex flex-col gap-[5px]">
+    <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col">
+      <div className="flex justify-between mb-7 items-center">
+        <div className="flex flex-col gap-1">
           <h1>Formulários</h1>
           <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {/* Secretaria de Saúde - Fortaleza */}
-            {(forms[0] as any)?.origin?.name} -{" "}
-            {(forms[0] as any)?.origin?.institution?.code_state} -{" "}
-            {(forms[0] as any)?.origin?.institution?.code_city}
+            {unitInfo}
           </h2>
         </div>
-        {/* <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
-          <Add />
-          <div
-            className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]"
-            onClick={pushEditor}
-          >
-            Novo Formulário
-          </div>
-        </button> */}
       </div>
       <BATable
         columns={columns}
