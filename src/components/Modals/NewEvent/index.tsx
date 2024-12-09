@@ -773,13 +773,15 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                     handleChange("agents", Array.from(e.target.value))
                   }
                 >
-                  {agents?.map((agent: any) => {
-                    return (
-                      <MenuItem key={agent.id} value={agent.id}>
-                        {agent.name}
-                      </MenuItem>
-                    );
-                  })}
+                  {agents
+                    ?.filter((x) => x.role == "agent")
+                    .map((agent: any) => {
+                      return (
+                        <MenuItem key={agent.id} value={agent.id}>
+                          {agent.name}
+                        </MenuItem>
+                      );
+                    })}
                 </Select>
               </FormControl>
               <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
@@ -797,7 +799,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                     }}
                   >
                     <Typography variant="body2" sx={{ mr: 1 }}>
-                      {agent}
+                      {agents.find((a) => a.id == agent)?.name}
                     </Typography>
                     <Button
                       size="small"
@@ -899,6 +901,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                       {translateSegment(currentSegmentType)}
                     </Typography>
                     <Select
+                      sx={{ maxWidth: 400, overflowY: "auto" }}
                       multiple
                       value={
                         event.segments ? event.segments[currentSegmentType] : []
@@ -949,7 +952,13 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                           )}
                     </Select>
                   </FormControl>
-                  <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
+                  <Box
+                    display="flex"
+                    flexWrap="wrap"
+                    gap={1}
+                    mt={1}
+                    sx={{ maxWidth: 300, maxHeight: 300, overflowY: "auto" }}
+                  >
                     {(event.segments
                       ? Object.values(event.segments).flat()
                       : []

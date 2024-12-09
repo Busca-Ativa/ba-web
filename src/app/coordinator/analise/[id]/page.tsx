@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useRef, useState } from "react";
+import { SetStateAction, useEffect, useRef, useState } from "react";
 import { ZoomControl, Polygon, Tooltip } from "react-leaflet";
 import { LatLngBounds, LatLngExpression, map } from "leaflet";
 import * as d3 from "d3";
@@ -41,6 +41,8 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
     type: "FeatureCollection",
     features: [],
   });
+  const [questions, setQuestions] = useState<any[]>([]);
+
   const mapRef = useRef<any>(null);
 
   useEffect(() => {
@@ -93,6 +95,19 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
       event.full_geometry_ref.forEach((segment: any) => {
         loadSegments(segment.ref, segment.type);
       });
+
+      api
+        .get(`coordinator/institution/form/${event.id_form}`)
+        .then((response) => {
+          const form = response.data.data;
+          const questions_aux: SetStateAction<any[]> = [];
+          form.survey_schema.pages[0].elements.map(
+            (question: any, index: number) => {
+              questions_aux.push(question);
+            }
+          );
+          setQuestions(questions_aux);
+        });
     }
   }, [event]);
 
@@ -221,7 +236,11 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
       </MapContainer>
 
       <div style={{ position: "absolute", top: 30, left: 30, zIndex: 1000 }}>
-        <EventAnalyticsControls data={data} handleChange={handleChange} />
+        <EventAnalyticsControls
+          questions={questions}
+          data={data}
+          handleChange={handleChange}
+        />
       </div>
       <div
         style={{ position: "absolute", bottom: 30, right: 30, zIndex: 1000 }}

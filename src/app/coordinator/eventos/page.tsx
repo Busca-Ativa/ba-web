@@ -123,7 +123,10 @@ const Eventos = () => {
   };
 
   const handleDelete = async (row: Record<string, string | number>) => {
-    console.log("Deleting row:", row);
+    api.delete("coordinator/event", {
+      data: { id_event: row.id },
+      withCredentials: true,
+    });
   };
 
   const handleEdit = (row: Record<string, string | number>) => {

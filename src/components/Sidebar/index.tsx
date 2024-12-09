@@ -174,7 +174,7 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
       <div className="group absolute bottom-[25px]">
         <ul className="flex flex-col gap-2">
           <li className={activePage === "config" ? "active" : ""}>
-            <Link style={{ width: "100%" }} href="/admin/config">
+            <Link style={{ width: "100%" }} href={`/${role}/config`}>
               <div className="flex items-center gap-2">
                 <SettingsOutlined />
                 <span>Configurações</span>

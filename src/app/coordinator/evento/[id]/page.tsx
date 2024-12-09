@@ -110,18 +110,6 @@ export default function Event({
       });
   }, [id]);
 
-  // Dados fictícios de exemplo
-  const eventDetails = {
-    title: "Evento #1",
-    description: "Descrição detalhada do evento.",
-    date: "23 de novembro de 2024",
-    attendees: [
-      { name: "João", team: "Equipe A", collections: 12 },
-      { name: "Maria", team: "Equipe B", collections: 8 },
-      { name: "Pedro", team: "Equipe A", collections: 5 },
-    ],
-  };
-
   useEffect(() => {
     if (event && event.full_geometry_ref) {
       const fetchGeojsons = async () => {
@@ -412,7 +400,7 @@ export default function Event({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {eventDetails.attendees.map((attendee, index) => (
+                {/* {eventDetails.attendees.map((attendee, index) => (
                   <TableRow
                     key={index}
                     sx={{
@@ -423,7 +411,7 @@ export default function Event({
                     <TableCell>{attendee.team}</TableCell>
                     <TableCell>{attendee.collections}</TableCell>
                   </TableRow>
-                ))}
+                ))} */}
               </TableBody>
             </Table>
           </TableContainer>

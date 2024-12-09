@@ -4,11 +4,13 @@ import Image from "next/image";
 
 interface EventAnalyticsControlsProps {
   data: any;
+  questions: any[];
   handleChange: (event: React.ChangeEvent<{ value: unknown }>) => void;
 }
 
 const EventAnalyticsControls = ({
   data,
+  questions,
   handleChange,
 }: EventAnalyticsControlsProps) => {
   const [propriedade, setPropriedade] = useState("");
@@ -134,9 +136,9 @@ const EventAnalyticsControls = ({
             <MenuItem value="" disabled>
               Propriedade
             </MenuItem>
-            {properties.map((property) => (
+            {questions.map((property, index) => (
               <MenuItem key={property} value={property}>
-                {property}
+                {index} - {property.name || property.title}
               </MenuItem>
             ))}
           </Select>
