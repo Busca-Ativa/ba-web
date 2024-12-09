@@ -19,31 +19,72 @@ interface Row {
 
 const Times = () => {
   const [userRows, setUserRows] = useState<any[]>([]);
+  const [unitInfo, setUnitInfo] = useState("Loading...");
 
   const columns = [
     { id: "name", label: "Nome", numeric: false },
-    { id: "identificator", label: "Cód. Id.", numeric: false },
-    { id: "unit", label: "Unidade", numeric: false },
-    { id: "role", label: "Cargo", numeric: false },
+    { id: "created_at", label: "Data de Criação", numeric: false },
+    { id: "agents", label: "Quant. Agentes", numeric: true },
   ];
 
   const handleAddTeam = () => {
     console.log("Add team");
   };
 
-  const handleEditTeam = () => {
-    console.log("Edit team");
-  };
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const response = await api.get("/supervisor/unit/teams", {
+          withCredentials: true,
+        });
+        const dataFromApi = response.data;
+        const rows = dataFromApi.data.map((user: any) => {
 
-  const handleDeleteTeam = () => {
-    console.log("Delete team");
-  };
+          const formattedDate = new Intl.DateTimeFormat("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            timeZone: "UTC",
+          }).format(new Date(user.created_at));
+
+          return {
+            name: user.name,
+            created_at: formattedDate,
+            agents: user.agents.length,
+          };
+        });
+        setUserRows(rows);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    getData();
+  }, []);
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const response = await api.get("/all/user", { withCredentials: true });
+        const dataFromApi = response.data;
+        const unit = dataFromApi.unit;
+        setUnitInfo(unit.name);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    getData();
+  }, []);
 
   return (
     <>
       <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-1">
-        <div className="flex justify-between">
-          <h1>Times</h1>
+        <div className="flex justify-between mb-7 items-center">
+          <div className="flex flex-col gap-1">
+            <h1>Times</h1>
+            <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
+              {unitInfo}
+            </h2>
+          </div>
           <Button
             onClick={handleAddTeam}
             className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white"
@@ -54,14 +95,9 @@ const Times = () => {
             </div>
           </Button>
         </div>
-        <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-          {"Teste"}
-        </h2>
         <BATable
           columns={columns}
           initialRows={userRows}
-          onEdit={handleEditTeam}
-          onDelete={handleDeleteTeam}
         />
       </div>
 
