@@ -1,16 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { SetStateAction, useEffect, useState } from "react";
-import { Add, PlusOne } from "@mui/icons-material";
+import { useEffect, useState } from "react";
 import BATable from "@/components/BATable";
 
 import api from "@/services/api";
-import nookies from "nookies";
-import { GetServerSidePropsContext } from "next";
-import { AuthService } from "@/services/auth/auth";
-import { getStatus, StatusObject } from "@/utils";
-import NewEvent from "@/components/Modals/NewEvent";
 
 // Função para formatar datas no padrão dd/mm/aa
 const formatDate = (dateString: string) => {
@@ -31,65 +25,55 @@ const isPastEvent = (startDate: string) => {
 
 const Eventos = () => {
   const router = useRouter();
+  const [unitInfo, setUnitInfo] = useState("Loading...");
 
   const columns = [
     { id: "title", label: "Título", numeric: false },
-    { id: "city", label: "Cidade", numeric: false },
     { id: "duration", label: "Duração", numeric: false },
     { id: "progress", label: "Progresso", numeric: false },
   ];
 
-  const [evens, setEvents] = useState<any[]>([]);
-  const [origin, setOrigin] = useState<any>({});
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   interface Row {
     id: string;
     title: string;
-    city: string;
     duration: string;
     progress: string;
-    origin: string;
   }
 
   const [rows, setRows] = useState<Row[]>([]);
-  const user: any = AuthService.getUser();
 
   useEffect(() => {
-    // // Obtém os dados da instituição
-    // const fetchInstitution = async () => {
-    //   const res = await api.get(`coordinator/institution`);
-    //   return res.data.data.institution;
-    // };
+    const getData = async () => {
+      try {
+        const response = await api.get("/all/user", { withCredentials: true });
+        const dataFromApi = response.data;
+        const unit = dataFromApi.unit;
+        setUnitInfo(unit.name);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    getData();
+  }, []);
 
-    // Obtém os eventos e formata os dados
+  useEffect(() => {
     const fetchEvents = async () => {
       const res = await api.get(`supervisor/events`);
       return res.data.data;
     };
 
-    // Atualiza os estados com os dados formatados
     const loadData = async () => {
       try {
-        const [eventsData] = await Promise.all([
-          // fetchInstitution(),
-          fetchEvents(),
-        ]);
-        // setOrigin(institution);
+        const [eventsData] = await Promise.all([fetchEvents()]);
 
         const formattedEvents = eventsData.map((event: any) => ({
           id: event.id,
           name: event.name,
-          city: "Fortaleza", // Pode ser atualizado para outro dado, se necessário
           duration: `${formatDate(event.date_start)} - ${formatDate(
             event.date_end
           )}`,
           progress: `${event.current_progress}/${event.meta}`,
-          origin: "Teste",
         }));
-
-        setEvents(formattedEvents);
 
         const formattedRows = formattedEvents.map((event: any) => {
           const [start] = event.duration.split(" - ");
@@ -99,11 +83,8 @@ const Eventos = () => {
             city: event.city,
             duration: event.duration,
             progress: event.progress,
-            origin: event.origin,
             config: {
               analyseble: isPastEvent(start),
-              editable: !isPastEvent(start),
-              deletable: true,
             },
           };
         });
@@ -122,36 +103,13 @@ const Eventos = () => {
     router.push(`/supervisor/eventos/${row.id}`);
   };
 
-  const handleDelete = async (row: Record<string, string | number>) => {
-    console.log("Deleting row:", row);
-  };
-
-  const handleEdit = (row: Record<string, string | number>) => {
-    console.log("Editing row:", row);
-  };
-
-  const handleSubmitEvent = async (data: any) => {
-    console.log("Submitting event:", data);
-    try {
-      const response = await api.post("/coordinator/event", data);
-
-      if (response.status === 200) {
-        setEvents((prevEvents) => [...prevEvents, response.data.data]);
-      }
-    } catch (error: any) {}
-
-    setIsModalOpen(false);
-  };
-
   return (
     <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between">
-        <div className="flex flex-col gap-[5px]">
-          <h1>Eventos</h1>
+        <div className="flex flex-col gap-1">
+          <h1>Times</h1>
           <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {/* Secretaria de Saúde - Fortaleza */}
-            {(evens[0] as any)?.origin?.name} -{" "}
-            {(evens[0] as any)?.origin?.institution?.code_city || "Fortaleza"}
+            {unitInfo}
           </h2>
         </div>
       </div>
@@ -159,16 +117,7 @@ const Eventos = () => {
         columns={columns}
         initialRows={rows as any}
         onAnalyse={handleAnalyse}
-        onDelete={handleDelete}
-        onEdit={handleDelete}
       />
-      {isModalOpen && (
-        <NewEvent
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleSubmitEvent}
-        />
-      )}
     </div>
   );
 };
