@@ -22,6 +22,7 @@ import { use, useEffect, useRef, useState } from "react";
 import api from "@/services/api";
 import { useRouter } from "next/navigation";
 import { Polygon } from "react-leaflet";
+import FitBoundsComponent from "../../analise/components/FitBoundsMap";
 
 // Componentes dinâmicos para evitar SSR no Leaflet
 const MapContainer = dynamic(

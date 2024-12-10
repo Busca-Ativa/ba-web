@@ -12,6 +12,8 @@ import geojsonData from "../../../data/fortaleza.json";
 import { useRouter } from "next/navigation";
 import api from "@/services/api";
 import FitBoundsComponent from "../components/FitBoundsMap";
+import ReactWordcloud from "react-wordcloud";
+import { Close } from "@mui/icons-material";
 
 // Importação dinâmica para evitar SSR no Leaflet
 const MapContainer = dynamic(
@@ -43,6 +45,13 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
     features: [],
   });
   const [questions, setQuestions] = useState<any[]>([]);
+  const [responses, setResponses] = useState<any[]>([]);
+  const [responseType, setResponseType] = useState();
+  const [wordCloud, setWordCloud] = useState<any[]>([]);
+  const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
 
   useEffect(() => {
     // setFeatures(Object.keys(geojson.features[0].properties));
@@ -109,6 +118,59 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
         });
     }
   }, [event]);
+
+  useEffect(() => {
+    const fetchAnalysis = async () => {
+      if (propertie) {
+        try {
+          const response = await api.post(
+            `coordinator/map/analysis?question=${
+              propertie?.name || propertie?.title
+            }`,
+            {
+              id_event: event.id,
+              id_form: event.id_form,
+              map_refs: event.full_geometry_ref,
+            }
+          );
+          setResponseType(response.data.type);
+          setResponses(response.data.responses_by_segments);
+        } catch (error) {
+          console.error("Erro ao obter análise do mapa:", error);
+        }
+      }
+    };
+
+    fetchAnalysis();
+  }, [event, propertie]);
+
+  useEffect(() => {
+    if (responseType === "text") {
+      const wordCountByResponse = responses.map((response) => {
+        const wordMap: { [key: string]: number } = {};
+        response.responses.forEach((word: string) => {
+          if (wordMap[word]) {
+            wordMap[word]++;
+          } else {
+            wordMap[word] = 1;
+          }
+        });
+        return {
+          id_segmento: response.id_segmento,
+          wordCount: Object.keys(wordMap).map((word) => ({
+            text: word,
+            value: wordMap[word],
+          })),
+        };
+      });
+
+      setWordCloud(wordCountByResponse);
+    }
+  }, [responseType, responses]);
+
+  useEffect(() => {
+    console.log(geojson);
+  }, [geojson]);
 
   interface GeoJsonFeature {
     features: any;
@@ -203,17 +265,84 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
               }
             )}
             eventHandlers={{
-              click: () => {
-                console.log(index);
+              click: (e) => {
                 setActivePolygon(index);
+                setClickPosition({
+                  x: e.containerPoint.x,
+                  y: e.containerPoint.y,
+                });
+                console.log(
+                  wordCloud.find(
+                    (x) => x.id_segmento == feature.properties?.CD_SETOR
+                  )?.wordCount
+                );
               },
             }}
           >
-            {propertie && activePolygon === index && (
-              <Tooltip permanent>
+            {responseType == "text" &&
+              propertie &&
+              activePolygon == index &&
+              wordCloud.find(
+                (x) => x.id_segmento == feature.properties?.CD_SETOR
+              ) && (
+                <div
+                  className="word-cloud"
+                  style={{
+                    position: "absolute",
+                    top: `${clickPosition.y - 150}px`,
+                    left: `${clickPosition.x}px`,
+                    backgroundColor: "white",
+                    zIndex: 1000,
+                    padding: "10px",
+                    borderRadius: "5px",
+                    width: "225px",
+                    height: "150px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <button
+                    style={{
+                      position: "absolute",
+                      top: "5px",
+                      right: "5px",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "grey",
+                    }}
+                    onClick={() => {
+                      setActivePolygon(null);
+                      setClickPosition({ x: 0, y: 0 });
+                    }}
+                  >
+                    <span style={{ fontSize: "16px", fontWeight: "bold" }}>
+                      <Close />
+                    </span>
+                  </button>
+                  <ReactWordcloud
+                    words={
+                      wordCloud.find(
+                        (x) => x.id_segmento == feature.properties?.CD_SETOR
+                      )?.wordCount
+                    }
+                    options={{
+                      fontSizes: [10, 60],
+                      padding: 1,
+                      rotations: 2,
+                      rotationAngles: [-90, 0],
+                      scale: "sqrt",
+                      spiral: "archimedean",
+                      transitionDuration: 1000,
+                    }}
+                  />
+                </div>
+              )}
+
+            {/* {propertie && activePolygon === index && (
+                <Tooltip permanent>
                 {feature.properties[propertie].toFixed(2)}
-              </Tooltip>
-            )}
+                </Tooltip>
+              )}} */}
           </Polygon>
         ))}
 
