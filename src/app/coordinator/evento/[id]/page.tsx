@@ -21,6 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import api from "@/services/api";
 import { useRouter } from "next/navigation";
 import { Polygon } from "react-leaflet";
+import { MapOutlined } from "@mui/icons-material";
 
 // Componentes dinâmicos para evitar SSR no Leaflet
 const MapContainer = dynamic(
@@ -286,7 +287,7 @@ export default function Event({
               </Typography>
             </Breadcrumbs>
           </Box>
-          {/* <Button
+          <Button
             sx={{
               height: "41px",
               px: "16px",
@@ -312,7 +313,7 @@ export default function Event({
             }}
           >
             Análise em Mapa
-          </Button> */}
+          </Button>
         </Box>
 
         {/* Grupo de informações */}
