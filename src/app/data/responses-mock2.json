@@ -1,0 +1,56 @@
+{
+    "responses_by_segments": [
+        {
+            "id_segmento": "230440005130011P",
+            "type": "categorical",
+            "responses": [
+                "Matemática",
+                [
+                    "Física",
+                    "Química"
+                ],
+                "Biologia",
+                [
+                    "Matemática",
+                    "Química"
+                ]
+            ],
+            "mode": "Matemática"
+        },
+        {
+            "id_segmento": "230440005130012P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "Química",
+                    "Física"
+                ],
+                "Química",
+                [
+                    "Química",
+                    "Biologia"
+                ],
+                "Física"
+            ],
+            "mode": "Química"
+        },
+        {
+            "id_segmento": "230440005130013P",
+            "type": "categorical",
+            "responses": [
+                "Biologia",
+                [
+                    "Física",
+                    "Química"
+                ],
+                "Química",
+                [
+                    "Física",
+                    "Matemática"
+                ]
+            ],
+            "mode": "Química"
+        }
+    ],
+    "type": "categorical"
+}

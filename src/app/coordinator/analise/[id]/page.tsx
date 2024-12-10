@@ -16,6 +16,9 @@ import ReactWordcloud from "react-wordcloud";
 import { Close } from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import mock from "../../../data/responses-mock.json";
+import mock2 from "../../../data/responses-mock2.json";
+import mock3 from "../../../data/responses-mock3.json";
 
 // Importação dinâmica para evitar SSR no Leaflet
 const MapContainer = dynamic(
@@ -54,6 +57,10 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
     x: 0,
     y: 0,
   });
+
+  const [quantileScale, setQuantileScale] = useState<any>(null);
+  const [colorScale, setColorScale] = useState<any>(null);
+  const [quantileValues, setQuantileValues] = useState<number[]>([]);
 
   useEffect(() => {
     // setFeatures(Object.keys(geojson.features[0].properties));
@@ -140,6 +147,8 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
                   : event.full_geometry_ref,
             }
           );
+          // setResponseType(mock3.type as any);
+          // setResponses(mock3.responses_by_segments);
           setResponseType(response.data.type);
           setResponses(response.data.responses_by_segments);
         } catch (error: any) {
@@ -150,6 +159,13 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
 
     fetchAnalysis();
   }, [event, filtro, propertie]);
+
+  useEffect(() => {
+    if (wordCloud.length > 0) {
+      const scale = createColorScale(wordCloud);
+      setColorScale(() => scale);
+    }
+  }, [wordCloud]);
 
   useEffect(() => {
     console.log(filtro);
@@ -174,14 +190,57 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
           })),
         };
       });
-
+      console.log(wordCountByResponse);
       setWordCloud(wordCountByResponse);
     }
-  }, [responseType, responses]);
+    if (responseType === "categorical") {
+      const wordCountByResponse = responses.map((response) => {
+        const wordMap: { [key: string]: number } = {};
 
-  useEffect(() => {
-    console.log(geojson);
-  }, [geojson]);
+        // Achatar respostas (individualizar itens dentro de arrays)
+        response.responses.flat().forEach((word: string) => {
+          if (wordMap[word]) {
+            wordMap[word]++;
+          } else {
+            wordMap[word] = 1;
+          }
+        });
+
+        return {
+          id_segmento: response.id_segmento,
+          wordCount: Object.keys(wordMap).map((word) => ({
+            text: word,
+            value: wordMap[word],
+          })),
+        };
+      });
+
+      console.log(wordCountByResponse);
+      setWordCloud(wordCountByResponse);
+    }
+
+    if (responseType === "numerical") {
+      // Extrair todos os valores numéricos de todas as respostas
+      const allValues = responses.flatMap((segment: any) => segment.responses);
+
+      // Criar uma escala quantílica com 5 grupos (quintis)
+      const quantile = d3.scaleQuantile().domain(allValues).range(d3.range(5));
+
+      // Gerar os valores dos limites dos quintis
+      const quantiles = quantile.quantiles();
+
+      // Criar uma escala de cores correspondente
+      const colorScale = d3
+        .scaleOrdinal()
+        .domain(d3.range(5).map(String))
+        .range(d3.schemeBlues[5]); // Pode usar outras esquemas como d3.schemeViridis
+
+      // Atualizar os estados
+      setQuantileScale(() => quantile);
+      setQuantileValues(() => quantiles);
+      setColorScale(() => colorScale);
+    }
+  }, [responseType, responses]);
 
   interface GeoJsonFeature {
     features: any;
@@ -200,19 +259,14 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
     features: GeoJsonFeature[];
   }
 
-  // Obter a escala para a propriedade selecionada
-  const createColorScale = (property: string) => {
-    const values = geojson.features.map(
-      (feature) => feature.properties[property]
+  const createColorScale = (wordCloud: any) => {
+    const allWords = wordCloud.flatMap((segment: any) =>
+      segment.wordCount.map((word: any) => word.text)
     );
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-
-    // Criar escala contínua com d3 usando uma única matiz (azul)
-    return d3.scaleSequential(d3.interpolateBlues).domain([min, max]);
+    const uniqueWords = Array.from(new Set(allWords));
+    const colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(uniqueWords);
+    return colorScale;
   };
-
-  const colorScale = propertie ? createColorScale(propertie) : null;
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     const { propriedade, mapa, filtro } = event.target.value as {
@@ -267,12 +321,31 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
             <Polygon
               key={index}
               pathOptions={{
-                color: "#FF6844",
-                fillColor: "#FF9814",
+                color:
+                  activePolygon == index
+                    ? "black"
+                    : responses && colorScale
+                    ? colorScale(
+                        responses.find(
+                          (x) => x.id_segmento == feature.properties.CD_SETOR
+                        )?.mean ||
+                          responses.find(
+                            (x) => x.id_segmento == feature.properties.CD_SETOR
+                          )?.mode
+                      )
+                    : "#FF6844",
+                fillColor:
+                  responses && colorScale
+                    ? colorScale(
+                        responses.find(
+                          (x) => x.id_segmento == feature.properties.CD_SETOR
+                        )?.mode
+                      )
+                    : "#FF9814",
                 opacity: 1,
                 stroke: true,
                 fillOpacity: 0.5,
-                weight: 1,
+                weight: activePolygon == index ? 2 : 1,
               }}
               positions={feature?.geometry?.coordinates[0].map(
                 (latlng: LatLngExpression) => {
@@ -295,62 +368,255 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
                 },
               }}
             >
-              {responseType == "text" &&
-                propertie &&
+              {responseType != "numerical" &&
                 activePolygon == index &&
                 wordCloud.find(
                   (x) => x.id_segmento == feature.properties?.CD_SETOR
                 ) && (
                   <div
-                    className="word-cloud"
+                    className="word-table"
                     style={{
                       position: "absolute",
                       top: `${clickPosition.y - 150}px`,
                       left: `${clickPosition.x}px`,
                       backgroundColor: "white",
                       zIndex: 1000,
-                      padding: "10px",
+                      padding: "20px",
                       borderRadius: "5px",
-                      width: "225px",
-                      height: "150px",
-                      overflow: "hidden",
+                      width: "400px",
+                      maxHeight: "300px",
+                      overflow: "auto",
                     }}
                   >
-                    <button
+                    <div className="flex justify-between items-center">
+                      <h4
+                        style={{ margin: 0 }}
+                        className="text-[#0e1113] text-lg font-bold font-['Poppins'] leading-[38px]"
+                      >
+                        Respostas
+                      </h4>
+                      <button
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          color: "grey",
+                        }}
+                        onClick={() => {
+                          setActivePolygon(null);
+                          setClickPosition({ x: 0, y: 0 });
+                        }}
+                      >
+                        <span style={{ fontSize: "16px", fontWeight: "bold" }}>
+                          <Close />
+                        </span>
+                      </button>
+                    </div>
+                    <h5 className="text-[#0e1113] text-[12px] font-medium font-['Poppins'] leading-[38px]">
+                      Setor: {feature.properties?.CD_SETOR}
+                    </h5>
+                    <table
                       style={{
-                        position: "absolute",
-                        top: "5px",
-                        right: "5px",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        color: "grey",
-                      }}
-                      onClick={() => {
-                        setActivePolygon(null);
-                        setClickPosition({ x: 0, y: 0 });
+                        width: "100%",
+                        borderCollapse: "collapse",
+                        marginTop: "8px",
                       }}
                     >
-                      <span style={{ fontSize: "16px", fontWeight: "bold" }}>
-                        <Close />
-                      </span>
-                    </button>
-                    <ReactWordcloud
-                      words={
-                        wordCloud.find(
-                          (x) => x.id_segmento == feature.properties?.CD_SETOR
-                        )?.wordCount
-                      }
-                      options={{
-                        fontSizes: [10, 60],
-                        padding: 1,
-                        rotations: 2,
-                        rotationAngles: [-90, 0],
-                        scale: "sqrt",
-                        spiral: "archimedean",
-                        transitionDuration: 1000,
+                      <thead>
+                        <tr>
+                          <th
+                            style={{
+                              borderBottom: "1px solid #ddd",
+                              padding: "8px",
+                              textAlign: "left",
+                              backgroundColor: "#f0f3f8",
+                            }}
+                          >
+                            Resposta
+                          </th>
+                          <th
+                            style={{
+                              borderBottom: "1px solid #ddd",
+                              padding: "8px",
+                              backgroundColor: "#f0f3f8",
+                              textAlign: "left",
+                            }}
+                          >
+                            Qtd
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {wordCloud
+                          .find(
+                            (x) => x.id_segmento == feature.properties?.CD_SETOR
+                          )
+                          ?.wordCount.map((word, index) => (
+                            <tr
+                              key={index}
+                              style={{
+                                backgroundColor:
+                                  index % 2 === 0 ? "#FFF" : "#f0f3f8",
+                              }}
+                            >
+                              <td
+                                style={{
+                                  padding: "8px",
+                                }}
+                              >
+                                {word.text}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "8px",
+                                }}
+                              >
+                                {word.value}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+              {responseType === "numerical" &&
+                activePolygon === index &&
+                responses.find(
+                  (x) => x.id_segmento === feature.properties?.CD_SETOR
+                ) && (
+                  <div
+                    className="numerical-table"
+                    style={{
+                      position: "absolute",
+                      top: `${clickPosition.y - 150}px`,
+                      left: `${clickPosition.x}px`,
+                      backgroundColor: "white",
+                      zIndex: 1000,
+                      padding: "20px",
+                      borderRadius: "5px",
+                      width: "400px",
+                      maxHeight: "350px",
+                      overflow: "auto",
+                    }}
+                  >
+                    <div className="flex justify-between items-center">
+                      <h4
+                        style={{ margin: 0 }}
+                        className="text-[#0e1113] text-lg font-bold font-['Poppins'] leading-[38px]"
+                      >
+                        Estatísticas Numéricas
+                      </h4>
+                      <button
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          color: "grey",
+                        }}
+                        onClick={() => {
+                          setActivePolygon(null);
+                          setClickPosition({ x: 0, y: 0 });
+                        }}
+                      >
+                        <span style={{ fontSize: "16px", fontWeight: "bold" }}>
+                          <Close />
+                        </span>
+                      </button>
+                    </div>
+                    <h5 className="text-[#0e1113] text-[12px] font-medium font-['Poppins'] leading-[38px]">
+                      Setor: {feature.properties?.CD_SETOR}
+                    </h5>
+                    <table
+                      style={{
+                        width: "100%",
+                        borderCollapse: "collapse",
+                        marginTop: "8px",
                       }}
-                    />
+                    >
+                      <thead>
+                        <tr>
+                          <th
+                            style={{
+                              borderBottom: "1px solid #ddd",
+                              padding: "8px",
+                              textAlign: "left",
+                              backgroundColor: "#f0f3f8",
+                            }}
+                          >
+                            Métrica
+                          </th>
+                          <th
+                            style={{
+                              borderBottom: "1px solid #ddd",
+                              padding: "8px",
+                              backgroundColor: "#f0f3f8",
+                              textAlign: "left",
+                            }}
+                          >
+                            Valor
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(() => {
+                          const segment = responses.find(
+                            (x) =>
+                              x.id_segmento === feature.properties?.CD_SETOR
+                          );
+                          if (!segment) return null;
+
+                          const values = segment.responses;
+                          const count = values.length;
+                          const mean = d3.mean(values);
+                          const meanValue =
+                            mean !== undefined ? mean.toFixed(2) : "N/A";
+                          const mode = d3.mode(values);
+                          const max = Math.max(...values);
+                          const min = Math.min(...values);
+
+                          const metrics = [
+                            { label: "Soma", value: count },
+                            {
+                              label: "Média",
+                              value:
+                                mean !== undefined ? mean.toFixed(2) : "N/A",
+                            },
+                            {
+                              label: "Moda",
+                              value: mode !== undefined ? mode : "N/A",
+                            },
+                            { label: "Máximo", value: max },
+                            { label: "Mínimo", value: min },
+                          ];
+
+                          return metrics.map((metric, index) => (
+                            <tr
+                              key={index}
+                              style={{
+                                backgroundColor:
+                                  index % 2 === 0 ? "#FFF" : "#f0f3f8",
+                              }}
+                            >
+                              <td
+                                style={{
+                                  padding: "8px",
+                                }}
+                              >
+                                {metric.label}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "8px",
+                                }}
+                              >
+                                {metric.value}
+                              </td>
+                            </tr>
+                          ));
+                        })()}
+                      </tbody>
+                    </table>
                   </div>
                 )}
             </Polygon>
@@ -372,29 +638,81 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
         style={{ position: "absolute", bottom: 30, right: 30, zIndex: 1000 }}
       >
         {/* <Legend /> */}
-        {colorScale && (
+        {wordCloud.length > 0 && (
           <div
             style={{
+              minWidth: "200px",
               background: "white",
-              padding: "10px",
               borderRadius: "5px",
+              padding: "20px",
             }}
           >
-            <h4>Legenda</h4>
-            {colorScale.ticks(5).map((tick, index) => (
+            <h4 className="mb-4">Legenda</h4>
+            {Array.from(
+              new Set(
+                wordCloud.flatMap((segment) =>
+                  segment.wordCount.map((word) => word.text)
+                )
+              )
+            ).map((word, index) => (
               <div
                 key={index}
-                style={{ display: "flex", alignItems: "center" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "5px",
+                }}
               >
                 <div
                   style={{
                     width: "20px",
                     height: "20px",
-                    backgroundColor: colorScale(tick),
+                    backgroundColor: colorScale ? colorScale(word) : "#ccc",
                     marginRight: "10px",
                   }}
                 ></div>
-                <span>{tick.toFixed(2)}</span>
+                <span>{word}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {responseType === "numerical" && (
+          <div
+            style={{
+              minWidth: "200px",
+              background: "white",
+              borderRadius: "5px",
+              padding: "20px",
+            }}
+          >
+            <h4 className="mb-4">Legenda</h4>
+            {quantileValues.map((threshold: number, i: number) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "5px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    backgroundColor: colorScale ? colorScale(i) : "#ccc",
+                    marginRight: "10px",
+                  }}
+                ></div>
+                <span>
+                  {i === 0
+                    ? `<= ${threshold.toFixed(2)}`
+                    : i === quantileValues.length
+                    ? `> ${quantileValues[i - 1].toFixed(2)}`
+                    : `${quantileValues[i - 1].toFixed(
+                        2
+                      )} - ${threshold.toFixed(2)}`}
+                </span>
               </div>
             ))}
           </div>

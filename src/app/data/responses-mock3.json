@@ -1,0 +1,53 @@
+{
+    "responses_by_segments": [
+        {
+            "id_segmento": "230440005130011P",
+            "type": "numerical",
+            "responses": [
+                12,
+                15,
+                12,
+                18,
+                20,
+                15,
+                15
+            ],
+            "mean": 15.29,
+            "mode": 15,
+            "min": 12,
+            "max": 20
+        },
+        {
+            "id_segmento": "230440005130012P",
+            "type": "numerical",
+            "responses": [
+                5,
+                7,
+                5,
+                10,
+                6
+            ],
+            "mean": 6.6,
+            "mode": 5,
+            "min": 5,
+            "max": 10
+        },
+        {
+            "id_segmento": "230440005130013P",
+            "type": "numerical",
+            "responses": [
+                25,
+                30,
+                25,
+                40,
+                30,
+                35
+            ],
+            "mean": 30.83,
+            "mode": 25,
+            "min": 25,
+            "max": 40
+        }
+    ],
+    "type": "numerical"
+}

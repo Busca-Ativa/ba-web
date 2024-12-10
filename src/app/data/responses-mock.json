@@ -1,0 +1,32 @@
+{
+    "responses_by_segments": [
+        {
+            "id_segmento": "230440005130011P",
+            "responses": [
+                "Doença ou problemas de saúde",
+                "Compromissos familiares urgentes",
+                "Falta de transporte",
+                "Desmotivação ou cansaço"
+            ]
+        },
+        {
+            "id_segmento": "230440005130012P",
+            "responses": [
+                "Clima desfavorável (chuva intensa, calor extremo)",
+                "Problemas financeiros para se deslocar",
+                "Trabalho ou estágio no horário das aulas",
+                "Conflitos de horários com outras atividades"
+            ]
+        },
+        {
+            "id_segmento": "230440005130013P",
+            "responses": [
+                "Falta de interesse no conteúdo das aulas",
+                "Problemas emocionais ou psicológicos",
+                "Atividades extracurriculares no mesmo horário",
+                "Dificuldades no ambiente escolar (ex.: bullying)"
+            ]
+        }
+    ],
+    "type": "text"
+}

@@ -116,7 +116,7 @@ export default function Event({
     if (event && event.agents) {
       const mappedAgents = event.agents.map((agent: any) => ({
         name: agent.name,
-        team: agent.team || "sem time",
+        team: agent.team || "-",
         unit: agent.unit.name,
       }));
       setAgents(mappedAgents);
