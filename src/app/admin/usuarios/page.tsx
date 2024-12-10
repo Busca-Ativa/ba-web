@@ -8,7 +8,7 @@ import nookies from "nookies";
 import { Button } from "@mui/material";
 import { Add, PlusOne } from "@mui/icons-material";
 import BATable from "@/components/BATable";
-import NewInstitutionModal from "@/components/Modals/NewInstitution";
+import NewCoordinatorModal from "@/components/Modals/NewCoordinator";
 import { ToastContainer } from "react-toastify";
 
 const UsuariosAdmin = () => {
@@ -84,6 +84,7 @@ const UsuariosAdmin = () => {
           </div>
         </>
       )}
+      <NewCoordinatorModal onSubmit={onAdd} open={isModalOpen} onClose={handleClose} />
       <ToastContainer/>
     </>
   );

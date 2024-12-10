@@ -27,6 +27,7 @@ const Secoes = () => {
     config: {
       editable: boolean;
       deletable: boolean;
+      duplicable: boolean;
     };
     origin: string;
   }
@@ -93,11 +94,10 @@ const Secoes = () => {
           id: value.id,
           title: value.title,
           creator: name,
-          // WARN: Apenas se for o mesmo criado pode deletar e editar.
           config:
             value.creator.id == user.id
-              ? { editable: true, deletable: true }
-              : { editable: false, deletable: false },
+              ? { editable: true, deletable: true, duplicable: false }
+              : { editable: false, deletable: false, duplicable: true },
           origin: value.origin ? value?.origin?.name : value?.unit?.name,
         };
       })
@@ -141,10 +141,13 @@ const Secoes = () => {
           title: data.name,
           creator: data.editor.name + " " + data.editor.lastName,
           status: status.name,
-          config:
-            data.creator.id !== user.id
-              ? { editable: false, deletable: false }
-              : status.config,
+          config: {
+            editable:
+              data.creator.id !== user.id ? false : status.config.editable,
+            deletable:
+              data.creator.id !== user.id ? false : status.config.deletable,
+            duplicable: false,
+          },
           origin:
             data.tags[0] === "institution"
               ? data.institution?.name

@@ -26,7 +26,7 @@ const Formularios = () => {
     title: any;
     creator: string;
     status: string;
-    config: { editable: boolean; deletable: boolean };
+    config: { editable: boolean; deletable: boolean; duplicable: boolean };
     origin: any;
   }
 
@@ -39,7 +39,7 @@ const Formularios = () => {
     const getForms = async () => {
       let list_forms = [];
       try {
-        let response = await api.get("/editor/unit/forms", {
+        let response = await api.get("/editor/institution/forms", {
           withCredentials: true,
         });
         if (response.data.data) {
@@ -47,10 +47,10 @@ const Formularios = () => {
         }
 
         // WARN: Pegar unidades pega alguns forms que ja vem no da instituição fazendo eles ficarem repetidos
-        // response = await api.get('/editor/unit/forms')
-        // if (response.data.data){
-        //   list_forms.push(...response.data.data)
-        // }
+        response = await api.get('/editor/unit/forms')
+        if (response.data.data){
+          list_forms.push(...response.data.data)
+        }
       } catch (error: any) {
         console.error(error.response?.message);
         throw error;
@@ -75,8 +75,8 @@ const Formularios = () => {
           // WARN: Apenas se for o mesmo criado pode deletar e editar.
           config:
             value.editor.id !== user.id
-              ? { editable: false, deletable: false }
-              : status.config,
+              ? { editable: false, deletable: false, duplicable: true }
+              : { editable: true, deletable: true, duplicable: false },
           origin: value?.origin?.name,
         };
       })
@@ -125,10 +125,10 @@ const Formularios = () => {
           status: status.name,
           config:
             data.editor.id !== user.id
-              ? { editable: false, deletable: false }
-              : status.config,
+              ? { editable: false, deletable: false, duplicable: true }
+              : { editable: true, deletable: true, duplicable: false },
           origin:
-            data.tags[0] === "institution"
+            data?.tags[0] === "institution"
               ? data.institution.name
               : data.unit.name,
         };

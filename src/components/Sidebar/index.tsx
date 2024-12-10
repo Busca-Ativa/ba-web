@@ -3,8 +3,10 @@
 import {
   ContentPasteSearchOutlined,
   DashboardOutlined,
+  Diversity3Outlined,
   DomainRounded,
   EventNoteOutlined,
+  EventOutlined,
   Groups2Outlined,
   LogoutOutlined,
   Quiz,
@@ -72,40 +74,164 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
             </ul>
           </div>
         )}
-        <div className="group flex flex-col gap-[10px] mt-[28px]">
-          <span>Edição</span>
-          <ul className="flex flex-col gap-2">
-            <li className={activePage === "formularios" ? "active" : ""}>
-              <Link style={{ width: "100%" }} href="/editor/formularios">
-                <div className="flex items-center gap-2">
-                  <ContentPasteSearchOutlined />
-                  <span>Formulários</span>
-                </div>
-              </Link>
-            </li>
-            <li className={activePage === "secoes" ? "active" : ""}>
-              <Link style={{ width: "100%" }} href="/editor/secoes">
-                <div className="flex items-center gap-2">
-                  <SplitscreenOutlined />
-                  <span>Seções</span>
-                </div>
-              </Link>
-            </li>
-            <li className={activePage === "questoes" ? "active" : ""}>
-              <Link style={{ width: "100%" }} href="/editor/questoes">
-                <div className="flex items-center gap-2">
-                  <QuizOutlined />
-                  <span>Questões</span>
-                </div>
-              </Link>
-            </li>
-          </ul>
-        </div>
+        {role == "coordinator" && (
+          <>
+            <div className="group flex flex-col gap-[10px]">
+              <span>Administrativo</span>
+              <ul className="flex flex-col gap-2">
+                <li className={activePage === "dashboard" ? "active" : ""}>
+                  <Link style={{ width: "100%" }} href="/coordinator/dashboard">
+                    <div className="flex items-center gap-2">
+                      <DashboardOutlined />
+                      <span>Dashboard</span>
+                    </div>
+                  </Link>
+                </li>
+                <li className={activePage === "unidades" ? "active" : ""}>
+                  <Link style={{ width: "100%" }} href="/coordinator/unidades">
+                    <div className="flex items-center gap-2">
+                      <DomainRounded />
+                      <span>Unidades</span>
+                    </div>
+                  </Link>
+                </li>
+                <li className={activePage === "usuarios" ? "active" : ""}>
+                  <Link style={{ width: "100%" }} href="/coordinator/usuarios">
+                    <div className="flex items-center gap-2">
+                      <Groups2Outlined />
+                      <span>Usuários</span>
+                    </div>
+                  </Link>
+                </li>
+                <li className={activePage === "times" ? "active" : ""}>
+                  <Link style={{ width: "100%" }} href="/coordinator/times">
+                    <div className="flex items-center gap-2">
+                      <Diversity3Outlined />
+                      <span>Times</span>
+                    </div>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div className="group flex flex-col gap-[10px] mt-[28px]">
+              <span>Pesquisa</span>
+              <ul className="flex flex-col gap-2">
+                <li className={activePage === "formularios" ? "active" : ""}>
+                  <Link
+                    style={{ width: "100%" }}
+                    href="/coordinator/formularios"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ContentPasteSearchOutlined />
+                      <span>Formulários</span>
+                    </div>
+                  </Link>
+                </li>
+                <li className={activePage === "secoes" ? "active" : ""}>
+                  <Link style={{ width: "100%" }} href="/coordinator/eventos">
+                    <div className="flex items-center gap-2">
+                      <EventOutlined />
+                      <span>Eventos</span>
+                    </div>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </>
+        )}
+        {role == "supervisor" && (
+          <>
+          <div className="group flex flex-col gap-[10px]">
+            <span>Administrativo</span>
+            <ul className="flex flex-col gap-2">
+              <li className={activePage === "dashboard" ? "active" : ""}>
+                <Link style={{ width: "100%" }} href="/supervisor/dashboard">
+                  <div className="flex items-center gap-2">
+                    <DashboardOutlined />
+                    <span>Dashboard</span>
+                  </div>
+                </Link>
+              </li>
+              <li className={activePage === "usuarios" ? "active" : ""}>
+                <Link style={{ width: "100%" }} href="/supervisor/usuarios">
+                  <div className="flex items-center gap-2">
+                    <Groups2Outlined />
+                    <span>Usuários</span>
+                  </div>
+                </Link>
+              </li>
+              <li className={activePage === "times" ? "active" : ""}>
+                <Link style={{ width: "100%" }} href="/supervisor/times">
+                  <div className="flex items-center gap-2">
+                    <Diversity3Outlined />
+                    <span>Times</span>
+                  </div>
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div className="group flex flex-col gap-[10px] mt-[28px]">
+            <span>Pesquisa</span>
+            <ul className="flex flex-col gap-2">
+              <li className={activePage === "formularios" ? "active" : ""}>
+                <Link
+                  style={{ width: "100%" }}
+                  href="/supervisor/formularios"
+                >
+                  <div className="flex items-center gap-2">
+                    <ContentPasteSearchOutlined />
+                    <span>Formulários</span>
+                  </div>
+                </Link>
+              </li>
+              <li className={activePage === "secoes" ? "active" : ""}>
+                <Link style={{ width: "100%" }} href="/supervisor/eventos">
+                  <div className="flex items-center gap-2">
+                    <EventOutlined />
+                    <span>Eventos</span>
+                  </div>
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </>
+        )}
+        {role == "editor" && (
+          <div className="group flex flex-col gap-[10px] mt-[28px]">
+            <span>Edição</span>
+            <ul className="flex flex-col gap-2">
+              <li className={activePage === "formularios" ? "active" : ""}>
+                <Link style={{ width: "100%" }} href="/editor/formularios">
+                  <div className="flex items-center gap-2">
+                    <ContentPasteSearchOutlined />
+                    <span>Formulários</span>
+                  </div>
+                </Link>
+              </li>
+              <li className={activePage === "secoes" ? "active" : ""}>
+                <Link style={{ width: "100%" }} href="/editor/secoes">
+                  <div className="flex items-center gap-2">
+                    <SplitscreenOutlined />
+                    <span>Seções</span>
+                  </div>
+                </Link>
+              </li>
+              <li className={activePage === "questoes" ? "active" : ""}>
+                <Link style={{ width: "100%" }} href="/editor/questoes">
+                  <div className="flex items-center gap-2">
+                    <QuizOutlined />
+                    <span>Questões</span>
+                  </div>
+                </Link>
+              </li>
+            </ul>
+          </div>
+        )}
       </div>
       <div className="group absolute bottom-[25px]">
         <ul className="flex flex-col gap-2">
-          <li>
-            <Link style={{ width: "100%" }} href="/admin/configuracoes">
+          <li className={activePage === "config" ? "active" : ""}>
+            <Link style={{ width: "100%" }} href={`/${role}/config`}>
               <div className="flex items-center gap-2">
                 <SettingsOutlined />
                 <span>Configurações</span>
@@ -116,7 +242,14 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
             <Link style={{ width: "100%" }} href="/">
               <div className="flex items-center gap-2">
                 <LogoutOutlined />
-                <button onClick={() => {localStorage.clear(); AuthService.logout()}}>Sair</button>
+                <button
+                  onClick={() => {
+                    localStorage.clear();
+                    AuthService.logout();
+                  }}
+                >
+                  Sair
+                </button>
               </div>
             </Link>
           </li>

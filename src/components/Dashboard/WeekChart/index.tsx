@@ -15,8 +15,14 @@ export default function WeekChart() {
 
     updateWidth();
 
-    window.addEventListener("resize", updateWidth);
-    return () => window.removeEventListener("resize", updateWidth);
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", updateWidth);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("resize", updateWidth);
+      }
+    };
   }, []);
 
   return (

@@ -22,12 +22,15 @@ const Login = () => {
       const token = auth.data.access_token;
       const decoded: any = jwtDecode(token);
       const role = decoded.role;
+      const userId = decoded.sub.id;
+
+      localStorage.setItem("role", role);
+      localStorage.setItem("user_id", userId);
+
       if (role == "editor") {
-        localStorage.setItem("role", role);
         router.push("/editor/formularios");
-      } else if (role == "admin" || role == "superuser") {
-        localStorage.setItem("role", role);
-        router.push("/admin/dashboard");
+      } else {
+        router.push(`/${role}/dashboard`);
       }
     } catch (err) {
       setError(

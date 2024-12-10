@@ -31,3 +31,37 @@ export function getTime(dateStr: string) : string {
     timeZone: timeZone
   })} às ${date.toLocaleTimeString("pt-BR",{timeZone: timeZone})}`;
 }
+
+export function translateSegment(segmentName: string): string {
+  const dict: Record<string, string> = {
+    country: "País",
+    state: "Estado",
+    city: "Cidade",
+    sector: "Setor",
+    neighborhood: "Bairro",
+  };
+
+  if (segmentName in dict) {
+    return dict[segmentName];
+  }
+
+  return `Tipo desconhecido: ${segmentName}`;
+}
+
+export function translateRole(roleName: string): string {
+  const dict: Record<string, string> = {
+    admin: "Administrador",
+    coordinator: "Coordenador",
+    supervisor: "Supervisor",
+    agent: "Agente",
+    user: "Usuário",
+    superuser: "Super Usuário",
+    editor: "Editor",
+  };
+
+  if (roleName in dict) {
+    return dict[roleName];
+  }
+
+  return `Tipo desconhecido: ${roleName}`;
+}
