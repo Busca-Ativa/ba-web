@@ -37,9 +37,9 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
   const [currentLocation, setCurrentLocation] = useState<[number, number]>([
     0, 0,
   ]);
-  const data: GeoJson = geojsonData as GeoJson;
+  const data: GeoJson = geojsonData as unknown as GeoJson;
   const [mapStyle, setMapStyle] = useState("1");
-  const [propertie, setPropertie] = useState("");
+  const [propertie, setPropertie] = useState<any>("");
   const [activePolygon, setActivePolygon] = useState<number | null>(null);
   const [filtro, setFiltro] = useState<string[]>([]);
   const [features, setFeatures] = useState<string[]>([]);
@@ -147,8 +147,6 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
                   : event.full_geometry_ref,
             }
           );
-          // setResponseType(mock3.type as any);
-          // setResponses(mock3.responses_by_segments);
           setResponseType(response.data.type);
           setResponses(response.data.responses_by_segments);
         } catch (error: any) {
@@ -263,7 +261,7 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
     const allWords = wordCloud.flatMap((segment: any) =>
       segment.wordCount.map((word: any) => word.text)
     );
-    const uniqueWords = Array.from(new Set(allWords));
+    const uniqueWords = Array.from(new Set(allWords)) as string[];
     const colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(uniqueWords);
     return colorScale;
   };
@@ -451,7 +449,7 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
                           .find(
                             (x) => x.id_segmento == feature.properties?.CD_SETOR
                           )
-                          ?.wordCount.map((word, index) => (
+                          ?.wordCount.map((word: any, index: number) => (
                             <tr
                               key={index}
                               style={{
@@ -651,7 +649,7 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
             {Array.from(
               new Set(
                 wordCloud.flatMap((segment) =>
-                  segment.wordCount.map((word) => word.text)
+                  segment.wordCount.map((word: any) => word.text)
                 )
               )
             ).map((word, index) => (

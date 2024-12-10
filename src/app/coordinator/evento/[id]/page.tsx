@@ -145,8 +145,6 @@ export default function Event({
             };
           });
 
-          setTeams(teamsWithUnits);
-
           // Atualizar informações dos agentes com o nome da unidade
           const agentsWithUnits = teamsWithUnits.flatMap((team: any) =>
             team.agents.map((agent: any) => ({
@@ -290,7 +288,7 @@ export default function Event({
               </Typography>
             </Breadcrumbs>
           </Box>
-          <Button
+          {/* <Button
             sx={{
               height: "41px",
               px: "16px",
@@ -316,7 +314,7 @@ export default function Event({
             }}
           >
             Análise em Mapa
-          </Button>
+          </Button> */}
         </Box>
 
         {/* Grupo de informações */}

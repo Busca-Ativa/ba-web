@@ -56,7 +56,8 @@ const EventAnalyticsControls = ({
     <Box
       sx={{
         width: 269,
-        height: window.innerHeight * 0.8,
+        height:
+          typeof window !== "undefined" ? window.innerHeight * 0.8 : "80vh",
         position: "relative",
         backgroundColor: "white",
         borderRadius: 1,
@@ -204,30 +205,30 @@ const EventAnalyticsControls = ({
             Detalhes
           </Typography>
           {/* <Typography
-            sx={{
-              color: "#161616",
-              fontSize: "9px",
-              fontWeight: "600",
-              fontFamily: "Poppins",
-              lineHeight: "21px",
-            }}
-          >
-            Método de Escala
-          </Typography>
+        sx={{
+          color: "#161616",
+          fontSize: "9px",
+          fontWeight: "600",
+          fontFamily: "Poppins",
+          lineHeight: "21px",
+        }}
+        >
+        Método de Escala
+        </Typography>
 
-          <Select
-            value={escala}
-            onChange={(e) => setEscala(e.target.value)}
-            displayEmpty
-            sx={selectStyles}
-          >
-            <MenuItem value="" disabled>
-              Método de escala
-            </MenuItem>
-            <MenuItem value="Escala Linear">Escala Linear</MenuItem>
-            <MenuItem value="Escala Logarítmica">Escala Logarítmica</MenuItem>
-            <MenuItem value="Escala Exponencial">Escala Exponencial</MenuItem>
-          </Select> */}
+        <Select
+        value={escala}
+        onChange={(e) => setEscala(e.target.value)}
+        displayEmpty
+        sx={selectStyles}
+        >
+        <MenuItem value="" disabled>
+          Método de escala
+        </MenuItem>
+        <MenuItem value="Escala Linear">Escala Linear</MenuItem>
+        <MenuItem value="Escala Logarítmica">Escala Logarítmica</MenuItem>
+        <MenuItem value="Escala Exponencial">Escala Exponencial</MenuItem>
+        </Select> */}
           <Typography
             sx={{
               color: "#161616",

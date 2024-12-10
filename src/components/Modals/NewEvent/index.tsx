@@ -94,6 +94,10 @@ interface Event {
   agents?: any[];
   segments?: Segments;
   geometry?: any;
+  uf?: UF;
+  city?: City;
+  bairros?: any[];
+  setores?: any[];
 }
 interface UF {
   id: number;
@@ -474,7 +478,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
     setModalState((prev) => prev - 1);
   };
 
-  const handleScroll = (e: React.UIEvent<HTMLSelectElement>) => {
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLSelectElement;
     if (target.scrollTop + target.clientHeight >= target.scrollHeight - 10) {
       setOffset(offset + limit);
@@ -923,7 +927,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                       onChange={(e) =>
                         handleChange(
                           "segments " + currentSegmentType,
-                          Array.from(e.target.value)
+                          Array.from(e.target.value as any[])
                         )
                       }
                     >
@@ -1000,7 +1004,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                               handleChange(
                                 currentSegmentType,
                                 (
-                                  event.segments[currentSegmentType] || []
+                                  event.segments?.[currentSegmentType] ?? []
                                 ).filter((b) => b !== segment)
                               )
                             }
