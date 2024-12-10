@@ -3,10 +3,15 @@
 import SideBar from "@/components/Sidebar";
 import "./style.css";
 import Card from "@/components/Dashboard/Card";
-import WeekChart from "@/components/Dashboard/WeekChart";
 import Legend from "@/components/Dashboard/Legend";
-import MonthChart from "@/components/Dashboard/MonthChart";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+const MonthChart = dynamic(() => import("@/components/Dashboard/MonthChart"), {
+  ssr: false,
+});
+const WeekChart = dynamic(() => import("@/components/Dashboard/WeekChart"), {
+  ssr: false,
+});
 import nookies from "nookies";
 import { useRouter } from "next/navigation";
 

@@ -24,8 +24,13 @@ const Login = () => {
       const role = decoded.role;
       const userId = decoded.sub.id;
 
-      localStorage.setItem("role", role);
-      localStorage.setItem("user_id", userId);
+      if (
+        typeof window !== "undefined" &&
+        typeof localStorage !== "undefined"
+      ) {
+        localStorage.setItem("role", role);
+        localStorage.setItem("user_id", userId);
+      }
 
       if (role == "editor") {
         router.push("/editor/formularios");

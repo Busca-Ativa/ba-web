@@ -48,7 +48,10 @@ const ProfileSettings: React.FC = () => {
       );
       const response = await api.patch("/coordinator/user", {
         ...updatedFields,
-        id_user: localStorage.getItem("user_id"),
+        id_user:
+          typeof window !== "undefined" && typeof localStorage !== "undefined"
+            ? localStorage.getItem("user_id")
+            : null,
       });
       if (response.status !== 200) {
         throw new Error("Erro ao atualizar perfil");

@@ -1,16 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { SetStateAction, useEffect, useState } from "react";
-import { Add, PlusOne } from "@mui/icons-material";
-import BATable from "@/components/BATable";
+import { useEffect, useState } from "react";
+import { Add } from "@mui/icons-material";
 
+const BATable = dynamic(() => import("@/components/BATable"), { ssr: false });
+const NewEvent = dynamic(() => import("@/components/Modals/NewEvent"), {
+  ssr: false,
+});
 import api from "@/services/api";
-import nookies from "nookies";
-import { GetServerSidePropsContext } from "next";
 import { AuthService } from "@/services/auth/auth";
-import { getStatus, StatusObject } from "@/utils";
-import NewEvent from "@/components/Modals/NewEvent";
+import dynamic from "next/dynamic";
 
 // Função para formatar datas no padrão dd/mm/aa
 const formatDate = (dateString: string) => {

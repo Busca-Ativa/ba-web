@@ -28,7 +28,9 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
   const [role, setRole] = useState("");
 
   useEffect(() => {
-    setRole(localStorage.getItem("role") || "");
+    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+      setRole(localStorage.getItem("role") || "");
+    }
   }, []);
 
   return (
@@ -141,60 +143,60 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
         )}
         {role == "supervisor" && (
           <>
-          <div className="group flex flex-col gap-[10px]">
-            <span>Administrativo</span>
-            <ul className="flex flex-col gap-2">
-              <li className={activePage === "dashboard" ? "active" : ""}>
-                <Link style={{ width: "100%" }} href="/supervisor/dashboard">
-                  <div className="flex items-center gap-2">
-                    <DashboardOutlined />
-                    <span>Dashboard</span>
-                  </div>
-                </Link>
-              </li>
-              <li className={activePage === "usuarios" ? "active" : ""}>
-                <Link style={{ width: "100%" }} href="/supervisor/usuarios">
-                  <div className="flex items-center gap-2">
-                    <Groups2Outlined />
-                    <span>Usuários</span>
-                  </div>
-                </Link>
-              </li>
-              <li className={activePage === "times" ? "active" : ""}>
-                <Link style={{ width: "100%" }} href="/supervisor/times">
-                  <div className="flex items-center gap-2">
-                    <Diversity3Outlined />
-                    <span>Times</span>
-                  </div>
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div className="group flex flex-col gap-[10px] mt-[28px]">
-            <span>Pesquisa</span>
-            <ul className="flex flex-col gap-2">
-              <li className={activePage === "formularios" ? "active" : ""}>
-                <Link
-                  style={{ width: "100%" }}
-                  href="/supervisor/formularios"
-                >
-                  <div className="flex items-center gap-2">
-                    <ContentPasteSearchOutlined />
-                    <span>Formulários</span>
-                  </div>
-                </Link>
-              </li>
-              <li className={activePage === "secoes" ? "active" : ""}>
-                <Link style={{ width: "100%" }} href="/supervisor/eventos">
-                  <div className="flex items-center gap-2">
-                    <EventOutlined />
-                    <span>Eventos</span>
-                  </div>
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </>
+            <div className="group flex flex-col gap-[10px]">
+              <span>Administrativo</span>
+              <ul className="flex flex-col gap-2">
+                <li className={activePage === "dashboard" ? "active" : ""}>
+                  <Link style={{ width: "100%" }} href="/supervisor/dashboard">
+                    <div className="flex items-center gap-2">
+                      <DashboardOutlined />
+                      <span>Dashboard</span>
+                    </div>
+                  </Link>
+                </li>
+                <li className={activePage === "usuarios" ? "active" : ""}>
+                  <Link style={{ width: "100%" }} href="/supervisor/usuarios">
+                    <div className="flex items-center gap-2">
+                      <Groups2Outlined />
+                      <span>Usuários</span>
+                    </div>
+                  </Link>
+                </li>
+                <li className={activePage === "times" ? "active" : ""}>
+                  <Link style={{ width: "100%" }} href="/supervisor/times">
+                    <div className="flex items-center gap-2">
+                      <Diversity3Outlined />
+                      <span>Times</span>
+                    </div>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div className="group flex flex-col gap-[10px] mt-[28px]">
+              <span>Pesquisa</span>
+              <ul className="flex flex-col gap-2">
+                <li className={activePage === "formularios" ? "active" : ""}>
+                  <Link
+                    style={{ width: "100%" }}
+                    href="/supervisor/formularios"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ContentPasteSearchOutlined />
+                      <span>Formulários</span>
+                    </div>
+                  </Link>
+                </li>
+                <li className={activePage === "secoes" ? "active" : ""}>
+                  <Link style={{ width: "100%" }} href="/supervisor/eventos">
+                    <div className="flex items-center gap-2">
+                      <EventOutlined />
+                      <span>Eventos</span>
+                    </div>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </>
         )}
         {role == "editor" && (
           <div className="group flex flex-col gap-[10px] mt-[28px]">
@@ -244,7 +246,12 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
                 <LogoutOutlined />
                 <button
                   onClick={() => {
-                    localStorage.clear();
+                    if (
+                      typeof window !== "undefined" &&
+                      typeof localStorage !== "undefined"
+                    ) {
+                      localStorage.clear();
+                    }
                     AuthService.logout();
                   }}
                 >
