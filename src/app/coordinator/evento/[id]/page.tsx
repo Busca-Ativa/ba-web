@@ -50,6 +50,7 @@ export default function Event({
   const [formattedDateRange, setFormattedDateRange] = useState<string>("");
   const router = useRouter();
   const [geojsons, setGeojsons] = useState<any[]>([]);
+  const [agents, setAgents] = useState<any[]>([]);
   // Handle geolocation asynchronously inside useEffect
   useEffect(() => {
     if (navigator.geolocation) {
@@ -110,6 +111,66 @@ export default function Event({
         console.error(error);
       });
   }, [id]);
+
+  useEffect(() => {
+    if (event && event.agents) {
+      const mappedAgents = event.agents.map((agent: any) => ({
+        name: agent.name,
+        team: agent.team || "sem time",
+        unit: agent.unit.name,
+      }));
+      setAgents(mappedAgents);
+    }
+
+    if (event && event.teams) {
+      // Buscar times
+      api.get(`/coordinator/institution/teams`).then((response) => {
+        const mappedTeams = event.teams.map((team: any) => {
+          const teamData = response.data.data.find(
+            (teamData: any) => teamData.id == team.id
+          );
+          return teamData;
+        });
+
+        // Buscar unidades
+        api.get(`/coordinator/institution/units`).then((unitResponse) => {
+          const units = unitResponse.data.data;
+
+          // Atualizar informações dos times com o nome da unidade
+          const teamsWithUnits = mappedTeams.map((team: any) => {
+            const unit = units.find((unit: any) => unit.id === team.id_unit);
+            return {
+              ...team,
+              unitName: unit ? unit.name : "Unidade não encontrada",
+            };
+          });
+
+          setTeams(teamsWithUnits);
+
+          // Atualizar informações dos agentes com o nome da unidade
+          const agentsWithUnits = teamsWithUnits.flatMap((team: any) =>
+            team.agents.map((agent: any) => ({
+              name: agent.name,
+              team: team.name,
+              unit: team.unitName,
+            }))
+          );
+
+          setAgents((prev) => [...prev, ...agentsWithUnits]);
+
+          const uniqueAgents = new Set<string>();
+          agentsWithUnits.forEach((agent: any) => {
+            uniqueAgents.add(JSON.stringify(agent));
+          });
+          const uniqueAgentsArray = Array.from(uniqueAgents).map((agent) => {
+            const parsedAgent = JSON.parse(agent);
+            return parsedAgent;
+          });
+          setAgents([...agents, ...uniqueAgentsArray]);
+        });
+      });
+    }
+  }, [agents, event]);
 
   useEffect(() => {
     if (event && event.full_geometry_ref) {
@@ -396,23 +457,18 @@ export default function Event({
                     <strong>Time</strong>
                   </TableCell>
                   <TableCell>
-                    <strong>Coletas</strong>
+                    <strong>Unidade</strong>
                   </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {/* {eventDetails.attendees.map((attendee, index) => (
-                  <TableRow
-                    key={index}
-                    sx={{
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f0f3f8", // Alterna entre as cores
-                    }}
-                  >
-                    <TableCell>{attendee.name}</TableCell>
-                    <TableCell>{attendee.team}</TableCell>
-                    <TableCell>{attendee.collections}</TableCell>
+                {agents.map((agent, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{agent.name}</TableCell>
+                    <TableCell>{agent.team}</TableCell>
+                    <TableCell>{agent.unit}</TableCell>
                   </TableRow>
-                ))} */}
+                ))}
               </TableBody>
             </Table>
           </TableContainer>

@@ -139,7 +139,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
 
   // Selects Controllers
   const [offset, setOffset] = useState(0);
-  const [limit, setLimit] = useState(200);
+  const [limit, setLimit] = useState(2000);
   const [currentSegmentType, setCurrentSegmentType] = useState<string>();
   const [currentState, setCurrentState] = useState<UF>();
   const [currentCity, setCurrentCity] = useState<City>();
@@ -310,33 +310,46 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
   };
 
   const loadGeoJson = async (segmentsID: string) => {
-    let stateString = currentState?.id ? currentState.id : "";
-    let cityString = currentCity?.id ? currentCity.id : "";
+    let stateString = currentState?.id || "";
+    let cityString = currentCity?.id || "";
     let countryString = "BR";
-    let segmentTypeString = currentSegmentType ? currentSegmentType : "";
+    let segmentTypeString = currentSegmentType || "";
 
     if (segmentsID.includes("all")) {
       const allSegments = segments[segmentTypeString] || [];
-      for (const segment of allSegments) {
+      const promises = allSegments.map(async (segment) => {
         let segmentID = segment._id || segment.id;
+
         if (segmentID && geoJsonCache.has(segmentID)) {
-          setGeojson((prev) => [...prev, geoJsonCache.get(segmentID)]);
-        } else {
-          try {
-            const response = await api.get(
-              `/all/geojson?id_state=${stateString}&segment_type=city&id_city=${cityString}&id_segment=${segmentID}&id_country=${countryString}`
-            );
-            if (response.status === 200) {
-              if (segmentID) {
-                geoJsonCache.set(segmentID, response.data);
-              }
-              setGeojson((prev) => [...prev, response.data]);
-            }
-          } catch (error) {
-            console.error("Erro ao carregar GeoJSON:", error);
-          }
+          return geoJsonCache.get(segmentID);
         }
-      }
+
+        try {
+          const response = await api.get(
+            `/all/geojson?id_state=${stateString}&segment_type=sector&id_city=${cityString}&id_segment=${segmentID}&id_country=${countryString}`
+          );
+          if (response.status === 200) {
+            if (segmentID) {
+              geoJsonCache.set(segmentID, response.data);
+            }
+            return response.data;
+          }
+        } catch (error) {
+          console.error(
+            `Erro ao carregar GeoJSON para o segmento ${segmentID}:`,
+            error
+          );
+          return null; // Retorna null em caso de erro para manter a execução
+        }
+      });
+
+      const results = await Promise.all(promises);
+
+      // Filtra resultados válidos (não null) e atualiza o estado
+      setGeojson((prev) => [
+        ...prev,
+        ...results.filter((data) => data !== null),
+      ]);
       return;
     }
 

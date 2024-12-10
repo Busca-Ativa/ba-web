@@ -4,18 +4,19 @@ import Image from "next/image";
 
 interface EventAnalyticsControlsProps {
   data: any;
+  event: any;
   questions: any[];
   handleChange: (event: React.ChangeEvent<{ value: unknown }>) => void;
 }
 
 const EventAnalyticsControls = ({
   data,
+  event,
   questions,
   handleChange,
 }: EventAnalyticsControlsProps) => {
   const [propriedade, setPropriedade] = useState("");
   const [filtro, setFiltro] = useState<string[]>([]);
-  const [escala, setEscala] = useState("");
   const [paleta, setPaleta] = useState("");
   const [mapa, setMapa] = useState("1");
 
@@ -39,13 +40,12 @@ const EventAnalyticsControls = ({
         value: {
           propriedade,
           filtro,
-          escala,
           paleta,
           mapa,
         },
       },
     } as React.ChangeEvent<{ value: unknown }>);
-  }, [propriedade, filtro, escala, paleta, mapa, handleChange]);
+  }, [propriedade, filtro, paleta, mapa, handleChange]);
 
   useEffect(() => {
     console.log(data);
@@ -56,7 +56,7 @@ const EventAnalyticsControls = ({
     <Box
       sx={{
         width: 269,
-        height: 779,
+        height: 600,
         position: "relative",
         backgroundColor: "white",
         borderRadius: 1,
@@ -80,14 +80,14 @@ const EventAnalyticsControls = ({
         </div>
         <Typography
           marginTop={"10px"}
-          variant="h5"
+          variant="h6"
           sx={{
             color: "#0e1113",
             fontWeight: "bold",
             lineHeight: "50px",
           }}
         >
-          Evento 1#
+          {event?.name}
         </Typography>
       </Box>
 
@@ -124,7 +124,7 @@ const EventAnalyticsControls = ({
               lineHeight: "21px",
             }}
           >
-            Propriedade
+            Questão
           </Typography>
 
           <Select
@@ -134,7 +134,7 @@ const EventAnalyticsControls = ({
             sx={selectStyles}
           >
             <MenuItem value="" disabled>
-              Propriedade
+              Questão
             </MenuItem>
             {questions.map((property, index) => (
               <MenuItem key={property} value={property}>
@@ -167,7 +167,7 @@ const EventAnalyticsControls = ({
             }}
           >
             {/* Setor */}
-            Bairro
+            Setores
           </Typography>
 
           <Select
@@ -181,12 +181,11 @@ const EventAnalyticsControls = ({
             }
           >
             <MenuItem value="" disabled>
-              Bairro
+              Setores
             </MenuItem>
-            <MenuItem value="Setor 1">Setor 1</MenuItem>
-            {data.features.map((feature: any, index: number) => (
-              <MenuItem key={index} value={feature.properties.nome_bairro}>
-                {feature.properties.nome_bairro}
+            {event?.full_geometry_ref?.map((feature: any, index: number) => (
+              <MenuItem key={index} value={feature.ref}>
+                Setor {feature.ref}
               </MenuItem>
             ))}
           </Select>
@@ -204,7 +203,7 @@ const EventAnalyticsControls = ({
           >
             Detalhes
           </Typography>
-          <Typography
+          {/* <Typography
             sx={{
               color: "#161616",
               fontSize: "9px",
@@ -228,7 +227,7 @@ const EventAnalyticsControls = ({
             <MenuItem value="Escala Linear">Escala Linear</MenuItem>
             <MenuItem value="Escala Logarítmica">Escala Logarítmica</MenuItem>
             <MenuItem value="Escala Exponencial">Escala Exponencial</MenuItem>
-          </Select>
+          </Select> */}
           <Typography
             sx={{
               color: "#161616",

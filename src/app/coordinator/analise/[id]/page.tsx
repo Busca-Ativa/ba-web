@@ -14,6 +14,8 @@ import api from "@/services/api";
 import FitBoundsComponent from "../components/FitBoundsMap";
 import ReactWordcloud from "react-wordcloud";
 import { Close } from "@mui/icons-material";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Importação dinâmica para evitar SSR no Leaflet
 const MapContainer = dynamic(
@@ -130,19 +132,28 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
             {
               id_event: event.id,
               id_form: event.id_form,
-              map_refs: event.full_geometry_ref,
+              map_refs:
+                filtro.length > 0
+                  ? event.full_geometry_ref.filter((geometry: any) =>
+                      filtro.includes(geometry.ref)
+                    )
+                  : event.full_geometry_ref,
             }
           );
           setResponseType(response.data.type);
           setResponses(response.data.responses_by_segments);
-        } catch (error) {
-          console.error("Erro ao obter análise do mapa:", error);
+        } catch (error: any) {
+          toast.error(error.response.data.message);
         }
       }
     };
 
     fetchAnalysis();
-  }, [event, propertie]);
+  }, [event, filtro, propertie]);
+
+  useEffect(() => {
+    console.log(filtro);
+  }, [filtro]);
 
   useEffect(() => {
     if (responseType === "text") {
@@ -245,106 +256,106 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
         <FitBoundsComponent geojson={geojson} />
 
         {/* Renderizar os polígonos */}
-        {geojson.features.map((feature, index) => (
-          <Polygon
-            key={index}
-            // pathOptions={{
-            //   color: colorScale ? "#000000" : "#FF9814", // Cor da borda preta
-            //   fillColor: colorScale
-            //     ? colorScale(feature.properties[propertie])
-            //     : "#FF9814",
-            //   opacity: colorScale ? 1 : 1,
-            //   stroke: true,
-            //   fillOpacity: colorScale ? 0.9 : 0.5,
-            //   weight: colorScale ? 1 : 1,
-            // }}
-            positions={feature?.geometry?.coordinates[0].map(
-              (latlng: LatLngExpression) => {
-                const [lng, lat] = latlng as [number, number];
-                return [lat, lng];
-              }
-            )}
-            eventHandlers={{
-              click: (e) => {
-                setActivePolygon(index);
-                setClickPosition({
-                  x: e.containerPoint.x,
-                  y: e.containerPoint.y,
-                });
-                console.log(
-                  wordCloud.find(
-                    (x) => x.id_segmento == feature.properties?.CD_SETOR
-                  )?.wordCount
-                );
-              },
-            }}
-          >
-            {responseType == "text" &&
-              propertie &&
-              activePolygon == index &&
-              wordCloud.find(
-                (x) => x.id_segmento == feature.properties?.CD_SETOR
-              ) && (
-                <div
-                  className="word-cloud"
-                  style={{
-                    position: "absolute",
-                    top: `${clickPosition.y - 150}px`,
-                    left: `${clickPosition.x}px`,
-                    backgroundColor: "white",
-                    zIndex: 1000,
-                    padding: "10px",
-                    borderRadius: "5px",
-                    width: "225px",
-                    height: "150px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <button
+        {geojson.features.map((feature, index) => {
+          if (
+            filtro.length > 0 &&
+            !filtro.includes(feature.properties.CD_SETOR)
+          ) {
+            return null;
+          }
+          return (
+            <Polygon
+              key={index}
+              pathOptions={{
+                color: "#FF6844",
+                fillColor: "#FF9814",
+                opacity: 1,
+                stroke: true,
+                fillOpacity: 0.5,
+                weight: 1,
+              }}
+              positions={feature?.geometry?.coordinates[0].map(
+                (latlng: LatLngExpression) => {
+                  const [lng, lat] = latlng as [number, number];
+                  return [lat, lng];
+                }
+              )}
+              eventHandlers={{
+                click: (e) => {
+                  setActivePolygon(index);
+                  setClickPosition({
+                    x: e.containerPoint.x,
+                    y: e.containerPoint.y,
+                  });
+                  console.log(
+                    wordCloud.find(
+                      (x) => x.id_segmento == feature.properties?.CD_SETOR
+                    )?.wordCount
+                  );
+                },
+              }}
+            >
+              {responseType == "text" &&
+                propertie &&
+                activePolygon == index &&
+                wordCloud.find(
+                  (x) => x.id_segmento == feature.properties?.CD_SETOR
+                ) && (
+                  <div
+                    className="word-cloud"
                     style={{
                       position: "absolute",
-                      top: "5px",
-                      right: "5px",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      color: "grey",
-                    }}
-                    onClick={() => {
-                      setActivePolygon(null);
-                      setClickPosition({ x: 0, y: 0 });
+                      top: `${clickPosition.y - 150}px`,
+                      left: `${clickPosition.x}px`,
+                      backgroundColor: "white",
+                      zIndex: 1000,
+                      padding: "10px",
+                      borderRadius: "5px",
+                      width: "225px",
+                      height: "150px",
+                      overflow: "hidden",
                     }}
                   >
-                    <span style={{ fontSize: "16px", fontWeight: "bold" }}>
-                      <Close />
-                    </span>
-                  </button>
-                  <ReactWordcloud
-                    words={
-                      wordCloud.find(
-                        (x) => x.id_segmento == feature.properties?.CD_SETOR
-                      )?.wordCount
-                    }
-                    options={{
-                      fontSizes: [10, 60],
-                      padding: 1,
-                      rotations: 2,
-                      rotationAngles: [-90, 0],
-                      scale: "sqrt",
-                      spiral: "archimedean",
-                      transitionDuration: 1000,
-                    }}
-                  />
-                </div>
-              )}
-
-            {/* {propertie && activePolygon === index && (
-                <Tooltip permanent>
-                {feature.properties[propertie].toFixed(2)}
-                </Tooltip>
-              )}} */}
-          </Polygon>
-        ))}
+                    <button
+                      style={{
+                        position: "absolute",
+                        top: "5px",
+                        right: "5px",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        color: "grey",
+                      }}
+                      onClick={() => {
+                        setActivePolygon(null);
+                        setClickPosition({ x: 0, y: 0 });
+                      }}
+                    >
+                      <span style={{ fontSize: "16px", fontWeight: "bold" }}>
+                        <Close />
+                      </span>
+                    </button>
+                    <ReactWordcloud
+                      words={
+                        wordCloud.find(
+                          (x) => x.id_segmento == feature.properties?.CD_SETOR
+                        )?.wordCount
+                      }
+                      options={{
+                        fontSizes: [10, 60],
+                        padding: 1,
+                        rotations: 2,
+                        rotationAngles: [-90, 0],
+                        scale: "sqrt",
+                        spiral: "archimedean",
+                        transitionDuration: 1000,
+                      }}
+                    />
+                  </div>
+                )}
+            </Polygon>
+          );
+        })}
 
         <ZoomControl position="topright" />
       </MapContainer>
@@ -353,6 +364,7 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
         <EventAnalyticsControls
           questions={questions}
           data={data}
+          event={event}
           handleChange={handleChange}
         />
       </div>
@@ -388,6 +400,7 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
           </div>
         )}
       </div>
+      <ToastContainer />
     </div>
   );
 };
