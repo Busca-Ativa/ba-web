@@ -85,7 +85,10 @@ export default function NewUnitModal({
       );
       setSupervisors([
         {
-          value: localStorage.getItem("user_id"),
+          value:
+            typeof window !== "undefined" && typeof localStorage !== "undefined"
+              ? localStorage.getItem("user_id")
+              : null,
           label: "Coordenador",
         } as any,
         ...supervisors.map((supervisor: any) => ({

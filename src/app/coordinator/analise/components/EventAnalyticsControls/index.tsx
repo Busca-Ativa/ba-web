@@ -56,8 +56,7 @@ const EventAnalyticsControls = ({
     <Box
       sx={{
         width: 269,
-        height:
-          typeof window !== "undefined" ? window.innerHeight * 0.8 : "80vh",
+        height: "80vh",
         position: "relative",
         backgroundColor: "white",
         borderRadius: 1,

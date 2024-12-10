@@ -16,13 +16,11 @@ import {
   Box,
   Button,
 } from "@mui/material";
-import L, { LatLngExpression } from "leaflet";
-import { MapOutlined } from "@mui/icons-material";
-import { use, useEffect, useRef, useState } from "react";
+import L from "leaflet";
+import { useEffect, useRef, useState } from "react";
 import api from "@/services/api";
 import { useRouter } from "next/navigation";
 import { Polygon } from "react-leaflet";
-import FitBoundsComponent from "../../analise/components/FitBoundsMap";
 
 // Componentes dinâmicos para evitar SSR no Leaflet
 const MapContainer = dynamic(
