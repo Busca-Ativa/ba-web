@@ -49,6 +49,28 @@ export default function Event({
   const [formattedDateRange, setFormattedDateRange] = useState<string>("");
   const router = useRouter();
   const [geojsons, setGeojsons] = useState<any[]>([]);
+  const [attendees, setAttendees] = useState<Attendee[]>([]);
+
+  interface Agent {
+    id: string;
+    name: string;
+  }
+
+  interface Team {
+    name: string;
+    agents: { id: string }[];
+  }
+
+  interface Event {
+    agents: Agent[];
+    teams: Team[];
+  }
+
+  interface Attendee {
+    name: string;
+    team: string | null;
+  }
+
   // Handle geolocation asynchronously inside useEffect
   useEffect(() => {
     if (navigator.geolocation) {
@@ -110,15 +132,39 @@ export default function Event({
       });
   }, [id]);
 
+  useEffect(() => {
+    if (!event) return;
+  
+    // Extract agents and teams from the event
+    const { agents = [], teams = [] }: Event = event;
+  
+    // Create a map of agent IDs to their team names
+    const teamMap: Record<string, string> = {};
+    teams.forEach((team: Team) => {
+      team.agents.forEach((agent) => {
+        teamMap[agent.id] = team.name;
+      });
+    });
+  
+    // Construct the attendees array
+    const formattedAttendees: Attendee[] = agents.map((agent: Agent) => ({
+      name: agent.name,
+      team: teamMap[agent.id] || null, // Assign team name if present in teamMap
+    }));
+  
+    // Update state with formatted attendees
+    setAttendees(formattedAttendees);
+  }, [event]);
+
   // Dados fictícios de exemplo
   const eventDetails = {
     title: "Evento #1",
     description: "Descrição detalhada do evento.",
     date: "23 de novembro de 2024",
     attendees: [
-      { name: "João", team: "Equipe A", collections: 12 },
-      { name: "Maria", team: "Equipe B", collections: 8 },
-      { name: "Pedro", team: "Equipe A", collections: 5 },
+      { name: "João", team: "Equipe A" },
+      { name: "Maria", team: "Equipe B" },
+      { name: "Pedro", team: "Equipe A" },
     ],
   };
 
@@ -406,13 +452,10 @@ export default function Event({
                   <TableCell>
                     <strong>Time</strong>
                   </TableCell>
-                  <TableCell>
-                    <strong>Coletas</strong>
-                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {eventDetails.attendees.map((attendee, index) => (
+                {attendees.map((attendee, index) => (
                   <TableRow
                     key={index}
                     sx={{
@@ -420,8 +463,7 @@ export default function Event({
                     }}
                   >
                     <TableCell>{attendee.name}</TableCell>
-                    <TableCell>{attendee.team}</TableCell>
-                    <TableCell>{attendee.collections}</TableCell>
+                    <TableCell>{attendee.team ?? "-"}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
