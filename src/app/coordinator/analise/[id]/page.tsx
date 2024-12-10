@@ -12,7 +12,6 @@ import geojsonData from "../../../data/fortaleza.json";
 import { useRouter } from "next/navigation";
 import api from "@/services/api";
 import FitBoundsComponent from "../components/FitBoundsMap";
-import ReactWordcloud from "react-wordcloud";
 import { Close } from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
