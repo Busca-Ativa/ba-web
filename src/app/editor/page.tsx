@@ -495,13 +495,6 @@ const EditorContent = () => {
                 handleAddElement({
                   type: "radiogroup",
                   name: "",
-                  // choices: [
-                  //   {id:0,label:"Muito Frequentemente",enabled:true},
-                  //   {id:1,label:"Raramente",enabled:true},
-                  //   {id:2,label:"Item 2",enabled:false},
-                  //   {id:3,label:"Item 3",enabled:false},
-                  //   {id:4,label:"Outro (Descreva)",enabled:false},
-                  // ]
                   choices: ["Muito Frequentemente", "Raramente"],
                 });
               }}
@@ -553,7 +546,6 @@ const EditorContent = () => {
               onClick={() => {
                 handleAddElement({
                   name: "",
-                  title: "",
                   type: "text",
                 });
               }}
@@ -570,7 +562,6 @@ const EditorContent = () => {
               onClick={() => {
                 handleAddElement({
                   name: "",
-                  title: "",
                   type: "comment",
                 });
               }}

@@ -68,9 +68,9 @@ const ModalQuestions = ({
   const getQuestionData = (questionType: string) => {
     switch (questionType) {
       case "ShortQuestion":
-        return { name: "", title: "", type: "text" };
+        return { name: "", type: "text" };
       case "LongQuestion":
-        return { name: "", title: "", type: "comment" };
+        return { name: "", type: "comment" };
       case "YesNotQuestion":
         return {
           name: "",

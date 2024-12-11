@@ -47,9 +47,9 @@ const Formularios = () => {
         }
 
         // WARN: Pegar unidades pega alguns forms que ja vem no da instituição fazendo eles ficarem repetidos
-        response = await api.get('/editor/unit/forms')
-        if (response.data.data){
-          list_forms.push(...response.data.data)
+        response = await api.get("/editor/unit/forms");
+        if (response.data.data) {
+          list_forms.push(...response.data.data);
         }
       } catch (error: any) {
         console.error(error.response?.message);
@@ -150,12 +150,14 @@ const Formularios = () => {
       <div className="flex justify-between">
         <div className="flex flex-col gap-[5px]">
           <h1>Formulários</h1>
-          <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {/* Secretaria de Saúde - Fortaleza */}
-            {(forms[0] as any)?.origin?.name} -{" "}
-            {(forms[0] as any)?.origin?.institution?.code_state} -{" "}
-            {(forms[0] as any)?.origin?.institution?.code_city}
-          </h2>
+          {forms && (
+            <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
+              {/* Secretaria de Saúde - Fortaleza */}
+              {(forms[0] as any)?.origin?.name} -{" "}
+              {(forms[0] as any)?.origin?.code_state} -{" "}
+              {(forms[0] as any)?.origin?.code_city}
+            </h2>
+          )}
         </div>
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
           <Add />
