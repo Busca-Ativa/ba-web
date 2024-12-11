@@ -54,26 +54,26 @@ const ShortQuestion: React.FC<ShortQuestionProps> = ({
 
   const [question, setQuestion] = useState(element?.title || "");
   const [type, setType] = useState(element?.type || "text");
-  const [required, setRequired] = useState(element?.required || false);
+  const [required, setRequired] = useState(element?.isRequired || false);
 
   useEffect(() => {
     if (element) {
       setQuestion(element.text);
       setType(element.type);
-      setRequired(element.required);
+      setRequired(element.isRequired);
     }
   }, [element]);
 
   const handleRequired = () => {
     const newRequired = !required;
-    setRequired(newRequired);
     dispatch(
       updateElement({
         pageIndex,
         elementIndex,
-        updatedElement: { ...element, required: newRequired },
+        updatedElement: { ...element, isRequired: newRequired },
       })
     );
+    setRequired(newRequired);
   };
 
   const handleTitleChange = (newText: string) => {

@@ -171,19 +171,21 @@ const Secoes = () => {
       <div className="flex justify-between">
         <div className="flex flex-col gap-[5px]">
           <h1>Seções</h1>
-          <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {userData?.unit
-              ? userData.unit.name +
-                " - " +
-                userData.institution.code_city +
-                " - " +
-                userData.institution.code_state
-              : userData?.institution?.name +
-                " - " +
-                userData?.institution?.code_state +
-                " - " +
-                userData?.institution?.code_city}
-          </h2>
+          {userData && (
+            <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
+              {userData?.unit
+                ? userData.unit.name +
+                  " - " +
+                  userData.institution.code_city +
+                  " - " +
+                  userData.institution.code_state
+                : userData?.institution?.name +
+                  " - " +
+                  userData?.institution?.code_state +
+                  " - " +
+                  userData?.institution?.code_city}
+            </h2>
+          )}
         </div>
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
           <Add />
