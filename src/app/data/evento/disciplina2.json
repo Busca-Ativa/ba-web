@@ -1,0 +1,89 @@
+{
+    "question": "Quais as disciplinas você menos gosta?",
+    "responses_by_segments": [
+        {
+            "id_segmento": "230440005130009P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "História"
+                ]
+            ],
+            "mode": "História"
+        },
+        {
+            "id_segmento": "230440005130010P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "Matemática",
+                    "Ciência"
+                ]
+            ],
+            "mode": "Matemática"
+        },
+        {
+            "id_segmento": "230440005130008P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "Português"
+                ]
+            ],
+            "mode": "Português"
+        },
+        {
+            "id_segmento": "230440005130007P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "Geografia",
+                    "Ciência"
+                ]
+            ],
+            "mode": "Geografia"
+        },
+        {
+            "id_segmento": "230440005130011P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "Geografia"
+                ]
+            ],
+            "mode": "Geografia"
+        },
+        {
+            "id_segmento": "230440005130012P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "História",
+                    "Ciência"
+                ]
+            ],
+            "mode": "História"
+        },
+        {
+            "id_segmento": "230440005130006P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "Matemática"
+                ]
+            ],
+            "mode": "Matemática"
+        },
+        {
+            "id_segmento": "230440005130005P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "Português"
+                ]
+            ],
+            "mode": "Português"
+        }
+    ],
+    "type": "categorical"
+}

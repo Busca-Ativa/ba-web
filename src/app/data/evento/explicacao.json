@@ -1,0 +1,70 @@
+{
+    "question": "Se você falta muito, conte-nos o porquê das suas faltas:",
+    "responses_by_segments": [
+        {
+            "id_segmento": "230440005130009P",
+            "type": "categorical",
+            "responses": [
+                "Falto raramente, mas quando acontece é por problemas de saúde."
+            ],
+            "mode": "Falto raramente, mas quando acontece é por problemas de saúde."
+        },
+        {
+            "id_segmento": "230440005130010P",
+            "type": "categorical",
+            "responses": [
+                "Falto por causa do trabalho e dificuldades financeiras para transporte."
+            ],
+            "mode": "Falto por causa do trabalho e dificuldades financeiras para transporte."
+        },
+        {
+            "id_segmento": "230440005130008P",
+            "type": "categorical",
+            "responses": [
+                ""
+            ],
+            "mode": ""
+        },
+        {
+            "id_segmento": "230440005130007P",
+            "type": "categorical",
+            "responses": [
+                "Falto por desmotivação e falta de interesse."
+            ],
+            "mode": "Falto por desmotivação e falta de interesse."
+        },
+        {
+            "id_segmento": "230440005130011P",
+            "type": "categorical",
+            "responses": [
+                "Eventualmente, compromissos familiares me impedem de ir."
+            ],
+            "mode": "Eventualmente, compromissos familiares me impedem de ir."
+        },
+        {
+            "id_segmento": "230440005130012P",
+            "type": "categorical",
+            "responses": [
+                "Tenho problemas com o transporte público."
+            ],
+            "mode": "Tenho problemas com o transporte público."
+        },
+        {
+            "id_segmento": "230440005130006P",
+            "type": "categorical",
+            "responses": [
+                ""
+            ],
+            "mode": ""
+        },
+        {
+            "id_segmento": "230440005130005P",
+            "type": "categorical",
+            "responses": [
+                "Preciso ajudar minha família no trabalho."
+            ],
+            "mode": "Preciso ajudar minha família no trabalho."
+        }
+    ],
+    "type": "text"
+}

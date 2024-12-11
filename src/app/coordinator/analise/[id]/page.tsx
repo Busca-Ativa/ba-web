@@ -15,9 +15,11 @@ import FitBoundsComponent from "../components/FitBoundsMap";
 import { Close } from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import mock from "../../../data/responses-mock.json";
-import mock2 from "../../../data/responses-mock2.json";
-import mock3 from "../../../data/responses-mock3.json";
+import nome from "../../../data/evento/nome.json";
+import disciplina1 from "../../../data/evento/disciplina1.json";
+import disciplina2 from "../../../data/evento/disciplina2.json";
+import frequencia from "../../../data/evento/frequencia.json";
+import explicacao from "../../../data/evento/explicacao.json";
 
 // Importação dinâmica para evitar SSR no Leaflet
 const MapContainer = dynamic(
@@ -50,7 +52,9 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
   });
   const [questions, setQuestions] = useState<any[]>([]);
   const [responses, setResponses] = useState<any[]>([]);
-  const [responseType, setResponseType] = useState();
+  const [responseType, setResponseType] = useState<string | undefined>(
+    undefined
+  );
   const [wordCloud, setWordCloud] = useState<any[]>([]);
   const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>({
     x: 0,
@@ -146,8 +150,25 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
                   : event.full_geometry_ref,
             }
           );
-          setResponseType(response.data.type);
-          setResponses(response.data.responses_by_segments);
+          let mock = null;
+          if (propertie?.name == "Nome:") {
+            mock = nome;
+          } else if (propertie?.name == "Quais as disciplinas você mais gosta?")
+            mock = disciplina1;
+          else if (propertie?.name == "Quais as disciplinas você menos gosta?")
+            mock = disciplina2;
+          else if (propertie?.name == "Com que frequência costuma faltar aula?")
+            mock = frequencia;
+          else if (
+            propertie?.name ==
+            "Se você falta muito, conte-nos o porquê das suas faltas:"
+          )
+            mock = explicacao;
+
+          if (mock) {
+            setResponseType(mock.type);
+            setResponses(mock.responses_by_segments);
+          }
         } catch (error: any) {
           toast.error(error.response.data.message);
         }
@@ -169,7 +190,7 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
   }, [filtro]);
 
   useEffect(() => {
-    if (responseType === "text") {
+    if (responseType == "text") {
       const wordCountByResponse = responses.map((response) => {
         const wordMap: { [key: string]: number } = {};
         response.responses.forEach((word: string) => {
@@ -190,7 +211,7 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
       console.log(wordCountByResponse);
       setWordCloud(wordCountByResponse);
     }
-    if (responseType === "categorical") {
+    if (responseType == "categorical") {
       const wordCountByResponse = responses.map((response) => {
         const wordMap: { [key: string]: number } = {};
 
@@ -212,11 +233,11 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
         };
       });
 
-      console.log(wordCountByResponse);
+      console.log("wordCountByResponse", wordCountByResponse);
       setWordCloud(wordCountByResponse);
     }
 
-    if (responseType === "numerical") {
+    if (responseType == "numerical") {
       // Extrair todos os valores numéricos de todas as respostas
       const allValues = responses.flatMap((segment: any) => segment.responses);
 

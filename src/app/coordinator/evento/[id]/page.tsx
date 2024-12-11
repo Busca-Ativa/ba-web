@@ -167,7 +167,8 @@ export default function Event({
         });
       });
     }
-  }, [agents, event]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event]);
 
   useEffect(() => {
     if (event && event.full_geometry_ref) {

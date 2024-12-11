@@ -1,0 +1,93 @@
+{
+    "question": "Quais as disciplinas você mais gosta?",
+    "responses_by_segments": [
+        {
+            "id_segmento": "230440005130009P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "Matemática",
+                    "Ciência"
+                ]
+            ],
+            "mode": "Matemática"
+        },
+        {
+            "id_segmento": "230440005130010P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "Português",
+                    "História"
+                ]
+            ],
+            "mode": "Português"
+        },
+        {
+            "id_segmento": "230440005130008P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "Ciência",
+                    "Geografia"
+                ]
+            ],
+            "mode": "Ciência"
+        },
+        {
+            "id_segmento": "230440005130007P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "História"
+                ]
+            ],
+            "mode": "História"
+        },
+        {
+            "id_segmento": "230440005130011P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "Português",
+                    "Ciência",
+                    "Matemática"
+                ]
+            ],
+            "mode": "Português"
+        },
+        {
+            "id_segmento": "230440005130012P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "Matemática"
+                ]
+            ],
+            "mode": "Matemática"
+        },
+        {
+            "id_segmento": "230440005130006P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "Ciência",
+                    "Português"
+                ]
+            ],
+            "mode": "Ciência"
+        },
+        {
+            "id_segmento": "230440005130005P",
+            "type": "categorical",
+            "responses": [
+                [
+                    "História",
+                    "Geografia"
+                ]
+            ],
+            "mode": "História"
+        }
+    ],
+    "type": "categorical"
+}
