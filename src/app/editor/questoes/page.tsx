@@ -146,7 +146,9 @@ const Questoes = () => {
     rowIndex: number
   ) => {
     try {
-      let response = await api.delete(`/editor/question/${row.id}`);
+      let response = await api.delete(`/editor/question/${row.id}`, {
+        withCredentials: true,
+      });
       const updatedRows = rows.filter((_, index) => index !== rowIndex);
       setRows(updatedRows);
     } catch (error: any) {
@@ -157,15 +159,17 @@ const Questoes = () => {
 
   const handleEdit = async (row: Record<string, string | number>) => {
     setEditQuestion(row);
-    api.get(`/editor/question/${row.id}`).then((response) => {
-      if (response.status === 200) {
-        const data = response.data;
-        dispatch(removeAllElements({ pageIndex: 0 }));
-        dispatch(addElement({ pageIndex: 0, element: data.question_data }));
-        setModalOpen(true);
-        setModalEdit(true);
-      }
-    });
+    api
+      .get(`/editor/question/${row.id}`, { withCredentials: true })
+      .then((response) => {
+        if (response.status === 200) {
+          const data = response.data;
+          dispatch(removeAllElements({ pageIndex: 0 }));
+          dispatch(addElement({ pageIndex: 0, element: data.question_data }));
+          setModalOpen(true);
+          setModalEdit(true);
+        }
+      });
   };
 
   const handleDuplicate = async (row: any, rowIndex: number) => {

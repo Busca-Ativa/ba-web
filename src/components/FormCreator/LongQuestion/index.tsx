@@ -49,7 +49,7 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
       state.survey.surveyJson.pages[pageIndex]?.elements[elementIndex]
   );
 
-  const [question, setQuestion] = useState<string>(element?.name || "");
+  const [question, setQuestion] = useState<string>(element?.title || "");
   const [type, setType] = useState<string>(element?.type || "text");
   const [required, setRequired] = useState<boolean>(
     element?.isRequired || false
@@ -57,7 +57,7 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
 
   useEffect(() => {
     if (element) {
-      setQuestion(element.name);
+      setQuestion(element.title);
       setType(element.type);
       setRequired(element.isRequired);
     }
@@ -79,7 +79,7 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
       updateElement({
         pageIndex,
         elementIndex,
-        updatedElement: { ...element, name: newQuestion },
+        updatedElement: { ...element, title: newQuestion },
       })
     );
   };

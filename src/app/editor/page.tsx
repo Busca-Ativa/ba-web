@@ -494,7 +494,7 @@ const EditorContent = () => {
               onClick={() => {
                 handleAddElement({
                   type: "radiogroup",
-                  name: "",
+                  title: "",
                   choices: ["Muito Frequentemente", "Raramente"],
                 });
               }}
@@ -511,7 +511,7 @@ const EditorContent = () => {
               onClick={() => {
                 handleAddElement({
                   type: "checkbox",
-                  name: "",
+                  title: "",
                   choices: ["Muito Frequentemente", "Raramente"],
                 });
               }}
@@ -527,7 +527,7 @@ const EditorContent = () => {
               onMouseLeave={handleTagsLeave}
               onClick={() => {
                 handleAddElement({
-                  name: "",
+                  title: "",
                   type: "boolean",
                   labelFalse: "Não",
                   labelTrue: "Sim",
@@ -545,7 +545,7 @@ const EditorContent = () => {
               onMouseLeave={handleTagsLeave}
               onClick={() => {
                 handleAddElement({
-                  name: "",
+                  title: "",
                   type: "text",
                 });
               }}
@@ -561,7 +561,7 @@ const EditorContent = () => {
               onMouseLeave={handleTagsLeave}
               onClick={() => {
                 handleAddElement({
-                  name: "",
+                  title: "",
                   type: "comment",
                 });
               }}
