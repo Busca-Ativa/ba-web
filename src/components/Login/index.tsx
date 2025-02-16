@@ -34,6 +34,9 @@ const Login = () => {
 
       if (role == "editor") {
         router.push("/editor/formularios");
+      }
+      if (role == "superuser") {
+        router.push("/admin/dashboard");
       } else {
         router.push(`/${role}/dashboard`);
       }
