@@ -233,14 +233,16 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
       </div>
       <div className="group mt-auto">
         <ul className="flex flex-col gap-2 w-full">
-          <li className={activePage === "config" ? "active" : ""}>
-            <Link href={`/${role === "superuser" ? "admin" : role}/config`}>
-              <div className="flex items-center gap-2">
-                <SettingsOutlined />
-                <span>Configurações</span>
-              </div>
-            </Link>
-          </li>
+          {role !== "superuser" && (
+            <li className={activePage === "config" ? "active" : ""}>
+              <Link href={`/${role === "superuser" ? "admin" : role}/config`}>
+                <div className="flex items-center gap-2">
+                  <SettingsOutlined />
+                  <span>Configurações</span>
+                </div>
+              </Link>
+            </li>
+          )}
           <li>
             <Link href="/">
               <div className="flex items-center gap-2">
