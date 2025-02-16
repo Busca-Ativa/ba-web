@@ -14,7 +14,7 @@ import { getStatus, StatusObject } from "@/utils";
 import { Model, Survey } from "survey-react-ui";
 import SkeletonTable from "@/components/SkeletonTable";
 import { useContextStore } from "@/stores/contextStore";
-import UserOriginInfo from "@/components/UserOriginInfo";
+import PageTitle from "@/components/PageTitle";
 
 const Formularios = () => {
   const { userOrigin, ensureUserOrigin } = useContextStore();
@@ -119,10 +119,7 @@ const Formularios = () => {
   return (
     <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between">
-        <div className="flex flex-col gap-[5px]">
-          <h1>Formulários</h1>
-          <UserOriginInfo />
-        </div>
+        <PageTitle title="Formulários" />
       </div>
       {loading && (
         <SkeletonTable

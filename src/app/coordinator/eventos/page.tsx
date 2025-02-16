@@ -12,6 +12,7 @@ import api from "@/services/api";
 import { AuthService } from "@/services/auth/auth";
 import dynamic from "next/dynamic";
 import SkeletonTable from "@/components/SkeletonTable";
+import PageTitle from "@/components/PageTitle";
 
 // Função para formatar datas no padrão dd/mm/aa
 const formatDate = (dateString: string) => {
@@ -154,14 +155,7 @@ const Eventos = () => {
   return (
     <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between">
-        <div className="flex flex-col gap-[5px]">
-          <h1>Eventos</h1>
-          <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {/* Secretaria de Saúde - Fortaleza */}
-            {(evens[0] as any)?.origin?.name} -{" "}
-            {(evens[0] as any)?.origin?.institution?.code_city || "Fortaleza"}
-          </h2>
-        </div>
+        <PageTitle title="Eventos" />
         <button
           className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white"
           onClick={() => setIsModalOpen(true)}

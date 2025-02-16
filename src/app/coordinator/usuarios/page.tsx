@@ -21,6 +21,7 @@ import { translateRole } from "@/utils/index";
 import CoordinatorEditUser from "@/components/Modals/CoordinatorEditUser";
 import "react-toastify/dist/ReactToastify.css";
 import SkeletonTable from "@/components/SkeletonTable";
+import PageTitle from "@/components/PageTitle";
 
 interface Row {
   [key: string]: string | number;
@@ -234,7 +235,7 @@ const UsuariosAdmin = () => {
         <>
           <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
             <div className="flex justify-between">
-              <h1>Usuários</h1>
+              <PageTitle title="Usuários" />
               <Button
                 onClick={handleShowApproval}
                 className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white"
