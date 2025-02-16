@@ -13,6 +13,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { translateRole } from "@/utils/index";
 import CoordinatorEditUser from "@/components/Modals/CoordinatorEditUser";
 import PageTitle from "@/components/PageTitle";
+import SkeletonTable from "@/components/SkeletonTable";
 
 interface Row {
   [key: string]: string | number;
@@ -20,6 +21,7 @@ interface Row {
 
 const UsuariosAdmin = () => {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [pass, setPass] = useState(false);
   const [userRows, setUserRows] = useState<any[]>([]);
   const [approvalRows, setApprovalRows] = useState<any[]>([]);
@@ -106,6 +108,7 @@ const UsuariosAdmin = () => {
 
   useEffect(() => {
     const getData = async () => {
+      setLoading(true);
       try {
         const response = await api.get("/supervisor/users?active=1", {
           withCredentials: true,
@@ -122,6 +125,8 @@ const UsuariosAdmin = () => {
         setUserRows(rows);
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
     getData();
@@ -199,17 +204,20 @@ const UsuariosAdmin = () => {
                 </div>
               </Button>
             </div>
-            <BATable
-              columns={columns}
-              initialRows={userRows}
-              onEdit={handleOpen}
-              onDelete={(
-                row: Record<string, string | number>,
-                rowIndex: number
-              ) => {
-                handleApproval(row, rowIndex, false);
-              }}
-            />
+            {loading && <SkeletonTable columns={columns} showActions={true} />}
+            {!loading && (
+              <BATable
+                columns={columns}
+                initialRows={userRows}
+                onEdit={handleOpen}
+                onDelete={(
+                  row: Record<string, string | number>,
+                  rowIndex: number
+                ) => {
+                  handleApproval(row, rowIndex, false);
+                }}
+              />
+            )}
           </div>
         </>
       )}

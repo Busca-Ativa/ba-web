@@ -132,7 +132,7 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
                     </div>
                   </Link>
                 </li>
-                <li className={activePage === "secoes" ? "active" : ""}>
+                <li className={activePage === "eventos" ? "active" : ""}>
                   <Link style={{ width: "100%" }} href="/coordinator/eventos">
                     <div className="flex items-center gap-2">
                       <EventOutlined />
@@ -189,7 +189,7 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
                     </div>
                   </Link>
                 </li>
-                <li className={activePage === "secoes" ? "active" : ""}>
+                <li className={activePage === "eventos" ? "active" : ""}>
                   <Link style={{ width: "100%" }} href="/supervisor/eventos">
                     <div className="flex items-center gap-2">
                       <EventOutlined />

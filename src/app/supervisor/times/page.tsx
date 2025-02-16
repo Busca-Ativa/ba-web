@@ -13,6 +13,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { translateRole } from "@/utils/index";
 import CoordinatorEditUser from "@/components/Modals/CoordinatorEditUser";
 import PageTitle from "@/components/PageTitle";
+import SkeletonTable from "@/components/SkeletonTable";
 
 interface Row {
   [key: string]: string | number;
@@ -20,6 +21,7 @@ interface Row {
 
 const Times = () => {
   const [userRows, setUserRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const columns = [
     { id: "name", label: "Nome", numeric: false },
@@ -33,6 +35,7 @@ const Times = () => {
 
   useEffect(() => {
     const getData = async () => {
+      setLoading(true);
       try {
         const response = await api.get("/supervisor/unit/teams", {
           withCredentials: true,
@@ -55,6 +58,8 @@ const Times = () => {
         setUserRows(rows);
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
     getData();
@@ -75,7 +80,8 @@ const Times = () => {
             </div>
           </Button>
         </div>
-        <BATable columns={columns} initialRows={userRows} />
+        {loading && <SkeletonTable columns={columns} />}
+        {!loading && <BATable columns={columns} initialRows={userRows} />}
       </div>
 
       <ToastContainer />

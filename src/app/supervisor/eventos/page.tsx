@@ -6,6 +6,7 @@ import BATable from "@/components/BATable";
 
 import api from "@/services/api";
 import PageTitle from "@/components/PageTitle";
+import SkeletonTable from "@/components/SkeletonTable";
 
 // Função para formatar datas no padrão dd/mm/aa
 const formatDate = (dateString: string) => {
@@ -25,6 +26,7 @@ const isPastEvent = (startDate: string) => {
 };
 
 const Eventos = () => {
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const columns = [
@@ -50,6 +52,7 @@ const Eventos = () => {
 
     const loadData = async () => {
       try {
+        setLoading(true);
         const [eventsData] = await Promise.all([fetchEvents()]);
 
         const formattedEvents = eventsData.map((event: any) => ({
@@ -78,6 +81,8 @@ const Eventos = () => {
         setRows(formattedRows);
       } catch (error) {
         console.error("Erro ao carregar os dados:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -94,11 +99,20 @@ const Eventos = () => {
       <div className="flex justify-between">
         <PageTitle title="Eventos" />
       </div>
-      <BATable
-        columns={columns}
-        initialRows={rows as any}
-        onAnalyse={handleAnalyse}
-      />
+      {loading && (
+        <SkeletonTable
+          columns={columns}
+          showActions={true}
+          showDelete={false}
+        />
+      )}
+      {!loading && (
+        <BATable
+          columns={columns}
+          initialRows={rows as any}
+          onAnalyse={handleAnalyse}
+        />
+      )}
     </div>
   );
 };
