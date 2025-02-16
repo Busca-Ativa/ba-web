@@ -44,7 +44,7 @@ const InstituicoesAdmin = () => {
           return {
             ...inst,
             estado: getEstadoById(inst.code_state),
-            cidade: getCidadeById(inst.code_state, inst.code_city),
+            cidade: getCidadeById(inst.code_city),
           };
         });
         setData(rows);
