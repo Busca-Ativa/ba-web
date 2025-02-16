@@ -1,25 +1,16 @@
 "use client";
-import React, { useState } from "react";
-import {
-  Button,
-  TextField,
-  IconButton,
-  Tabs,
-  Tab,
-  Typography,
-} from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import React, { useEffect, useState } from "react";
+import { Button, TextField, Tabs, Tab } from "@mui/material";
 import api from "@/services/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const ProfileSettings: React.FC = () => {
-  const [showPassword, setShowPassword] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [formUser, setFormUser] = useState({
     name: "",
+    lastName: "",
     email: "",
-    password: "",
   });
   const [formInstitution, setFormInstitution] = useState({
     name: "",
@@ -27,10 +18,6 @@ const ProfileSettings: React.FC = () => {
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword((prev) => !prev);
   };
 
   const handleUserChange = (field: string, value: string) => {
@@ -41,12 +28,47 @@ const ProfileSettings: React.FC = () => {
     setFormInstitution((prev) => ({ ...prev, [field]: value }));
   };
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await api.get("/all/user", {
+          withCredentials: true,
+        });
+        if (response.status !== 200) {
+          throw new Error("Erro ao buscar dados do usuário");
+        }
+        const { name, lastName, email } = response.data;
+        setFormUser({ name, lastName, email });
+      } catch (error) {
+        console.error(error);
+        toast.error("Erro ao buscar dados do usuário");
+      }
+    };
+
+    const fetchInstitutionData = async () => {
+      try {
+        const response = await api.get("/coordinator/institution");
+        if (response.status !== 200) {
+          throw new Error("Erro ao buscar dados da instituição");
+        }
+        const { name } = response.data.data.institution;
+        setFormInstitution({ name });
+      } catch (error) {
+        console.error(error);
+        toast.error("Erro ao buscar dados da instituição");
+      }
+    };
+
+    if (tabValue === 0) fetchUserData();
+    if (tabValue === 1) fetchInstitutionData();
+  }, [tabValue]);
+
   const updateUserProfile = async () => {
     try {
       const updatedFields = Object.fromEntries(
         Object.entries(formUser).filter(([_, value]) => value)
       );
-      const response = await api.patch("/coordinator/user", {
+      const response = await api.patch("/all/user", {
         ...updatedFields,
         id_user:
           typeof window !== "undefined" && typeof localStorage !== "undefined"
@@ -85,12 +107,7 @@ const ProfileSettings: React.FC = () => {
   return (
     <div className="w-full px-[45px] pt-[60px]">
       {/* Title */}
-      <Typography
-        variant="h4"
-        className="text-3xl font-[Poppins] text-[42px] font-bold mb-8"
-      >
-        Configurações
-      </Typography>
+      <h1 className="mb-8">Configurações</h1>
 
       {/* Tabs */}
       <Tabs
@@ -104,49 +121,52 @@ const ProfileSettings: React.FC = () => {
             height: "100%",
             zIndex: 0,
           },
-          "& .Mui-selected": {
+          "& .MuiTab-root": {
+            color: "#575757",
+            fontFamily: "Poppins",
+            fontSize: "14px",
+            fontStyle: "normal",
+            fontWeight: 500,
+            lineHeight: "21px",
+            textTransform: "none",
+          },
+          "& .MuiTab-root.Mui-selected": {
             color: "#19B394",
           },
         }}
       >
-        <Tab label="Perfil" className="capitalize" />
-        <Tab label="Instituição" className="capitalize" />
+        <Tab label="Perfil" />
+        <Tab label="Instituição" />
       </Tabs>
 
       {/* Profile Section */}
       {tabValue === 0 && (
         <div className="flex flex-col gap-8 w-1/2">
-          <div className="flex flex-col gap-4">
-            <Typography
-              variant="h5"
-              className="text-2xl font-bold text-[30px] mb-2"
-              sx={{
-                color: "#0e1113",
-                fontSize: "1.875rem",
-                fontWeight: "bold",
-              }}
-            >
+          <div className="flex flex-col gap-4 mt-7">
+            <div className="text-2xl font-bold text-[30px] mb-2 font-['Poppins']">
               Perfil
-            </Typography>
-            <Typography
-              className="text-gray-600 mb-4"
-              sx={{
-                color: "#575757",
-                fontSize: "0.875rem",
-              }}
-            >
+            </div>
+            <div className="text-gray-600 mb-4 font-['Poppins']">
               Gerencie as configurações do seu perfil.
-            </Typography>
+            </div>
           </div>
 
           {/* Form */}
           <div className="flex flex-col gap-4">
             <TextField
-              label="Nome Completo"
+              label="Nome"
               variant="outlined"
               fullWidth
               value={formUser.name}
               onChange={(e) => handleUserChange("name", e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Sobrenome"
+              variant="outlined"
+              fullWidth
+              value={formUser.lastName}
+              onChange={(e) => handleUserChange("lastName", e.target.value)}
               InputLabelProps={{ shrink: true }}
             />
             <TextField
@@ -158,33 +178,19 @@ const ProfileSettings: React.FC = () => {
               onChange={(e) => handleUserChange("email", e.target.value)}
               InputLabelProps={{ shrink: true }}
             />
-            <div className="relative">
-              <TextField
-                label="Senha"
-                type={showPassword ? "text" : "password"}
-                variant="outlined"
-                fullWidth
-                value={formUser.password}
-                onChange={(e) => handleUserChange("password", e.target.value)}
-                InputLabelProps={{ shrink: true }}
-              />
-              <IconButton
-                onClick={togglePasswordVisibility}
-                className="absolute right-4 top-2"
-                edge="end"
-              >
-                {showPassword ? <VisibilityOff /> : <Visibility />}
-              </IconButton>
-            </div>
 
             <Button
               variant="contained"
               className="bg-[#19b394]"
               onClick={updateUserProfile}
-              style={{
+              sx={{
+                fontFamily: "Poppins",
                 textTransform: "none",
                 width: "128px",
                 marginTop: "8px",
+                "&:hover": {
+                  backgroundColor: "#128a76",
+                },
               }}
             >
               Atualizar
@@ -196,27 +202,13 @@ const ProfileSettings: React.FC = () => {
       {/* Institution Section */}
       {tabValue === 1 && (
         <div className="flex flex-col gap-8 w-1/2">
-          <div className="flex flex-col gap-4">
-            <Typography
-              variant="h5"
-              className="text-2xl font-bold text-[30px] mb-2"
-              sx={{
-                color: "#0e1113",
-                fontSize: "1.875rem",
-                fontWeight: "bold",
-              }}
-            >
+          <div className="flex flex-col gap-4 mt-7">
+            <div className="text-2xl font-bold text-[30px] mb-2 font-['Poppins']">
               Instituição
-            </Typography>
-            <Typography
-              className="text-gray-600 mb-4"
-              sx={{
-                color: "#575757",
-                fontSize: "0.875rem",
-              }}
-            >
+            </div>
+            <div className="text-gray-600 mb-4 font-['Poppins']">
               Gerencie as configurações da sua instituição.
-            </Typography>
+            </div>
           </div>
 
           {/* Form */}
@@ -234,10 +226,14 @@ const ProfileSettings: React.FC = () => {
               variant="contained"
               className="bg-[#19b394]"
               onClick={updateInstitution}
-              style={{
+              sx={{
+                fontFamily: "Poppins",
                 textTransform: "none",
                 width: "128px",
                 marginTop: "8px",
+                "&:hover": {
+                  backgroundColor: "#128a76",
+                },
               }}
             >
               Atualizar
