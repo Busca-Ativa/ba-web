@@ -34,11 +34,14 @@ const Login = () => {
 
       if (role == "editor") {
         router.push("/editor/formularios");
+        return;
       }
       if (role == "superuser") {
         router.push("/admin/dashboard");
+        return;
       } else {
         router.push(`/${role}/dashboard`);
+        return;
       }
     } catch (err) {
       setError(
