@@ -10,6 +10,7 @@ import nookies from "nookies";
 import { GetServerSidePropsContext } from "next";
 import { AuthService } from "@/services/auth/auth";
 import { getStatus, StatusObject } from "@/utils";
+import PageTitle from "@/components/PageTitle";
 
 const Formularios = () => {
   const router = useRouter();
@@ -148,17 +149,7 @@ const Formularios = () => {
   return (
     <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between">
-        <div className="flex flex-col gap-[5px]">
-          <h1>Formulários</h1>
-          {forms && (
-            <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-              {/* Secretaria de Saúde - Fortaleza */}
-              {(forms[0] as any)?.origin?.name} -{" "}
-              {(forms[0] as any)?.origin?.code_state} -{" "}
-              {(forms[0] as any)?.origin?.code_city}
-            </h2>
-          )}
-        </div>
+        <PageTitle title="Formulários" />
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
           <Add />
           <div

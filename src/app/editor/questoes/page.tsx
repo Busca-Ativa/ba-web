@@ -13,6 +13,7 @@ import { getStatus, StatusObject } from "@/utils";
 import ModalQuestions from "@/components/FormCreator/ModalQuestions";
 import { useDispatch } from "react-redux";
 import { addElement, removeAllElements } from "../../../../redux/surveySlice";
+import PageTitle from "@/components/PageTitle";
 
 const Questoes = () => {
   const router = useRouter();
@@ -212,14 +213,7 @@ const Questoes = () => {
   return (
     <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between">
-        <div className="flex flex-col gap-[5px]">
-          <h1>Questões</h1>
-          <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {/* Secretaria de Saúde - Fortaleza */}
-            {/* {forms[0]?.institution.name} - {forms[0]?.institution.code_state} -{" "} */}
-            {/* {forms[0]?.institution.code_city} */}
-          </h2>
-        </div>
+        <PageTitle title="Questões" />
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
           <Add />
           <div
