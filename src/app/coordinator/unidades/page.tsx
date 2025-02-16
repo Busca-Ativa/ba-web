@@ -2,20 +2,19 @@
 
 import { useRouter } from "next/navigation";
 import api from "@/services/api";
-import { getEstadoById, getCidadeById } from "@/services/ibge/api";
-import { act, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import nookies from "nookies";
 import { Button } from "@mui/material";
-import { Add, PlusOne } from "@mui/icons-material";
+import { Add } from "@mui/icons-material";
 import BATable from "@/components/BATable";
-import NewInstitutionModal from "@/components/Modals/NewInstitution";
 import { toast, ToastContainer } from "react-toastify";
 import NewUnitModal from "@/components/Modals/NewUnit";
-import { on } from "events";
 import "react-toastify/dist/ReactToastify.css";
+import SkeletonTable from "@/components/SkeletonTable";
 
 const InstituicoesAdmin = () => {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [pass, setPass] = useState(false);
   const [rows, setData] = useState<Row[]>([]);
 
@@ -40,6 +39,7 @@ const InstituicoesAdmin = () => {
 
   useEffect(() => {
     const getData = async () => {
+      setLoading(true);
       try {
         const response = await api.get("/coordinator/institution/units", {
           withCredentials: true,
@@ -59,6 +59,8 @@ const InstituicoesAdmin = () => {
         setData(rows);
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
     getData();
@@ -194,12 +196,15 @@ const InstituicoesAdmin = () => {
                 </div>
               </Button>
             </div>
-            <BATable
-              columns={columns}
-              initialRows={rows}
-              onDelete={onDelete}
-              onEdit={handleEdit}
-            />
+            {loading && <SkeletonTable columns={columns} showActions={true} />}
+            {!loading && (
+              <BATable
+                columns={columns}
+                initialRows={rows}
+                onDelete={onDelete}
+                onEdit={handleEdit}
+              />
+            )}
           </div>
         </>
       )}

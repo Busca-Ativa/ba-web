@@ -12,8 +12,10 @@ import { GetServerSidePropsContext } from "next";
 import { AuthService } from "@/services/auth/auth";
 import { getStatus, StatusObject } from "@/utils";
 import { Model, Survey } from "survey-react-ui";
+import SkeletonTable from "@/components/SkeletonTable";
 
 const Formularios = () => {
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const columns = [
     { id: "title", label: "Título", numeric: false },
@@ -37,6 +39,7 @@ const Formularios = () => {
 
   useEffect(() => {
     const getForms = async () => {
+      setLoading(true);
       let list_forms = [];
       try {
         let response = await api.get("/coordinator/institution/forms", {
@@ -57,6 +60,7 @@ const Formularios = () => {
         throw error;
       } finally {
         setForms(list_forms);
+        setLoading(false);
       }
     };
     getForms();
@@ -116,21 +120,21 @@ const Formularios = () => {
             {(forms[0] as any)?.origin?.institution?.code_city}
           </h2>
         </div>
-        {/* <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
-          <Add />
-          <div
-            className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]"
-            onClick={pushEditor}
-          >
-            Novo Formulário
-          </div>
-        </button> */}
       </div>
-      <BATable
-        columns={columns}
-        initialRows={rows as any}
-        onAnalyse={handleSee}
-      />
+      {loading && (
+        <SkeletonTable
+          columns={columns}
+          showActions={true}
+          showDelete={false}
+        />
+      )}
+      {!loading && (
+        <BATable
+          columns={columns}
+          initialRows={rows as any}
+          onAnalyse={handleSee}
+        />
+      )}
       {form && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 pb-16 rounded shadow-lg w-[80%] max-w-[800px] h-[80%]">

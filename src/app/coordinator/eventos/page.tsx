@@ -11,6 +11,7 @@ const NewEvent = dynamic(() => import("@/components/Modals/NewEvent"), {
 import api from "@/services/api";
 import { AuthService } from "@/services/auth/auth";
 import dynamic from "next/dynamic";
+import SkeletonTable from "@/components/SkeletonTable";
 
 // Função para formatar datas no padrão dd/mm/aa
 const formatDate = (dateString: string) => {
@@ -39,6 +40,7 @@ const Eventos = () => {
     { id: "progress", label: "Progresso", numeric: false },
   ];
 
+  const [loading, setLoading] = useState(true);
   const [evens, setEvents] = useState<any[]>([]);
   const [origin, setOrigin] = useState<any>({});
 
@@ -71,6 +73,7 @@ const Eventos = () => {
 
     // Atualiza os estados com os dados formatados
     const loadData = async () => {
+      setLoading(true);
       try {
         const [institution, eventsData] = await Promise.all([
           fetchInstitution(),
@@ -111,6 +114,8 @@ const Eventos = () => {
         setRows(formattedRows);
       } catch (error) {
         console.error("Erro ao carregar os dados:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -167,13 +172,16 @@ const Eventos = () => {
           </div>
         </button>
       </div>
-      <BATable
-        columns={columns}
-        initialRows={rows as any}
-        onAnalyse={handleAnalyse}
-        onDelete={handleDelete}
-        onEdit={handleDelete}
-      />
+      {loading && <SkeletonTable columns={columns} showActions />}
+      {!loading && (
+        <BATable
+          columns={columns}
+          initialRows={rows as any}
+          onAnalyse={handleAnalyse}
+          onDelete={handleDelete}
+          onEdit={handleDelete}
+        />
+      )}
       {isModalOpen && (
         <NewEvent
           open={isModalOpen}

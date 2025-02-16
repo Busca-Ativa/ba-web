@@ -9,7 +9,6 @@ import {
   Paper,
   Box,
   Typography,
-  Pagination,
   TableSortLabel,
   createTheme,
   ThemeProvider,
@@ -79,12 +78,16 @@ interface SkeletonTableProps {
   rows?: number;
   columns?: Column[];
   showActions?: boolean;
+  showEdit?: boolean;
+  showDelete?: boolean;
 }
 
 const SkeletonTable = ({
   rows = 10,
   columns = [],
   showActions = false,
+  showEdit = true,
+  showDelete = true,
 }: SkeletonTableProps) => {
   return (
     <>
@@ -141,25 +144,21 @@ const SkeletonTable = ({
                   {/* Action Buttons Placeholder */}
                   {showActions && (
                     <TableCell colSpan={2} sx={{ width: 20 }}>
-                      <Box display="flex" justifyContent="flex-end">
-                        <Skeleton
-                          variant="circular"
-                          width={32}
-                          height={32}
-                          sx={{ mx: 1 }}
-                        />
-                        <Skeleton
-                          variant="circular"
-                          width={32}
-                          height={32}
-                          sx={{ mx: 1 }}
-                        />
-                        <Skeleton
-                          variant="circular"
-                          width={32}
-                          height={32}
-                          sx={{ mx: 1 }}
-                        />
+                      <Box display="flex" justifyContent="flex-end" gap={2}>
+                        {showEdit && (
+                          <Skeleton
+                            variant="rectangular"
+                            width={120}
+                            height={35}
+                          />
+                        )}
+                        {showDelete && (
+                          <Skeleton
+                            variant="rectangular"
+                            width={54}
+                            height={35}
+                          />
+                        )}
                       </Box>
                     </TableCell>
                   )}
@@ -177,9 +176,9 @@ const SkeletonTable = ({
         padding="16px"
       >
         <Typography sx={{ fontSize: 16, color: "#8A8A8A" }}>
-          <Skeleton variant="text" width={120} height={24} />
+          <Skeleton variant="text" width={150} height={24} />
         </Typography>
-        <Skeleton variant="rectangular" width={200} height={32} />
+        <Skeleton variant="rectangular" width={125} height={32} />
       </Box>
     </>
   );
