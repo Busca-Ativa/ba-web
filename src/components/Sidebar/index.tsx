@@ -18,6 +18,7 @@ import "./style.css";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useContextStore } from "@/stores/contextStore";
 
 import { useDispatch } from "react-redux";
 
@@ -26,6 +27,7 @@ import { AuthService } from "@/services/auth/auth";
 const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
   const [expanded, setExpanded] = useState(false);
   const [role, setRole] = useState("");
+  const { setUserOrigin } = useContextStore();
 
   useEffect(() => {
     if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
@@ -255,6 +257,12 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
                     ) {
                       localStorage.clear();
                     }
+                    setUserOrigin({
+                      institutionName: null,
+                      institutionId: null,
+                      institutionCity: null,
+                      institutionState: null,
+                    });
                     AuthService.logout();
                   }}
                 >

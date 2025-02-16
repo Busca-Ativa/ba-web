@@ -4,8 +4,10 @@ import { Button, TextField, Tabs, Tab } from "@mui/material";
 import api from "@/services/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useContextStore } from "@/stores/contextStore";
 
 const ProfileSettings: React.FC = () => {
+  const { ensureUserOrigin } = useContextStore();
   const [tabValue, setTabValue] = useState(0);
   const [formUser, setFormUser] = useState({
     name: "",
@@ -98,6 +100,7 @@ const ProfileSettings: React.FC = () => {
         throw new Error("Erro ao atualizar instituição");
       }
       toast.success("Instituição atualizada com sucesso!");
+      await ensureUserOrigin();
     } catch (error) {
       console.error(error);
       toast.error("Erro ao atualizar instituição");
