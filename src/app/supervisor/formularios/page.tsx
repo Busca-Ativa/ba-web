@@ -9,10 +9,10 @@ import BATable from "@/components/BATable";
 import api from "@/services/api";
 import { getStatus, StatusObject } from "@/utils";
 import { Model, Survey } from "survey-react-ui";
+import PageTitle from "@/components/PageTitle";
 
 const Formularios = () => {
   const router = useRouter();
-  const [unitInfo, setUnitInfo] = useState("Loading...");
   const columns = [
     { id: "title", label: "Título", numeric: false },
     { id: "creator", label: "Criador", numeric: false },
@@ -86,29 +86,10 @@ const Formularios = () => {
     }
   };
 
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await api.get("/all/user", { withCredentials: true });
-        const dataFromApi = response.data;
-        const unit = dataFromApi.unit;
-        setUnitInfo(unit.name);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getData();
-  }, []);
-
   return (
     <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col">
       <div className="flex justify-between mb-7 items-center">
-        <div className="flex flex-col gap-1">
-          <h1>Formulários</h1>
-          <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {unitInfo}
-          </h2>
-        </div>
+        <PageTitle title="Formulários" />
       </div>
       <BATable
         columns={columns}

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import BATable from "@/components/BATable";
 
 import api from "@/services/api";
+import PageTitle from "@/components/PageTitle";
 
 // Função para formatar datas no padrão dd/mm/aa
 const formatDate = (dateString: string) => {
@@ -25,7 +26,6 @@ const isPastEvent = (startDate: string) => {
 
 const Eventos = () => {
   const router = useRouter();
-  const [unitInfo, setUnitInfo] = useState("Loading...");
 
   const columns = [
     { id: "title", label: "Título", numeric: false },
@@ -41,20 +41,6 @@ const Eventos = () => {
   }
 
   const [rows, setRows] = useState<Row[]>([]);
-
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await api.get("/all/user", { withCredentials: true });
-        const dataFromApi = response.data;
-        const unit = dataFromApi.unit;
-        setUnitInfo(unit.name);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getData();
-  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -106,12 +92,7 @@ const Eventos = () => {
   return (
     <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between">
-        <div className="flex flex-col gap-1">
-          <h1>Times</h1>
-          <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {unitInfo}
-          </h2>
-        </div>
+        <PageTitle title="Eventos" />
       </div>
       <BATable
         columns={columns}
