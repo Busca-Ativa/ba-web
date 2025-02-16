@@ -46,15 +46,16 @@ const Formularios = () => {
         if (response.data.data) {
           list_forms.push(...response.data.data);
         }
-
-        // WARN: Pegar unidades pega alguns forms que ja vem no da instituição fazendo eles ficarem repetidos
         response = await api.get("/editor/unit/forms");
         if (response.data.data) {
           list_forms.push(...response.data.data);
         }
       } catch (error: any) {
-        console.error(error.response?.message);
-        throw error;
+        if (error.response?.status === 404) {
+          console.warn("Nenhum formulário encontrado");
+        } else {
+          console.error(error.response?.message);
+        }
       } finally {
         setForms(list_forms);
       }
