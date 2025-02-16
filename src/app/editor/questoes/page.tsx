@@ -14,8 +14,10 @@ import ModalQuestions from "@/components/FormCreator/ModalQuestions";
 import { useDispatch } from "react-redux";
 import { addElement, removeAllElements } from "../../../../redux/surveySlice";
 import PageTitle from "@/components/PageTitle";
+import SkeletonTable from "@/components/SkeletonTable";
 
 const Questoes = () => {
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const columns = [
     { id: "title", label: "Título", numeric: false },
@@ -37,7 +39,6 @@ const Questoes = () => {
   const [rowsConfig, setRowsConfig] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalEdit, setModalEdit] = useState(false);
-  const [userData, setUserData] = useState<any>({});
   const [editQuestion, setEditQuestion] = useState<any>({});
   const user: any = AuthService.getUser();
 
@@ -51,24 +52,8 @@ const Questoes = () => {
   }, [dispatch, modalOpen]);
 
   useEffect(() => {
-    const getUserData = async () => {
-      try {
-        let response = await api.get("/all/user", {
-          withCredentials: true,
-        });
-        if (response.data) {
-          setUserData(response.data);
-        }
-      } catch (error: any) {
-        if (error.response?.status === 401) {
-          console.warn("Acesso não autorizado");
-        } else {
-          console.error(error.response?.message);
-          throw error;
-        }
-      }
-    };
     const getForms = async () => {
+      setLoading(true);
       let list_forms: SetStateAction<any[]> = [];
       try {
         let response = await api.get("/editor/questions", {
@@ -82,14 +67,15 @@ const Questoes = () => {
         throw error;
       } finally {
         setForms(list_forms);
+        setLoading(false);
       }
     };
     getForms();
-    getUserData();
   }, []);
 
   const reloadQuestions = () => {
     const getForms = async () => {
+      setLoading(true);
       let list_forms: SetStateAction<any[]> = [];
       try {
         let response = await api.get("/editor/questions", {
@@ -103,6 +89,7 @@ const Questoes = () => {
         throw error;
       } finally {
         setForms(list_forms);
+        setLoading(false);
       }
     };
     getForms();
@@ -224,13 +211,16 @@ const Questoes = () => {
           </div>
         </button>
       </div>
-      <BATable
-        columns={columns}
-        initialRows={rows as any}
-        onDuplicate={handleDuplicate}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
-      />
+      {loading && <SkeletonTable columns={columns} showActions={true} />}
+      {!loading && (
+        <BATable
+          columns={columns}
+          initialRows={rows as any}
+          onDuplicate={handleDuplicate}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+        />
+      )}
       {modalOpen && (
         <ModalQuestions
           onClose={setModalOpen}

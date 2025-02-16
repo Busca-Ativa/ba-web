@@ -11,8 +11,10 @@ import { GetServerSidePropsContext } from "next";
 import { AuthService } from "@/services/auth/auth";
 import { getStatus, StatusObject } from "@/utils";
 import PageTitle from "@/components/PageTitle";
+import SkeletonTable from "@/components/SkeletonTable";
 
 const Secoes = () => {
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const columns = [
     { id: "title", label: "Título", numeric: false },
@@ -39,6 +41,7 @@ const Secoes = () => {
 
   useEffect(() => {
     const getForms = async () => {
+      setLoading(true);
       let list_forms = [];
       try {
         let response = await api.get("/editor/sections", {
@@ -62,6 +65,7 @@ const Secoes = () => {
         }
       } finally {
         setForms(list_forms);
+        setLoading(false);
       }
     };
     getForms();
@@ -162,13 +166,16 @@ const Secoes = () => {
           </div>
         </button>
       </div>
-      <BATable
-        columns={columns}
-        initialRows={rows as any}
-        onDuplicate={handleDuplicate}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
-      />
+      {loading && <SkeletonTable columns={columns} showActions={true} />}
+      {!loading && (
+        <BATable
+          columns={columns}
+          initialRows={rows as any}
+          onDuplicate={handleDuplicate}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+        />
+      )}
     </div>
   );
 };

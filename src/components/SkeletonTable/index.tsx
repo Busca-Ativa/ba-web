@@ -83,7 +83,7 @@ interface SkeletonTableProps {
 }
 
 const SkeletonTable = ({
-  rows = 10,
+  rows = 8,
   columns = [],
   showActions = false,
   showEdit = true,
