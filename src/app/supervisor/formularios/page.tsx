@@ -96,7 +96,7 @@ const Formularios = () => {
   };
 
   return (
-    <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col">
+    <div className="w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between mb-7 items-center">
         <PageTitle title="Formulários" />
       </div>

@@ -73,6 +73,10 @@ const Questoes = () => {
     getForms();
   }, []);
 
+  useEffect(() => {
+    document.title = "Questões | Busca Ativa";
+  }, []);
+
   const reloadQuestions = () => {
     const getForms = async () => {
       setLoading(true);
@@ -198,7 +202,7 @@ const Questoes = () => {
   };
 
   return (
-    <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
+    <div className="w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between">
         <PageTitle title="Questões" />
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
