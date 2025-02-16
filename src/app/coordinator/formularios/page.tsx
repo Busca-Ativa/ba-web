@@ -13,8 +13,16 @@ import { AuthService } from "@/services/auth/auth";
 import { getStatus, StatusObject } from "@/utils";
 import { Model, Survey } from "survey-react-ui";
 import SkeletonTable from "@/components/SkeletonTable";
+import { useContextStore } from "@/stores/contextStore";
+import UserOriginInfo from "@/components/UserOriginInfo";
 
 const Formularios = () => {
+  const { userOrigin, ensureUserOrigin } = useContextStore();
+
+  useEffect(() => {
+    ensureUserOrigin();
+  }, []);
+
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const columns = [
@@ -113,12 +121,7 @@ const Formularios = () => {
       <div className="flex justify-between">
         <div className="flex flex-col gap-[5px]">
           <h1>Formulários</h1>
-          <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {/* Secretaria de Saúde - Fortaleza */}
-            {(forms[0] as any)?.origin?.name} -{" "}
-            {(forms[0] as any)?.origin?.institution?.code_state} -{" "}
-            {(forms[0] as any)?.origin?.institution?.code_city}
-          </h2>
+          <UserOriginInfo />
         </div>
       </div>
       {loading && (
