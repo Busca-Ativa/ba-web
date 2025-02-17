@@ -20,6 +20,8 @@ import { toast, ToastContainer } from "react-toastify";
 import { translateRole } from "@/utils/index";
 import CoordinatorEditUser from "@/components/Modals/CoordinatorEditUser";
 import "react-toastify/dist/ReactToastify.css";
+import SkeletonTable from "@/components/SkeletonTable";
+import PageTitle from "@/components/PageTitle";
 
 interface Row {
   [key: string]: string | number;
@@ -27,6 +29,7 @@ interface Row {
 
 const UsuariosAdmin = () => {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [pass, setPass] = useState(false);
   const [userRows, setUserRows] = useState<any[]>([]);
   const [approvalRows, setApprovalRows] = useState<any[]>([]);
@@ -132,6 +135,7 @@ const UsuariosAdmin = () => {
 
   useEffect(() => {
     const getData = async () => {
+      setLoading(true);
       try {
         const response = await api.get("/coordinator/institution/users", {
           withCredentials: true,
@@ -151,6 +155,8 @@ const UsuariosAdmin = () => {
         setUserRows(rows);
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
     getData();
@@ -158,6 +164,7 @@ const UsuariosAdmin = () => {
 
   useEffect(() => {
     const getData = async () => {
+      setLoading(true);
       try {
         const response = await api.get(
           "/coordinator/institution/users?active=0",
@@ -176,6 +183,8 @@ const UsuariosAdmin = () => {
         setApprovalRows(rows);
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
     getData();
@@ -209,30 +218,6 @@ const UsuariosAdmin = () => {
     }
   };
 
-  // INFO: Anteriormente não foi definido que podia deletar o usuário e sim inativá-lo
-  // const handleDelete= async (row: Record<string, string | number>) => {
-  //   api
-  //     .patch(
-  //       `/coordinator/user`,
-  //       {
-  //         body: {
-  //           id_user: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  //           name: "string",
-  //           last_name: "string",
-  //           email: "string",
-  //           identificator: "string",
-  //           role: "string",
-  //           active: 0,
-  //           id_institution: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  //           id_unit: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-  //         },
-  //       },
-  //       {withCredentials: true},
-  //     )
-  //     .then((response) => {
-  //     });
-  // };
-
   const columns = [
     { id: "name", label: "Nome", numeric: false },
     { id: "identificator", label: "Cód. Id.", numeric: false },
@@ -248,9 +233,9 @@ const UsuariosAdmin = () => {
     <>
       {!showApprovalPage && (
         <>
-          <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-1">
+          <div className="w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
             <div className="flex justify-between">
-              <h1>Usuários</h1>
+              <PageTitle title="Usuários" />
               <Button
                 onClick={handleShowApproval}
                 className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white"
@@ -261,20 +246,20 @@ const UsuariosAdmin = () => {
                 </div>
               </Button>
             </div>
-            {/* <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-              {"Teste"}
-            </h2> */}
-            <BATable
-              columns={columns}
-              initialRows={userRows}
-              onEdit={handleOpen}
-              onDelete={(
-                row: Record<string, string | number>,
-                rowIndex: number
-              ) => {
-                semiDelete(row, rowIndex);
-              }}
-            />
+            {loading && <SkeletonTable columns={columns} showActions={true} />}
+            {!loading && (
+              <BATable
+                columns={columns}
+                initialRows={userRows}
+                onEdit={handleOpen}
+                onDelete={(
+                  row: Record<string, string | number>,
+                  rowIndex: number
+                ) => {
+                  semiDelete(row, rowIndex);
+                }}
+              />
+            )}
           </div>
           {confirmationModalOpen && (
             <Dialog

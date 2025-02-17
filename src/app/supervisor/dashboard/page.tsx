@@ -9,6 +9,7 @@ import MonthChart from "@/components/Dashboard/MonthChart";
 import { useEffect, useState } from "react";
 import nookies from "nookies";
 import { useRouter } from "next/navigation";
+import PageTitle from "@/components/PageTitle";
 
 const Dashboard = () => {
   const cards = [
@@ -58,8 +59,8 @@ const Dashboard = () => {
     <>
       {pass && (
         <>
-          <div className="dashboard w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
-            <h1 className="text-3xl 2xl:text-4xl">Painel de Monitoramento</h1>
+          <div className="dashboard w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
+            <PageTitle title="Painel de Monitoramento" />
             <div className="cards w-[100%] flex justify-stretch gap-[20px]">
               {cards.map((card) => (
                 <Card

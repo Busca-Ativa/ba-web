@@ -50,7 +50,9 @@ const ModalInsertions = ({ onClose }: ModalinsertionsProps) => {
   useEffect(() => {
     const url = `/editor/${tabSelected == 0 ? "sections" : "questions"}`;
     api
-      .get(url)
+      .get(url, {
+        withCredentials: true,
+      })
       .then((response) => {
         setData(response.data);
         setInsertsSelected(

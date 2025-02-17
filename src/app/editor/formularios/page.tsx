@@ -10,8 +10,11 @@ import nookies from "nookies";
 import { GetServerSidePropsContext } from "next";
 import { AuthService } from "@/services/auth/auth";
 import { getStatus, StatusObject } from "@/utils";
+import PageTitle from "@/components/PageTitle";
+import SkeletonTable from "@/components/SkeletonTable";
 
 const Formularios = () => {
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const columns = [
     { id: "title", label: "Título", numeric: false },
@@ -37,6 +40,7 @@ const Formularios = () => {
 
   useEffect(() => {
     const getForms = async () => {
+      setLoading(true);
       let list_forms = [];
       try {
         let response = await api.get("/editor/institution/forms", {
@@ -45,17 +49,19 @@ const Formularios = () => {
         if (response.data.data) {
           list_forms.push(...response.data.data);
         }
-
-        // WARN: Pegar unidades pega alguns forms que ja vem no da instituição fazendo eles ficarem repetidos
         response = await api.get("/editor/unit/forms");
         if (response.data.data) {
           list_forms.push(...response.data.data);
         }
       } catch (error: any) {
-        console.error(error.response?.message);
-        throw error;
+        if (error.response?.status === 404) {
+          console.warn("Nenhum formulário encontrado");
+        } else {
+          console.error(error.response?.message);
+        }
       } finally {
         setForms(list_forms);
+        setLoading(false);
       }
     };
     getForms();
@@ -146,19 +152,9 @@ const Formularios = () => {
   };
 
   return (
-    <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
+    <div className="w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between">
-        <div className="flex flex-col gap-[5px]">
-          <h1>Formulários</h1>
-          {forms && (
-            <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-              {/* Secretaria de Saúde - Fortaleza */}
-              {(forms[0] as any)?.origin?.name} -{" "}
-              {(forms[0] as any)?.origin?.code_state} -{" "}
-              {(forms[0] as any)?.origin?.code_city}
-            </h2>
-          )}
-        </div>
+        <PageTitle title="Formulários" />
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
           <Add />
           <div
@@ -169,13 +165,16 @@ const Formularios = () => {
           </div>
         </button>
       </div>
-      <BATable
-        columns={columns}
-        initialRows={rows as any}
-        onDuplicate={handleDuplicate}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
-      />
+      {loading && <SkeletonTable columns={columns} showActions={true} />}
+      {!loading && (
+        <BATable
+          columns={columns}
+          initialRows={rows as any}
+          onDuplicate={handleDuplicate}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+        />
+      )}
     </div>
   );
 };

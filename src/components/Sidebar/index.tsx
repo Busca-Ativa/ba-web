@@ -18,6 +18,7 @@ import "./style.css";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useContextStore } from "@/stores/contextStore";
 
 import { useDispatch } from "react-redux";
 
@@ -26,6 +27,7 @@ import { AuthService } from "@/services/auth/auth";
 const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
   const [expanded, setExpanded] = useState(false);
   const [role, setRole] = useState("");
+  const { setUserOrigin } = useContextStore();
 
   useEffect(() => {
     if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
@@ -45,37 +47,38 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
         <span className="text-[#FF9814]">Ativa!</span>
       </div>
       <div className="mt-[69.5px]">
-        {role == "admin" && (
-          <div className="group flex flex-col gap-[10px]">
-            <span>Administrativo</span>
-            <ul className="flex flex-col gap-2">
-              <li className={activePage === "dashboard" ? "active" : ""}>
-                <Link style={{ width: "100%" }} href="/admin/dashboard">
-                  <div className="flex items-center gap-2">
-                    <DashboardOutlined />
-                    <span>Dashboard</span>
-                  </div>
-                </Link>
-              </li>
-              <li className={activePage === "instituicoes" ? "active" : ""}>
-                <Link style={{ width: "100%" }} href="/admin/instituicoes">
-                  <div className="flex items-center gap-2">
-                    <DomainRounded />
-                    <span>Instituições</span>
-                  </div>
-                </Link>
-              </li>
-              <li className={activePage === "usuarios" ? "active" : ""}>
-                <Link style={{ width: "100%" }} href="/admin/usuarios">
-                  <div className="flex items-center gap-2">
-                    <Groups2Outlined />
-                    <span>Usuários</span>
-                  </div>
-                </Link>
-              </li>
-            </ul>
-          </div>
-        )}
+        {role == "admin" ||
+          (role == "superuser" && (
+            <div className="group flex flex-col gap-[10px]">
+              <span>Administrativo</span>
+              <ul className="flex flex-col gap-2">
+                <li className={activePage === "dashboard" ? "active" : ""}>
+                  <Link style={{ width: "100%" }} href="/admin/dashboard">
+                    <div className="flex items-center gap-2">
+                      <DashboardOutlined />
+                      <span>Dashboard</span>
+                    </div>
+                  </Link>
+                </li>
+                <li className={activePage === "instituicoes" ? "active" : ""}>
+                  <Link style={{ width: "100%" }} href="/admin/instituicoes">
+                    <div className="flex items-center gap-2">
+                      <DomainRounded />
+                      <span>Instituições</span>
+                    </div>
+                  </Link>
+                </li>
+                <li className={activePage === "usuarios" ? "active" : ""}>
+                  <Link style={{ width: "100%" }} href="/admin/usuarios">
+                    <div className="flex items-center gap-2">
+                      <Groups2Outlined />
+                      <span>Usuários</span>
+                    </div>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          ))}
         {role == "coordinator" && (
           <>
             <div className="group flex flex-col gap-[10px]">
@@ -129,7 +132,7 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
                     </div>
                   </Link>
                 </li>
-                <li className={activePage === "secoes" ? "active" : ""}>
+                <li className={activePage === "eventos" ? "active" : ""}>
                   <Link style={{ width: "100%" }} href="/coordinator/eventos">
                     <div className="flex items-center gap-2">
                       <EventOutlined />
@@ -186,7 +189,7 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
                     </div>
                   </Link>
                 </li>
-                <li className={activePage === "secoes" ? "active" : ""}>
+                <li className={activePage === "eventos" ? "active" : ""}>
                   <Link style={{ width: "100%" }} href="/supervisor/eventos">
                     <div className="flex items-center gap-2">
                       <EventOutlined />
@@ -230,18 +233,20 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
           </div>
         )}
       </div>
-      <div className="group absolute bottom-[25px]">
-        <ul className="flex flex-col gap-2">
-          <li className={activePage === "config" ? "active" : ""}>
-            <Link style={{ width: "100%" }} href={`/${role}/config`}>
-              <div className="flex items-center gap-2">
-                <SettingsOutlined />
-                <span>Configurações</span>
-              </div>
-            </Link>
-          </li>
+      <div className="group mt-auto">
+        <ul className="flex flex-col gap-2 w-full">
+          {role !== "superuser" && (
+            <li className={activePage === "config" ? "active" : ""}>
+              <Link href={`/${role === "superuser" ? "admin" : role}/config`}>
+                <div className="flex items-center gap-2">
+                  <SettingsOutlined />
+                  <span>Configurações</span>
+                </div>
+              </Link>
+            </li>
+          )}
           <li>
-            <Link style={{ width: "100%" }} href="/">
+            <Link href="/">
               <div className="flex items-center gap-2">
                 <LogoutOutlined />
                 <button
@@ -252,6 +257,12 @@ const SideBar = ({ user, activePage }: { user: any; activePage: string }) => {
                     ) {
                       localStorage.clear();
                     }
+                    setUserOrigin({
+                      institutionName: null,
+                      institutionId: null,
+                      institutionCity: null,
+                      institutionState: null,
+                    });
                     AuthService.logout();
                   }}
                 >

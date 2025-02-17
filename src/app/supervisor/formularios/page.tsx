@@ -9,10 +9,12 @@ import BATable from "@/components/BATable";
 import api from "@/services/api";
 import { getStatus, StatusObject } from "@/utils";
 import { Model, Survey } from "survey-react-ui";
+import PageTitle from "@/components/PageTitle";
+import SkeletonTable from "@/components/SkeletonTable";
 
 const Formularios = () => {
   const router = useRouter();
-  const [unitInfo, setUnitInfo] = useState("Loading...");
+  const [loading, setLoading] = useState(true);
   const columns = [
     { id: "title", label: "Título", numeric: false },
     { id: "creator", label: "Criador", numeric: false },
@@ -33,22 +35,29 @@ const Formularios = () => {
 
   useEffect(() => {
     const getForms = async () => {
+      setLoading(true);
       let list_forms = [];
       try {
-        let response = await api.get("/supervisor/unit/forms", {
+        const response = await api.get("/supervisor/unit/forms", {
           withCredentials: true,
         });
-        if (response.data.data) {
+
+        if (response.status === 200 && response.data.data) {
           console.log(response.data.data);
-          list_forms.push(...response.data.data);
+          list_forms = response.data.data;
         }
       } catch (error: any) {
-        console.error(error.response?.message);
-        throw error;
+        if (error.response?.status === 404) {
+          console.warn("Nenhum formulário encontrado.");
+        } else {
+          console.error("Erro ao buscar formulários:", error);
+        }
       } finally {
         setForms(list_forms);
+        setLoading(false);
       }
     };
+
     getForms();
   }, []);
 
@@ -86,35 +95,25 @@ const Formularios = () => {
     }
   };
 
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await api.get("/all/user", { withCredentials: true });
-        const dataFromApi = response.data;
-        const unit = dataFromApi.unit;
-        setUnitInfo(unit.name);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getData();
-  }, []);
-
   return (
-    <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col">
+    <div className="w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between mb-7 items-center">
-        <div className="flex flex-col gap-1">
-          <h1>Formulários</h1>
-          <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {unitInfo}
-          </h2>
-        </div>
+        <PageTitle title="Formulários" />
       </div>
-      <BATable
-        columns={columns}
-        initialRows={rows as any}
-        onAnalyse={handleSee}
-      />
+      {loading && (
+        <SkeletonTable
+          columns={columns}
+          showActions={true}
+          showDelete={false}
+        />
+      )}
+      {!loading && (
+        <BATable
+          columns={columns}
+          initialRows={rows as any}
+          onAnalyse={handleSee}
+        />
+      )}
       {form && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 pb-16 rounded shadow-lg w-[80%] max-w-[800px] h-[80%]">

@@ -12,6 +12,8 @@ import NewInstitutionModal from "@/components/Modals/NewInstitution";
 import { toast, ToastContainer } from "react-toastify";
 import { translateRole } from "@/utils/index";
 import CoordinatorEditUser from "@/components/Modals/CoordinatorEditUser";
+import PageTitle from "@/components/PageTitle";
+import SkeletonTable from "@/components/SkeletonTable";
 
 interface Row {
   [key: string]: string | number;
@@ -19,10 +21,10 @@ interface Row {
 
 const UsuariosAdmin = () => {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [pass, setPass] = useState(false);
   const [userRows, setUserRows] = useState<any[]>([]);
   const [approvalRows, setApprovalRows] = useState<any[]>([]);
-  const [unitInfo, setUnitInfo] = useState("Loading...");
 
   const [showApprovalPage, setShowApprovalPage] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
@@ -106,6 +108,7 @@ const UsuariosAdmin = () => {
 
   useEffect(() => {
     const getData = async () => {
+      setLoading(true);
       try {
         const response = await api.get("/supervisor/users?active=1", {
           withCredentials: true,
@@ -122,6 +125,8 @@ const UsuariosAdmin = () => {
         setUserRows(rows);
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
     getData();
@@ -152,20 +157,6 @@ const UsuariosAdmin = () => {
       getData();
     }
   }, [showApprovalPage]);
-
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await api.get("/all/user", { withCredentials: true });
-        const dataFromApi = response.data;
-        const unit = dataFromApi.unit;
-        setUnitInfo(unit.name);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getData();
-  }, []);
 
   const handleEdit = async (row: Record<string, string | number>) => {
     api
@@ -200,14 +191,9 @@ const UsuariosAdmin = () => {
     <>
       {!showApprovalPage && (
         <>
-          <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-1">
+          <div className="w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
             <div className="flex justify-between mb-7 items-center">
-              <div className="flex flex-col gap-1">
-                <h1>Usuários</h1>
-                <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-                  {unitInfo}
-                </h2>
-              </div>
+              <PageTitle title="Usuários" />
               <Button
                 onClick={handleShowApproval}
                 className="h-[41px] px-4 py-2 bg-[#19B394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white"
@@ -218,17 +204,20 @@ const UsuariosAdmin = () => {
                 </div>
               </Button>
             </div>
-            <BATable
-              columns={columns}
-              initialRows={userRows}
-              onEdit={handleOpen}
-              onDelete={(
-                row: Record<string, string | number>,
-                rowIndex: number
-              ) => {
-                handleApproval(row, rowIndex, false);
-              }}
-            />
+            {loading && <SkeletonTable columns={columns} showActions={true} />}
+            {!loading && (
+              <BATable
+                columns={columns}
+                initialRows={userRows}
+                onEdit={handleOpen}
+                onDelete={(
+                  row: Record<string, string | number>,
+                  rowIndex: number
+                ) => {
+                  handleApproval(row, rowIndex, false);
+                }}
+              />
+            )}
           </div>
         </>
       )}

@@ -13,8 +13,11 @@ import { getStatus, StatusObject } from "@/utils";
 import ModalQuestions from "@/components/FormCreator/ModalQuestions";
 import { useDispatch } from "react-redux";
 import { addElement, removeAllElements } from "../../../../redux/surveySlice";
+import PageTitle from "@/components/PageTitle";
+import SkeletonTable from "@/components/SkeletonTable";
 
 const Questoes = () => {
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const columns = [
     { id: "title", label: "Título", numeric: false },
@@ -36,7 +39,6 @@ const Questoes = () => {
   const [rowsConfig, setRowsConfig] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalEdit, setModalEdit] = useState(false);
-  const [userData, setUserData] = useState<any>({});
   const [editQuestion, setEditQuestion] = useState<any>({});
   const user: any = AuthService.getUser();
 
@@ -50,24 +52,8 @@ const Questoes = () => {
   }, [dispatch, modalOpen]);
 
   useEffect(() => {
-    const getUserData = async () => {
-      try {
-        let response = await api.get("/all/user", {
-          withCredentials: true,
-        });
-        if (response.data) {
-          setUserData(response.data);
-        }
-      } catch (error: any) {
-        if (error.response?.status === 401) {
-          console.warn("Acesso não autorizado");
-        } else {
-          console.error(error.response?.message);
-          throw error;
-        }
-      }
-    };
     const getForms = async () => {
+      setLoading(true);
       let list_forms: SetStateAction<any[]> = [];
       try {
         let response = await api.get("/editor/questions", {
@@ -81,14 +67,19 @@ const Questoes = () => {
         throw error;
       } finally {
         setForms(list_forms);
+        setLoading(false);
       }
     };
     getForms();
-    getUserData();
+  }, []);
+
+  useEffect(() => {
+    document.title = "Questões | Busca Ativa";
   }, []);
 
   const reloadQuestions = () => {
     const getForms = async () => {
+      setLoading(true);
       let list_forms: SetStateAction<any[]> = [];
       try {
         let response = await api.get("/editor/questions", {
@@ -102,6 +93,7 @@ const Questoes = () => {
         throw error;
       } finally {
         setForms(list_forms);
+        setLoading(false);
       }
     };
     getForms();
@@ -146,7 +138,9 @@ const Questoes = () => {
     rowIndex: number
   ) => {
     try {
-      let response = await api.delete(`/editor/question/${row.id}`);
+      let response = await api.delete(`/editor/question/${row.id}`, {
+        withCredentials: true,
+      });
       const updatedRows = rows.filter((_, index) => index !== rowIndex);
       setRows(updatedRows);
     } catch (error: any) {
@@ -157,15 +151,17 @@ const Questoes = () => {
 
   const handleEdit = async (row: Record<string, string | number>) => {
     setEditQuestion(row);
-    api.get(`/editor/question/${row.id}`).then((response) => {
-      if (response.status === 200) {
-        const data = response.data;
-        dispatch(removeAllElements({ pageIndex: 0 }));
-        dispatch(addElement({ pageIndex: 0, element: data.question_data }));
-        setModalOpen(true);
-        setModalEdit(true);
-      }
-    });
+    api
+      .get(`/editor/question/${row.id}`, { withCredentials: true })
+      .then((response) => {
+        if (response.status === 200) {
+          const data = response.data;
+          dispatch(removeAllElements({ pageIndex: 0 }));
+          dispatch(addElement({ pageIndex: 0, element: data.question_data }));
+          setModalOpen(true);
+          setModalEdit(true);
+        }
+      });
   };
 
   const handleDuplicate = async (row: any, rowIndex: number) => {
@@ -206,16 +202,9 @@ const Questoes = () => {
   };
 
   return (
-    <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
+    <div className="w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between">
-        <div className="flex flex-col gap-[5px]">
-          <h1>Questões</h1>
-          <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {/* Secretaria de Saúde - Fortaleza */}
-            {/* {forms[0]?.institution.name} - {forms[0]?.institution.code_state} -{" "} */}
-            {/* {forms[0]?.institution.code_city} */}
-          </h2>
-        </div>
+        <PageTitle title="Questões" />
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
           <Add />
           <div
@@ -226,13 +215,16 @@ const Questoes = () => {
           </div>
         </button>
       </div>
-      <BATable
-        columns={columns}
-        initialRows={rows as any}
-        onDuplicate={handleDuplicate}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
-      />
+      {loading && <SkeletonTable columns={columns} showActions={true} />}
+      {!loading && (
+        <BATable
+          columns={columns}
+          initialRows={rows as any}
+          onDuplicate={handleDuplicate}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+        />
+      )}
       {modalOpen && (
         <ModalQuestions
           onClose={setModalOpen}
