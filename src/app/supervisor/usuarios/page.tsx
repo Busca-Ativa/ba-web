@@ -35,6 +35,10 @@ const UsuariosAdmin = () => {
   const handleShowApproval = () => setShowApprovalPage(true);
   const handleHideApproval = () => setShowApprovalPage(false);
 
+  useEffect(() => {
+    document.title = "Usuários | Busca Ativa";
+  }, []);
+
   const handleApproval = async (
     row: Record<string, string | number>,
     rowIndex: number,

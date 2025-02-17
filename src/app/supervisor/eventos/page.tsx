@@ -45,6 +45,10 @@ const Eventos = () => {
   const [rows, setRows] = useState<Row[]>([]);
 
   useEffect(() => {
+    document.title = "Eventos | Busca Ativa";
+  }, []);
+
+  useEffect(() => {
     const fetchEvents = async () => {
       const res = await api.get(`supervisor/events`);
       return res.data.data;

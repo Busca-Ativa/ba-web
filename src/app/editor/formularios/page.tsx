@@ -37,6 +37,10 @@ const Formularios = () => {
   const [rowsConfig, setRowsConfig] = useState([]);
   const user: any = AuthService.getUser();
   const [origin, setOrigin] = useState<any>();
+  
+  useEffect(() => {
+    document.title = "Formulários | Busca Ativa";
+  }, []);
 
   useEffect(() => {
     const getForms = async () => {

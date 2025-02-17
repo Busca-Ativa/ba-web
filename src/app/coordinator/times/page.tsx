@@ -36,6 +36,10 @@ const Times = () => {
   ];
 
   useEffect(() => {
+    document.title = "Times | Busca Ativa";
+  }, []);
+
+  useEffect(() => {
     const getData = async () => {
       setLoading(true);
       try {

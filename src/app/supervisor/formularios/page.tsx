@@ -34,6 +34,10 @@ const Formularios = () => {
   const [form, setForm] = useState<any>();
 
   useEffect(() => {
+    document.title = "Formulários | Busca Ativa";
+  }, []);
+
+  useEffect(() => {
     const getForms = async () => {
       setLoading(true);
       let list_forms = [];

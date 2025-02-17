@@ -39,6 +39,10 @@ const InstituicoesAdmin = () => {
   }, [router]);
 
   useEffect(() => {
+    document.title = "Unidades | Busca Ativa";
+  }, []);
+
+  useEffect(() => {
     const getData = async () => {
       setLoading(true);
       try {

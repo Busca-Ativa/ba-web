@@ -39,6 +39,10 @@ const UsuariosAdmin = () => {
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>({});
 
+  useEffect(() => {
+    document.title = "Usuários | Busca Ativa";
+  }, []);
+
   const handleOpen = (user: any) => {
     console.log("user", user);
     setSelectedUser({
