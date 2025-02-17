@@ -42,7 +42,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
       state.survey.surveyJson.pages[pageIndex]?.elements[elementIndex]
   );
 
-  const [question, setQuestion] = useState<string>(element?.name || "");
+  const [question, setQuestion] = useState<string>(element?.title || "");
   const [type, setType] = useState<string>("comment");
   const [required, setRequired] = useState<boolean>(
     element?.isRequired || false
@@ -165,7 +165,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
       updateElement({
         pageIndex,
         elementIndex,
-        updatedElement: { ...element, name: newQuestion },
+        updatedElement: { ...element, title: newQuestion },
       })
     );
   };

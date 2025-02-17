@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import BATable from "@/components/BATable";
 
 import api from "@/services/api";
+import PageTitle from "@/components/PageTitle";
+import SkeletonTable from "@/components/SkeletonTable";
 
 // Função para formatar datas no padrão dd/mm/aa
 const formatDate = (dateString: string) => {
@@ -24,8 +26,8 @@ const isPastEvent = (startDate: string) => {
 };
 
 const Eventos = () => {
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const [unitInfo, setUnitInfo] = useState("Loading...");
 
   const columns = [
     { id: "title", label: "Título", numeric: false },
@@ -43,20 +45,6 @@ const Eventos = () => {
   const [rows, setRows] = useState<Row[]>([]);
 
   useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await api.get("/all/user", { withCredentials: true });
-        const dataFromApi = response.data;
-        const unit = dataFromApi.unit;
-        setUnitInfo(unit.name);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getData();
-  }, []);
-
-  useEffect(() => {
     const fetchEvents = async () => {
       const res = await api.get(`supervisor/events`);
       return res.data.data;
@@ -64,6 +52,7 @@ const Eventos = () => {
 
     const loadData = async () => {
       try {
+        setLoading(true);
         const [eventsData] = await Promise.all([fetchEvents()]);
 
         const formattedEvents = eventsData.map((event: any) => ({
@@ -92,6 +81,8 @@ const Eventos = () => {
         setRows(formattedRows);
       } catch (error) {
         console.error("Erro ao carregar os dados:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -104,20 +95,24 @@ const Eventos = () => {
   };
 
   return (
-    <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
+    <div className="w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between">
-        <div className="flex flex-col gap-1">
-          <h1>Times</h1>
-          <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {unitInfo}
-          </h2>
-        </div>
+        <PageTitle title="Eventos" />
       </div>
-      <BATable
-        columns={columns}
-        initialRows={rows as any}
-        onAnalyse={handleAnalyse}
-      />
+      {loading && (
+        <SkeletonTable
+          columns={columns}
+          showActions={true}
+          showDelete={false}
+        />
+      )}
+      {!loading && (
+        <BATable
+          columns={columns}
+          initialRows={rows as any}
+          onAnalyse={handleAnalyse}
+        />
+      )}
     </div>
   );
 };

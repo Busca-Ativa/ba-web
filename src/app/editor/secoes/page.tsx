@@ -10,8 +10,11 @@ import nookies from "nookies";
 import { GetServerSidePropsContext } from "next";
 import { AuthService } from "@/services/auth/auth";
 import { getStatus, StatusObject } from "@/utils";
+import PageTitle from "@/components/PageTitle";
+import SkeletonTable from "@/components/SkeletonTable";
 
 const Secoes = () => {
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const columns = [
     { id: "title", label: "Título", numeric: false },
@@ -35,27 +38,10 @@ const Secoes = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [rowsConfig, setRowsConfig] = useState([]);
   const user: any = AuthService.getUser();
-  const [userData, setUserData] = useState<any>({});
 
   useEffect(() => {
-    const getUserData = async () => {
-      try {
-        let response = await api.get("/all/user", {
-          withCredentials: true,
-        });
-        if (response.data) {
-          setUserData(response.data);
-        }
-      } catch (error: any) {
-        if (error.response?.status === 401) {
-          console.warn("Acesso não autorizado");
-        } else {
-          console.error(error.response?.message);
-          throw error;
-        }
-      }
-    };
     const getForms = async () => {
+      setLoading(true);
       let list_forms = [];
       try {
         let response = await api.get("/editor/sections", {
@@ -79,10 +65,10 @@ const Secoes = () => {
         }
       } finally {
         setForms(list_forms);
+        setLoading(false);
       }
     };
     getForms();
-    getUserData();
   }, []);
 
   // TODO: Quando deletar apagar a linha da tabela e refresh do component
@@ -167,26 +153,9 @@ const Secoes = () => {
   };
 
   return (
-    <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
+    <div className="w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between">
-        <div className="flex flex-col gap-[5px]">
-          <h1>Seções</h1>
-          {userData && (
-            <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-              {userData?.unit
-                ? userData.unit.name +
-                  " - " +
-                  userData.institution.code_city +
-                  " - " +
-                  userData.institution.code_state
-                : userData?.institution?.name +
-                  " - " +
-                  userData?.institution?.code_state +
-                  " - " +
-                  userData?.institution?.code_city}
-            </h2>
-          )}
-        </div>
+        <PageTitle title="Seções" />
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
           <Add />
           <div
@@ -197,13 +166,16 @@ const Secoes = () => {
           </div>
         </button>
       </div>
-      <BATable
-        columns={columns}
-        initialRows={rows as any}
-        onDuplicate={handleDuplicate}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
-      />
+      {loading && <SkeletonTable columns={columns} showActions={true} />}
+      {!loading && (
+        <BATable
+          columns={columns}
+          initialRows={rows as any}
+          onDuplicate={handleDuplicate}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+        />
+      )}
     </div>
   );
 };

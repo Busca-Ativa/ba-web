@@ -47,22 +47,7 @@ const ProfileSettings: React.FC = () => {
       }
     };
 
-    const fetchInstitutionData = async () => {
-      try {
-        const response = await api.get("/coordinator/institution");
-        if (response.status !== 200) {
-          throw new Error("Erro ao buscar dados da instituição");
-        }
-        const { name } = response.data.data.institution;
-        setFormInstitution({ name });
-      } catch (error) {
-        console.error(error);
-        toast.error("Erro ao buscar dados da instituição");
-      }
-    };
-
     if (tabValue === 0) fetchUserData();
-    if (tabValue === 1) fetchInstitutionData();
   }, [tabValue]);
 
   const updateUserProfile = async () => {
@@ -84,26 +69,6 @@ const ProfileSettings: React.FC = () => {
     } catch (error) {
       console.error(error);
       toast.error("Erro ao atualizar perfil");
-    }
-  };
-
-  const updateInstitution = async () => {
-    try {
-      const updatedFields = Object.fromEntries(
-        Object.entries(formInstitution).filter(([_, value]) => value)
-      );
-      const response = await api.patch(
-        "/coordinator/institution",
-        updatedFields
-      );
-      if (response.status !== 200) {
-        throw new Error("Erro ao atualizar instituição");
-      }
-      toast.success("Instituição atualizada com sucesso!");
-      await ensureUserOrigin();
-    } catch (error) {
-      console.error(error);
-      toast.error("Erro ao atualizar instituição");
     }
   };
 
@@ -139,7 +104,6 @@ const ProfileSettings: React.FC = () => {
         }}
       >
         <Tab label="Perfil" />
-        <Tab label="Instituição" />
       </Tabs>
 
       {/* Profile Section */}
@@ -186,49 +150,6 @@ const ProfileSettings: React.FC = () => {
               variant="contained"
               className="bg-[#19b394]"
               onClick={updateUserProfile}
-              sx={{
-                fontFamily: "Poppins",
-                textTransform: "none",
-                width: "128px",
-                marginTop: "8px",
-                "&:hover": {
-                  backgroundColor: "#128a76",
-                },
-              }}
-            >
-              Atualizar
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Institution Section */}
-      {tabValue === 1 && (
-        <div className="flex flex-col gap-8 w-1/2">
-          <div className="flex flex-col gap-4 mt-7">
-            <div className="text-2xl font-bold text-[30px] mb-2 font-['Poppins']">
-              Instituição
-            </div>
-            <div className="text-gray-600 mb-4 font-['Poppins']">
-              Gerencie as configurações da sua instituição.
-            </div>
-          </div>
-
-          {/* Form */}
-          <div className="flex flex-col gap-4">
-            <TextField
-              label="Nome"
-              variant="outlined"
-              fullWidth
-              value={formInstitution.name}
-              onChange={(e) => handleInstitutionChange("name", e.target.value)}
-              InputLabelProps={{ shrink: true }}
-            />
-
-            <Button
-              variant="contained"
-              className="bg-[#19b394]"
-              onClick={updateInstitution}
               sx={{
                 fontFamily: "Poppins",
                 textTransform: "none",

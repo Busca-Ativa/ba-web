@@ -9,34 +9,35 @@ import MonthChart from "@/components/Dashboard/MonthChart";
 import { useEffect, useState } from "react";
 import nookies from "nookies";
 import { useRouter } from "next/navigation";
+import PageTitle from "@/components/PageTitle";
 
 const Dashboard = () => {
   const cards = [
     {
       key: 1,
-      title: "Quant. Instituições",
-      content: "4 Instituições",
+      title: "Quant. Unidades",
+      content: "1 Unidade",
       bgColor: "--primary-lighter",
       textColor: "--primary-dark",
     },
     {
       key: 2,
-      title: "Quant. Usuários",
-      content: "124 Usuários",
+      title: "Quant. Agentes",
+      content: "50 Agentes",
       bgColor: "--secondary-lighter",
       textColor: "--secondary-dark",
     },
     {
       key: 3,
       title: "Quant. Eventos (Total)",
-      content: "26 Eventos",
+      content: "6 Eventos",
       bgColor: "--primary-lighter",
       textColor: "--primary-dark",
     },
     {
       key: 4,
-      title: "Quant.Eventos (Julho)",
-      content: "5 Eventos",
+      title: "Quant. Coletas (Total)",
+      content: "232  Eventos",
       bgColor: "--secondary-lighter",
       textColor: "--secondary-dark",
     },
@@ -58,8 +59,8 @@ const Dashboard = () => {
     <>
       {pass && (
         <>
-          <div className="dashboard w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
-            <h1 className="text-3xl 2xl:text-4xl">Painel de Monitoramento</h1>
+          <div className="dashboard w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
+            <PageTitle title="Painel de Monitoramento" />
             <div className="cards w-[100%] flex justify-stretch gap-[20px]">
               {cards.map((card) => (
                 <Card

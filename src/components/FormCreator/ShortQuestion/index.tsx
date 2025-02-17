@@ -111,13 +111,13 @@ const ShortQuestion: React.FC<ShortQuestionProps> = ({
       state.survey.surveyJson.pages[pageIndex]?.elements[elementIndex]
   );
 
-  const [question, setQuestion] = useState(element?.name || "");
+  const [question, setQuestion] = useState(element?.title || "");
   const [type, setType] = useState(element?.inputType || "text");
   const [required, setRequired] = useState(element?.isRequired || false);
 
   useEffect(() => {
     if (element) {
-      setQuestion(element.text);
+      setQuestion(element.title);
       setType(element.inputType);
       setRequired(element.isRequired);
     }
@@ -141,7 +141,7 @@ const ShortQuestion: React.FC<ShortQuestionProps> = ({
       updateElement({
         pageIndex,
         elementIndex,
-        updatedElement: { ...element, name: newText },
+        updatedElement: { ...element, title: newText },
       })
     );
   };

@@ -68,12 +68,12 @@ const ModalQuestions = ({
   const getQuestionData = (questionType: string) => {
     switch (questionType) {
       case "ShortQuestion":
-        return { name: "", type: "text" };
+        return { title: "", type: "text" };
       case "LongQuestion":
-        return { name: "", type: "comment" };
+        return { title: "", type: "comment" };
       case "YesNotQuestion":
         return {
-          name: "",
+          title: "",
           type: "boolean",
           labelFalse: "Não",
           labelTrue: "Sim",
@@ -81,13 +81,13 @@ const ModalQuestions = ({
       case "UniqueSelection":
         return {
           type: "radiogroup",
-          name: "",
+          title: "",
           choices: ["Muito Frequentemente", "Raramente"],
         };
       case "MultipleSelection":
         return {
           type: "checkbox",
-          name: "",
+          title: "",
           choices: ["Muito Frequentemente", "Raramente"],
         };
       default:
@@ -160,16 +160,20 @@ const ModalQuestions = ({
   const saveQuestion = async () => {
     console.log("saveQuestion question:", question);
     const questionData = {
-      title: question.title || question.name,
+      title: question.title,
       type: question.type,
       question_data: question,
       tags: "",
     };
     try {
       if (modalEdit) {
-        await api.patch(`/editor/question/${editQuestion.id}`, questionData);
+        await api.patch(`/editor/question/${editQuestion.id}`, questionData, {
+          withCredentials: true,
+        });
       } else {
-        await api.post("/editor/question", questionData);
+        await api.post("/editor/question", questionData, {
+          withCredentials: true,
+        });
       }
       toast.success("Questão salva com sucesso!");
       reloadQuestions();
