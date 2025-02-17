@@ -40,6 +40,10 @@ const Secoes = () => {
   const user: any = AuthService.getUser();
 
   useEffect(() => {
+    document.title = "Seções | Busca Ativa";
+  }, []);
+
+  useEffect(() => {
     const getForms = async () => {
       setLoading(true);
       let list_forms = [];

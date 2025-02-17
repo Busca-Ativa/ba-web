@@ -51,6 +51,10 @@ const Dashboard = () => {
   const [pass, setPass] = useState(false);
 
   useEffect(() => {
+    document.title = "Dashboard | Busca Ativa";
+  }, []);
+
+  useEffect(() => {
     const token = nookies.get(null).access_token;
     if (!token) {
       router.push("/");

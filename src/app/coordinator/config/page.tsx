@@ -18,6 +18,10 @@ const ProfileSettings: React.FC = () => {
     name: "",
   });
 
+  useEffect(() => {
+    document.title = "Configurações | Busca Ativa";
+  }, []);
+
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };

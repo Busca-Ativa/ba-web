@@ -47,6 +47,10 @@ const Eventos = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    document.title = "Eventos | Busca Ativa";
+  }, []);
+
   interface Row {
     id: string;
     title: string;

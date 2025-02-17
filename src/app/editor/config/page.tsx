@@ -31,6 +31,10 @@ const ProfileSettings: React.FC = () => {
   };
 
   useEffect(() => {
+    document.title = "Configurações | Busca Ativa";
+  }, []);
+
+  useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await api.get("/all/user", {

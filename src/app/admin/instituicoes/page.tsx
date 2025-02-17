@@ -24,6 +24,10 @@ const InstituicoesAdmin = () => {
   const handleClose = () => setModalOpen(false);
 
   useEffect(() => {
+    document.title = "Instituições | Busca Ativa";
+  }, []);
+
+  useEffect(() => {
     const token = nookies.get(null).access_token;
     if (!token) {
       router.push("/");
