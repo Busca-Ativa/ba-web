@@ -519,7 +519,7 @@ const EditorContent = () => {
       </div>
       {tabSelected == 0 && (
         <div className="flex">
-          <div className="flex items-start flex-col w-[24%] 2xl:w-[28%] px-[7px] gap-[12px] text-[#575757]">
+          <div className="flex absolute items-start flex-col w-[24%] 2xl:w-[28%] px-[7px] gap-[12px] text-[#575757]">
             <button
               className="h-[34px] pl-[7px] pr-[15px] py-[5px] hover:bg-white rounded-[100px] hover:shadow justify-start items-center gap-2.5 inline-flex hover:text-[#19b394]"
               onMouseOver={() => handleTagsHover(0)}
@@ -618,7 +618,7 @@ const EditorContent = () => {
               )}
             </button>
           </div>
-          <div className="flex flex-col ml-12 flex-6 justify-center items-center">
+          <div className="flex flex-col mx-auto flex-6 justify-center items-center">
             {Object.keys(surveyJson).length === 0 && (
               <div className="flex flex-col flex-1 justify-center items-center gap-[45px]">
                 <div className="text-center text-black text-sm font-normal font-['Poppins'] leading-[21px]">
