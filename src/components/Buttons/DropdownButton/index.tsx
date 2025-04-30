@@ -1,18 +1,19 @@
 /* eslint-disable */
-import React, { useState, ReactNode } from 'react';
-import Button from '@mui/material/Button';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { SxProps, Theme } from '@mui/system';
-import { ListItemIcon, ListItemText, Divider } from '@mui/material';
-import { darken } from '@mui/system';
+import React, { useState, ReactNode } from "react";
+import Button from "@mui/material/Button";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { SxProps, Theme } from "@mui/system";
+import { ListItemIcon, ListItemText, Divider } from "@mui/material";
+import { darken } from "@mui/system";
 
 interface Option {
   label: string | ReactNode;
   onClick: () => void;
   icon?: ReactNode;
   subOptions?: Option[];
+  show?: boolean;
 }
 
 export interface OptionGroup {
@@ -36,7 +37,9 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
   sx,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<null | HTMLElement>(
+    null
+  );
   const [subOptions, setSubOptions] = useState<Option[]>([]);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -68,19 +71,19 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
         endIcon={
           <ExpandMoreIcon
             sx={{
-              '&:hover': {
-                color: sx?.color || 'darkgreen',
+              "&:hover": {
+                color: sx?.color || "darkgreen",
               },
             }}
           />
         }
         sx={{
           backgroundColor: color,
-          '&:hover': {
+          "&:hover": {
             backgroundColor: darken(color, 0.2),
           },
           color: sx?.color,
-          ...( sx ),
+          ...sx,
         }}
         onClick={handleClick}
       >
@@ -91,12 +94,12 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
         open={Boolean(anchorEl)}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
+          vertical: "bottom",
+          horizontal: "right",
         }}
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
+          vertical: "top",
+          horizontal: "right",
         }}
       >
         {optionGroups.map((group, groupIndex) => (
@@ -104,7 +107,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
             {group.groupLabel && (
               <>
                 {groupIndex > 0 && <Divider />}
-                <MenuItem disabled>{group.groupLabel}</MenuItem>
+                {<MenuItem disabled>{group.groupLabel}</MenuItem>}
               </>
             )}
             {group.options.map((option, optionIndex) => (
@@ -119,11 +122,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
                   }
                 }}
               >
-                {option.icon && (
-                  <ListItemIcon>
-                    {option.icon}
-                  </ListItemIcon>
-                )}
+                {option.icon && <ListItemIcon>{option.icon}</ListItemIcon>}
                 <ListItemText>{option.label}</ListItemText>
               </MenuItem>
             ))}
@@ -137,12 +136,12 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
         open={Boolean(subMenuAnchorEl)}
         onClose={handleSubMenuClose}
         anchorOrigin={{
-          vertical: 'center',
-          horizontal: 'left',
+          vertical: "center",
+          horizontal: "left",
         }}
         transformOrigin={{
-          vertical: 'center',
-          horizontal: 'right',
+          vertical: "center",
+          horizontal: "right",
         }}
       >
         {subOptions.map((subOption, subOptionIndex) => (
@@ -153,11 +152,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
               subOption.onClick();
             }}
           >
-            {subOption.icon && (
-              <ListItemIcon>
-                {subOption.icon}
-              </ListItemIcon>
-            )}
+            {subOption.icon && <ListItemIcon>{subOption.icon}</ListItemIcon>}
             <ListItemText>{subOption.label}</ListItemText>
           </MenuItem>
         ))}

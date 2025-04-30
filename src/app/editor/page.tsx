@@ -1,66 +1,61 @@
 "use client";
-import "./styles.css";
-import "survey-core/defaultV2.min.css";
 import "react-toastify/dist/ReactToastify.css";
+import "survey-core/defaultV2.min.css";
+import "./styles.css";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect, useContext, Suspense } from "react";
-import { Model, Survey } from "survey-react-ui";
-import Breadcrumbs from "@mui/material/Breadcrumbs";
-import Typography from "@mui/material/Typography";
-import { Button } from "@mui/material";
-import Link from "@mui/material/Link";
-import { toast } from "react-toastify";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  setSurveyJson,
-  setFormName,
-  setFormDescription,
-  setTags,
-  setStatus,
-  setCreatedAt,
-  setUpdatedAt,
-  addElement,
-  updateQuestionOrder,
-  selectAllElements,
-  removeAllElements,
-  initialState,
-} from "../../../redux/surveySlice";
+import ClickOrDropDownButton, {
+  OptionGroup,
+} from "@/components/Buttons/ClickOrDropdownButton";
+import DropDownButton from "@/components/Buttons/DropdownButton";
+import LongQuestion from "@/components/FormCreator/LongQuestion";
+import ModalInsertions from "@/components/FormCreator/ModalInsertions";
+import MultipleSelection from "@/components/FormCreator/MultipleSelection";
+import ShortQuestion from "@/components/FormCreator/ShortQuestion";
+import UniqueSelection from "@/components/FormCreator/UniqueSelection";
+import YesNotQuestion from "@/components/FormCreator/YesNotQuestion";
+import EditFormIcon from "@/components/Icons/EditFormIcon";
+import InsertTagsDialog from "@/components/Modals/TagsModals";
+import Status from "@/components/Status";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
+import api from "@/services/api";
+import { AuthService } from "@/services/auth/auth";
+import { Question } from "@/types/Question";
+import { getStatus, getTime } from "@/utils";
 import {
   CheckBoxOutlined,
+  DonutLargeOutlined,
+  LabelOutlined,
   RadioButtonChecked,
   ShortTextOutlined,
   SubjectOutlined,
   ToggleOnOutlined,
+  UndoOutlined,
   UploadFileOutlined,
 } from "@mui/icons-material";
-import SaveIcon from "@mui/icons-material/Save";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
-import {
-  UndoOutlined,
-  DonutLargeOutlined,
-  LabelOutlined,
-} from "@mui/icons-material";
-import EditFormIcon from "@/components/Icons/EditFormIcon";
-import { motion, AnimatePresence } from "framer-motion";
-import Status from "@/components/Status";
-import ShortQuestion from "@/components/FormCreator/ShortQuestion";
-import LongQuestion from "@/components/FormCreator/LongQuestion";
-import UniqueSelection from "@/components/FormCreator/UniqueSelection";
-import BaseComponent from "@/components/FormCreator/BaseComponent";
-import { AuthService } from "@/services/auth/auth";
-import DropDownButton from "@/components/Buttons/DropdownButton";
-import ClickOrDropDownButton from "@/components/Buttons/ClickOrDropdownButton";
-import { OptionGroup } from "@/components/Buttons/ClickOrDropdownButton";
-import api from "@/services/api";
-import { surveyElements, surveyPageExample } from "../../utils/SurveyJS";
-import { Question } from "@/types/Question";
-import { getTime, getStatus } from "@/utils";
-import MultipleSelection from "@/components/FormCreator/MultipleSelection";
-import YesNotQuestion from "@/components/FormCreator/YesNotQuestion";
+import SaveIcon from "@mui/icons-material/Save";
+import Breadcrumbs from "@mui/material/Breadcrumbs";
+import Link from "@mui/material/Link";
+import Typography from "@mui/material/Typography";
 import { UnknownAction } from "@reduxjs/toolkit";
-import ModalInsertions from "@/components/FormCreator/ModalInsertions";
-import ToastContainerWrapper from "@/components/ToastContainerWrapper";
+import { AnimatePresence, motion } from "framer-motion";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { Model, Survey } from "survey-react-ui";
+import {
+  addElement,
+  initialState,
+  removeAllElements,
+  setCreatedAt,
+  setFormDescription,
+  setFormName,
+  setStatus,
+  setSurveyJson,
+  setUpdatedAt,
+  updateQuestionOrder,
+} from "../../../redux/surveySlice";
 
 const EditorContent = () => {
   const dispatch = useDispatch();
@@ -72,12 +67,14 @@ const EditorContent = () => {
   );
   const updatedAt = useSelector((state: any) => state.survey.updatedAt);
   const createdAt = useSelector((state: any) => state.survey.createdAt);
-  const tags = useSelector((state: any) => state.survey.tags);
+  const tags = useSelector((state: any) => state.survey.surveyJson.tags);
   const status = useSelector((state: any) => state.survey.status);
 
   const [tabSelected, setTabSelected] = useState(0);
   const [tagHover, setTagHover] = useState<null | number>(null);
   const [user, setUser] = useState<any>(AuthService.getUser());
+  const [tagsModalsOpen, setTagsModalsOpen] = useState<boolean>(false);
+  const [currentTags, setCurrentTags] = useState<string[]>(tags || []);
 
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -96,6 +93,10 @@ const EditorContent = () => {
   }, []);
 
   useEffect(() => {
+    setCurrentTags(tags);
+  }, [tags]);
+
+  useEffect(() => {
     const fetchForm = async () => {
       if (formId) {
         try {
@@ -107,7 +108,6 @@ const EditorContent = () => {
             dispatch(setUpdatedAt(formData.data.updated_at));
             dispatch(setCreatedAt(formData.data.created_at));
             dispatch(setSurveyJson(formData.data.survey_schema || {}));
-            dispatch(setTags(formData.data.tags));
             dispatch(setStatus(formData.data.status));
             dispatch(setFormName(formData.data.survey_schema?.title || ""));
             dispatch(
@@ -201,33 +201,49 @@ const EditorContent = () => {
     },
   ];
 
-  const modifyOptionsGroups: OptionGroup[] = [
-    {
-      groupLabel: "",
-      options: [
+  const [modifyOptionsGroups, setModifyOptionsGroups] = useState<OptionGroup[]>(
+    [
+      {
+        groupLabel: "",
+        options: [
+          {
+            label: "Modificar Status",
+            onClick: () => console.log("Status Modificado"),
+            icon: <DonutLargeOutlined />,
+            subOptions: [
+              {
+                label: <Typography color="#BE9007">Em edição</Typography>,
+                onClick: () => dispatch(setStatus("undone")),
+              },
+              {
+                label: <Typography color="#19b394">Pronto</Typography>,
+                onClick: () => dispatch(setStatus("done")),
+              },
+            ],
+          },
+        ],
+      },
+    ]
+  );
+
+  useEffect(() => {
+    if (typeForm === "form") {
+      setModifyOptionsGroups([
         {
-          label: "Modificar Status",
-          onClick: () => console.log("Status Modificado"),
-          icon: <DonutLargeOutlined />,
-          subOptions: [
+          ...modifyOptionsGroups[0],
+          options: [
+            ...modifyOptionsGroups[0].options,
             {
-              label: <Typography color="#BE9007">Em edição</Typography>,
-              onClick: () => dispatch(setStatus("undone")),
-            },
-            {
-              label: <Typography color="#19b394">Pronto</Typography>,
-              onClick: () => dispatch(setStatus("done")),
+              label: "Modificar Tags",
+              onClick: () => setTagsModalsOpen(true),
+              icon: <LabelOutlined />,
             },
           ],
         },
-        {
-          label: "Modificar Tags",
-          onClick: () => console.log("Modificando Tags"),
-          icon: <LabelOutlined />,
-        },
-      ],
-    },
-  ];
+      ]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typeForm]);
 
   const handleAddElement = (element: any): UnknownAction => {
     return dispatch(addElement({ pageIndex: 0, element }));
@@ -271,10 +287,10 @@ const EditorContent = () => {
         const newTags = [...tags];
         let sendData = {};
         if (typeForm == "form") {
+          const auxSurveyJson = { ...surveyJson, tags: currentTags };
           sendData = {
-            tags: newTags,
             status: status,
-            schema: surveyJson,
+            schema: auxSurveyJson,
           };
         } else if (typeForm == "section") {
           sendData = {
@@ -310,10 +326,10 @@ const EditorContent = () => {
       } else {
         let sendData;
         if (typeForm === "form") {
+          const auxSurveyJson = { ...surveyJson, tags: currentTags };
           sendData = {
             title: formName,
-            tags: tags,
-            schema: surveyJson,
+            schema: auxSurveyJson,
             status: status,
           };
         } else if (typeForm === "section") {
@@ -448,6 +464,20 @@ const EditorContent = () => {
                 padding: "2px 5px",
               }}
             />
+          )}
+          {currentTags?.length > 0 && (
+            <div className="flex gap-2 mt-2">
+              {currentTags.map((tag: string, index: number) => {
+                return (
+                  <div
+                    key={index}
+                    className="bg-[#D2F9F1] text-[#19b394] text-sm font-semibold font-['Poppins'] leading-[18px] px-2 py-[2px] rounded-full"
+                  >
+                    {tag}
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
         <div className="flex flex-col gap-2 items-end">
@@ -654,6 +684,15 @@ const EditorContent = () => {
         </div>
       )}
       {tabSelected == 1 && <Survey model={new Model(surveyJson)} />}
+      <InsertTagsDialog
+        open={tagsModalsOpen}
+        initialTags={tags}
+        onClose={() => setTagsModalsOpen(false)}
+        onConfirm={(internTags) => {
+          setCurrentTags(internTags);
+          setTagsModalsOpen(false);
+        }}
+      />
       <ToastContainerWrapper />
       {modalOpen && <ModalInsertions onClose={setModalOpen} />}
     </div>

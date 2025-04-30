@@ -22,6 +22,7 @@ const Formularios = () => {
     { id: "creator", label: "Criador", numeric: false },
     { id: "status", label: "Status", numeric: false },
     { id: "origin", label: "Origem", numeric: false },
+    { id: "tags", label: "Categorias", numeric: false },
   ];
 
   const [forms, setForms] = useState<any[]>([]);
@@ -30,6 +31,7 @@ const Formularios = () => {
     title: any;
     creator: string;
     status: string;
+    tags?: any;
     config: { editable: boolean; deletable: boolean; duplicable: boolean };
     origin: any;
   }
@@ -88,6 +90,9 @@ const Formularios = () => {
           title: value.name,
           creator: name,
           status: status.name,
+          tags:
+            value.survey_schema.tags.slice(0, 3).join(", ") +
+            (value.survey_schema.tags.length > 3 ? ", [...]" : ""),
           // WARN: Apenas se for o mesmo criado pode deletar e editar.
           config:
             value.editor.id !== user.id
