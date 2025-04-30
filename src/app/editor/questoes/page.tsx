@@ -154,6 +154,7 @@ const Questoes = () => {
       setSelectedRowIndex(null);
       toast.success("Questão deletada com sucesso!");
     } catch (error: any) {
+      toast.error("Erro ao deletar a questão!");
       console.error(error.response?.message);
       throw error;
     }

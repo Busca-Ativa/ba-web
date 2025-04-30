@@ -119,6 +119,7 @@ const Secoes = () => {
       setSelectedRowIndex(null);
       toast.success("Seção deletada com sucesso!");
     } catch (error: any) {
+      toast.error("Erro ao deletar seção!");
       console.error(error.response?.message);
       throw error;
     }

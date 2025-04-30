@@ -119,6 +119,7 @@ const Formularios = () => {
       setSelectedRowIndex(null);
       toast.success("Formulário deletado com sucesso!");
     } catch (error: any) {
+      toast.error("Erro ao deletar o formulário!");
       console.error(error.response?.message);
       throw error;
     }

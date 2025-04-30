@@ -433,20 +433,22 @@ const EditorContent = () => {
               padding: "2px 5px",
             }}
           />
-          <input
-            type="text"
-            value={formDescription}
-            onChange={(e) => dispatch(setFormDescription(e.target.value))}
-            placeholder="Descrição"
-            className="form-input text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px] border-none outline-none bg-transparent"
-            style={{
-              paddingTop: "13px",
-              transition: "border-color 0.3s ease",
-              width: "100%",
-              flex: 1,
-              padding: "2px 5px",
-            }}
-          />
+          {typeForm === "form" && (
+            <input
+              type="text"
+              value={formDescription}
+              onChange={(e) => dispatch(setFormDescription(e.target.value))}
+              placeholder="Descrição"
+              className="form-input text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px] border-none outline-none bg-transparent"
+              style={{
+                paddingTop: "13px",
+                transition: "border-color 0.3s ease",
+                width: "100%",
+                flex: 1,
+                padding: "2px 5px",
+              }}
+            />
+          )}
         </div>
         <div className="flex flex-col gap-2 items-end">
           <Status
