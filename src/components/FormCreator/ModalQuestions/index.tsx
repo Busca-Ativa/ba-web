@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, MouseEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import ShortQuestion from "../ShortQuestion";
 import LongQuestion from "../LongQuestion";
 import YesNotQuestion from "../YesNotQuestion";
