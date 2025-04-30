@@ -25,6 +25,7 @@ const initialSurveyState = {
     ],
     showQuestionNumbers: "off",
   },
+  tags: [],
   formName: "",
   formDescription: "",
   createdAt: "",

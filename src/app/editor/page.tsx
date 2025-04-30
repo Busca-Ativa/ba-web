@@ -56,6 +56,7 @@ import {
   setUpdatedAt,
   updateQuestionOrder,
 } from "../../../redux/surveySlice";
+import { v4 as uuidv4 } from "uuid";
 
 const EditorContent = () => {
   const dispatch = useDispatch();
@@ -246,7 +247,10 @@ const EditorContent = () => {
   }, [typeForm]);
 
   const handleAddElement = (element: any): UnknownAction => {
-    return dispatch(addElement({ pageIndex: 0, element }));
+    const randomUUID = uuidv4();
+    return dispatch(
+      addElement({ pageIndex: 0, element: { ...element, id: randomUUID } })
+    );
   };
 
   const types = {
@@ -284,13 +288,13 @@ const EditorContent = () => {
       if (formId) {
         dispatch(setStatus("done"));
         const status = "done";
-        const newTags = [...tags];
         let sendData = {};
         if (typeForm == "form") {
           const auxSurveyJson = { ...surveyJson, tags: currentTags };
           sendData = {
             status: status,
             schema: auxSurveyJson,
+            tags: [],
           };
         } else if (typeForm == "section") {
           sendData = {
@@ -331,6 +335,7 @@ const EditorContent = () => {
             title: formName,
             schema: auxSurveyJson,
             status: status,
+            tags: [],
           };
         } else if (typeForm === "section") {
           sendData = {
@@ -346,11 +351,7 @@ const EditorContent = () => {
           sendData = {
             title: formName,
             type: "text",
-            // origin_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            // origin_type: "unit",
-            // id_creator: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
             question_data: surveyJson.pages[0].elements[0],
-            // tags: "unit,undone",
           };
         }
         response = await api.post(`/editor/${typeForm}`, sendData, {
