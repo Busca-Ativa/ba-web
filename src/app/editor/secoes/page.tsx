@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { Add, PlusOne } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 
@@ -12,6 +12,9 @@ import { AuthService } from "@/services/auth/auth";
 import { getStatus, StatusObject } from "@/utils";
 import PageTitle from "@/components/PageTitle";
 import SkeletonTable from "@/components/SkeletonTable";
+import ConfirmAction from "@/components/Modals/ConfirmAction";
+import { toast } from "react-toastify";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
 
 const Secoes = () => {
   const [loading, setLoading] = useState(true);
@@ -36,7 +39,12 @@ const Secoes = () => {
   }
 
   const [rows, setRows] = useState<Row[]>([]);
-  const [rowsConfig, setRowsConfig] = useState([]);
+  const [selectedRow, setSelectedRow] = useState<Record<
+    string,
+    string | number
+  > | null>(null);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const user: any = AuthService.getUser();
 
   useEffect(() => {
@@ -98,7 +106,7 @@ const Secoes = () => {
     router.push("/editor?type=section");
   };
 
-  const handleDelete = async (
+  const deleteSection = async (
     row: Record<string, string | number>,
     rowIndex: number
   ) => {
@@ -106,10 +114,23 @@ const Secoes = () => {
       let response = await api.delete(`/editor/section/${row.id}`);
       const updatedRows = rows.filter((_, index) => index !== rowIndex);
       setRows(updatedRows);
+      setConfirmDelete(false);
+      setSelectedRow(null);
+      setSelectedRowIndex(null);
+      toast.success("Seção deletada com sucesso!");
     } catch (error: any) {
       console.error(error.response?.message);
       throw error;
     }
+  };
+
+  const handleDelete = (
+    row: SetStateAction<Record<string, string | number> | null>,
+    rowIndex: number
+  ) => {
+    setSelectedRow(row);
+    setSelectedRowIndex(rowIndex);
+    setConfirmDelete(true);
   };
 
   const handleEdit = async (row: Record<string, string | number>) => {
@@ -180,6 +201,18 @@ const Secoes = () => {
           onEdit={handleEdit}
         />
       )}
+      <ConfirmAction
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          if (selectedRow && selectedRowIndex !== null) {
+            deleteSection(selectedRow, selectedRowIndex);
+          }
+        }}
+        actionLabel="Deletar Seção"
+        description="Você tem certeza que deseja deletar esta seção?"
+      />
+      <ToastContainerWrapper />
     </div>
   );
 };

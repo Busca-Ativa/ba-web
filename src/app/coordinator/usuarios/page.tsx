@@ -16,7 +16,7 @@ import {
 import { HowToReg } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 import NewInstitutionModal from "@/components/Modals/NewInstitution";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, ToastContainerWrapper } from "react-toastify";
 import { translateRole } from "@/utils/index";
 import CoordinatorEditUser from "@/components/Modals/CoordinatorEditUser";
 import "react-toastify/dist/ReactToastify.css";
@@ -348,7 +348,7 @@ const UsuariosAdmin = () => {
         onSubmit={handleEdit}
         data={selectedUser}
       />
-      <ToastContainer />
+      <ToastContainerWrapper />
     </>
   );
 };

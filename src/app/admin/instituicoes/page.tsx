@@ -9,8 +9,8 @@ import { Button, Skeleton } from "@mui/material";
 import { Add, PlusOne } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 import NewInstitutionModal from "@/components/Modals/NewInstitution";
-import { ToastContainer } from "react-toastify";
 import SkeletonTable from "@/components/SkeletonTable";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
 
 const InstituicoesAdmin = () => {
   const router = useRouter();
@@ -99,7 +99,7 @@ const InstituicoesAdmin = () => {
         open={isModalOpen}
         onClose={handleClose}
       />
-      <ToastContainer />
+      <ToastContainerWrapper />
     </>
   );
 };

@@ -9,7 +9,7 @@ import { Button } from "@mui/material";
 import { Add, HowToReg } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 import NewInstitutionModal from "@/components/Modals/NewInstitution";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, ToastContainerWrapper } from "react-toastify";
 import { translateRole } from "@/utils/index";
 import CoordinatorEditUser from "@/components/Modals/CoordinatorEditUser";
 import { active } from "d3";
@@ -183,7 +183,7 @@ const Times = () => {
         data={selectedTeam}
         edit={isEdit}
       />
-      <ToastContainer />
+      <ToastContainerWrapper />
     </>
   );
 };

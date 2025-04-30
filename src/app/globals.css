@@ -23,6 +23,10 @@
     --white: #FEFEFE;
     --bg-white: #F7FAF9;
     --white-100: #FFFFFF;
+
+    --danger: #EF4838;
+    --danger-hover: #ca3c2f;
+
 }
 
 body {

@@ -10,7 +10,7 @@ import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Typography from "@mui/material/Typography";
 import { Button } from "@mui/material";
 import Link from "@mui/material/Link";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setSurveyJson,
@@ -60,6 +60,7 @@ import MultipleSelection from "@/components/FormCreator/MultipleSelection";
 import YesNotQuestion from "@/components/FormCreator/YesNotQuestion";
 import { UnknownAction } from "@reduxjs/toolkit";
 import ModalInsertions from "@/components/FormCreator/ModalInsertions";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
 
 const EditorContent = () => {
   const dispatch = useDispatch();
@@ -651,7 +652,7 @@ const EditorContent = () => {
         </div>
       )}
       {tabSelected == 1 && <Survey model={new Model(surveyJson)} />}
-      <ToastContainer />
+      <ToastContainerWrapper />
       {modalOpen && <ModalInsertions onClose={setModalOpen} />}
     </div>
   );

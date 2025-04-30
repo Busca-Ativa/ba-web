@@ -9,7 +9,7 @@ import { Button } from "@mui/material";
 import { HowToReg } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 import NewInstitutionModal from "@/components/Modals/NewInstitution";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { translateRole } from "@/utils/index";
 import CoordinatorEditUser from "@/components/Modals/CoordinatorEditUser";
 import PageTitle from "@/components/PageTitle";
@@ -259,7 +259,7 @@ const UsuariosAdmin = () => {
         </>
       )}
       {/* <CoordinatorEditUser onClose={handleClose} open={isEditModalOpen} onSubmit={()=>{}}/>
-      <ToastContainer/> */}
+      <ToastContainerWrapper/> */}
     </>
   );
 };
