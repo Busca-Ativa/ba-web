@@ -9,11 +9,11 @@ import { Button } from "@mui/material";
 import { Add, HowToReg } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 import NewInstitutionModal from "@/components/Modals/NewInstitution";
-import { toast, ToastContainer } from "react-toastify";
 import { translateRole } from "@/utils/index";
 import CoordinatorEditUser from "@/components/Modals/CoordinatorEditUser";
 import PageTitle from "@/components/PageTitle";
 import SkeletonTable from "@/components/SkeletonTable";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
 
 interface Row {
   [key: string]: string | number;
@@ -88,7 +88,7 @@ const Times = () => {
         {!loading && <BATable columns={columns} initialRows={userRows} />}
       </div>
 
-      <ToastContainer />
+      <ToastContainerWrapper />
     </>
   );
 };

@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import api from "@/services/api";
 import FitBoundsComponent from "../components/FitBoundsMap";
 import { Close } from "@mui/icons-material";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, ToastContainerWrapper } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import nome from "../../../data/evento/nome.json";
 import disciplina1 from "../../../data/evento/disciplina1.json";
@@ -736,7 +736,7 @@ const EventAnalytics = ({ params }: { params: { id: string } }) => {
           </div>
         )}
       </div>
-      <ToastContainer />
+      <ToastContainerWrapper />
     </div>
   );
 };

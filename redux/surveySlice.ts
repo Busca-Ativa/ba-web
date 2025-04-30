@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 const initialSurveyState = {
   surveyJson: {
     title: "",
+    tags: [],
     description: "",
     completedHtml: "<h3>Thank you for your feedback</h3>",
     completedHtmlOnCondition: [
@@ -28,7 +29,6 @@ const initialSurveyState = {
   formDescription: "",
   createdAt: "",
   updatedAt: "",
-  tags: [],
   status: "undone",
 };
 
@@ -46,9 +46,6 @@ const surveySlice = createSlice({
     },
     setSurveyJson: (state, action) => {
       state.surveyJson = action.payload || initialSurveyState.surveyJson;
-    },
-    setTags: (state, action) => {
-      state.tags = action.payload;
     },
     setStatus: (state, action) => {
       state.status = action.payload;
@@ -175,7 +172,6 @@ export const {
   setFormName,
   setFormDescription,
   setSurveyJson,
-  setTags,
   setStatus,
   setUpdatedAt,
   setCreatedAt,

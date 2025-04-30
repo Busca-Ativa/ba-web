@@ -1,17 +1,18 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { SetStateAction, use, useEffect, useState } from "react";
-import { Add, PlusOne } from "@mui/icons-material";
 import BATable from "@/components/BATable";
+import { Add } from "@mui/icons-material";
+import { useRouter } from "next/navigation";
+import { SetStateAction, useEffect, useState } from "react";
 
-import api from "../../../services/api";
-import nookies from "nookies";
-import { GetServerSidePropsContext } from "next";
-import { AuthService } from "@/services/auth/auth";
-import { getStatus, StatusObject } from "@/utils";
 import PageTitle from "@/components/PageTitle";
 import SkeletonTable from "@/components/SkeletonTable";
+import { AuthService } from "@/services/auth/auth";
+import { getStatus, StatusObject } from "@/utils";
+import api from "../../../services/api";
+import ConfirmAction from "@/components/Modals/ConfirmAction";
+import { toast } from "react-toastify";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
 
 const Formularios = () => {
   const [loading, setLoading] = useState(true);
@@ -21,6 +22,7 @@ const Formularios = () => {
     { id: "creator", label: "Criador", numeric: false },
     { id: "status", label: "Status", numeric: false },
     { id: "origin", label: "Origem", numeric: false },
+    { id: "tags", label: "Categorias", numeric: false },
   ];
 
   const [forms, setForms] = useState<any[]>([]);
@@ -29,15 +31,21 @@ const Formularios = () => {
     title: any;
     creator: string;
     status: string;
+    tags?: any;
     config: { editable: boolean; deletable: boolean; duplicable: boolean };
     origin: any;
   }
 
   const [rows, setRows] = useState<Row[]>([]);
-  const [rowsConfig, setRowsConfig] = useState([]);
+  const [selectedRow, setSelectedRow] = useState<Record<
+    string,
+    string | number
+  > | null>(null);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   const user: any = AuthService.getUser();
-  const [origin, setOrigin] = useState<any>();
-  
+
   useEffect(() => {
     document.title = "Formulários | Busca Ativa";
   }, []);
@@ -82,6 +90,9 @@ const Formularios = () => {
           title: value.name,
           creator: name,
           status: status.name,
+          tags:
+            value.survey_schema.tags.slice(0, 3).join(", ") +
+            (value.survey_schema.tags.length > 3 ? ", [...]" : ""),
           // WARN: Apenas se for o mesmo criado pode deletar e editar.
           config:
             value.editor.id !== user.id
@@ -98,7 +109,7 @@ const Formularios = () => {
     router.push("/editor");
   };
 
-  const handleDelete = async (
+  const deleteForm = async (
     row: Record<string, string | number>,
     rowIndex: number
   ) => {
@@ -108,10 +119,24 @@ const Formularios = () => {
       });
       const updatedRows = rows.filter((_, index) => index !== rowIndex);
       setRows(updatedRows);
+      setConfirmDelete(false);
+      setSelectedRow(null);
+      setSelectedRowIndex(null);
+      toast.success("Formulário deletado com sucesso!");
     } catch (error: any) {
+      toast.error("Erro ao deletar o formulário!");
       console.error(error.response?.message);
       throw error;
     }
+  };
+
+  const handleDelete = (
+    row: SetStateAction<Record<string, string | number> | null>,
+    rowIndex: number
+  ) => {
+    setSelectedRow(row);
+    setSelectedRowIndex(rowIndex);
+    setConfirmDelete(true);
   };
 
   const handleEdit = async (row: Record<string, string | number>) => {
@@ -179,6 +204,18 @@ const Formularios = () => {
           onEdit={handleEdit}
         />
       )}
+      <ConfirmAction
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          if (selectedRow && selectedRowIndex !== null) {
+            deleteForm(selectedRow, selectedRowIndex);
+          }
+        }}
+        actionLabel="Deletar Formulário"
+        description="Você tem certeza que deseja deletar este formulário?"
+      />
+      <ToastContainerWrapper />
     </div>
   );
 };

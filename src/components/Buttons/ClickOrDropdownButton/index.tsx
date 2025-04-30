@@ -1,18 +1,19 @@
 /* eslint-disable */
-import React, { useState, ReactNode } from 'react';
-import Button from '@mui/material/Button';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { ListItemIcon, ListItemText, Divider } from '@mui/material';
-import { darken } from '@mui/material/styles'
-import { SxProps, Theme } from '@mui/material'; // Import darken utility }
+import React, { useState, ReactNode } from "react";
+import Button from "@mui/material/Button";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { ListItemIcon, ListItemText, Divider } from "@mui/material";
+import { darken } from "@mui/material/styles";
+import { SxProps, Theme } from "@mui/material"; // Import darken utility }
 
 interface Option {
   label: string | ReactNode;
   onClick: () => void;
   icon?: ReactNode;
   subOptions?: Option[];
+  show?: boolean;
 }
 
 export interface OptionGroup {
@@ -65,18 +66,18 @@ const ClickOrDropdownButton: React.FC<DropdownButtonProps> = ({
             sx={{
               padding: 0,
               margin: 0,
-              '&:hover': {
-                backgroundColor:darken(color, 0.1),
+              "&:hover": {
+                backgroundColor: darken(color, 0.1),
               },
             }}
           />
         }
         sx={{
           backgroundColor: color,
-          '&:hover': {
+          "&:hover": {
             backgroundColor: color,
           },
-          ...( sx as SxProps<Theme> ),
+          ...(sx as SxProps<Theme>),
         }}
       >
         {children}
@@ -86,12 +87,12 @@ const ClickOrDropdownButton: React.FC<DropdownButtonProps> = ({
         open={Boolean(anchorEl)}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
+          vertical: "bottom",
+          horizontal: "right",
         }}
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
+          vertical: "top",
+          horizontal: "right",
         }}
       >
         {optionGroups.map((group, groupIndex) => (
@@ -110,11 +111,7 @@ const ClickOrDropdownButton: React.FC<DropdownButtonProps> = ({
                   option.onClick();
                 }}
               >
-                {option.icon && (
-                  <ListItemIcon>
-                    {option.icon}
-                  </ListItemIcon>
-                )}
+                {option.icon && <ListItemIcon>{option.icon}</ListItemIcon>}
                 <ListItemText>{option.label}</ListItemText>
               </MenuItem>
             ))}

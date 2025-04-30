@@ -1,20 +1,21 @@
 "use client";
 
+import BATable from "@/components/BATable";
+import { Add } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { SetStateAction, useEffect, useState } from "react";
-import { Add, PlusOne } from "@mui/icons-material";
-import BATable from "@/components/BATable";
 
-import api from "../../../services/api";
-import nookies from "nookies";
-import { GetServerSidePropsContext } from "next";
-import { AuthService } from "@/services/auth/auth";
-import { getStatus, StatusObject } from "@/utils";
 import ModalQuestions from "@/components/FormCreator/ModalQuestions";
-import { useDispatch } from "react-redux";
-import { addElement, removeAllElements } from "../../../../redux/surveySlice";
+import ConfirmAction from "@/components/Modals/ConfirmAction";
 import PageTitle from "@/components/PageTitle";
 import SkeletonTable from "@/components/SkeletonTable";
+import { toast } from "react-toastify";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
+import { AuthService } from "@/services/auth/auth";
+import { getStatus, StatusObject } from "@/utils";
+import { useDispatch } from "react-redux";
+import { addElement, removeAllElements } from "../../../../redux/surveySlice";
+import api from "../../../services/api";
 
 const Questoes = () => {
   const [loading, setLoading] = useState(true);
@@ -36,7 +37,12 @@ const Questoes = () => {
     origin: any;
   }
   const [rows, setRows] = useState<Row[]>([]);
-  const [rowsConfig, setRowsConfig] = useState([]);
+  const [selectedRow, setSelectedRow] = useState<Record<
+    string,
+    string | number
+  > | null>(null);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalEdit, setModalEdit] = useState(false);
   const [editQuestion, setEditQuestion] = useState<any>({});
@@ -133,7 +139,7 @@ const Questoes = () => {
     setModalOpen(true);
   };
 
-  const handleDelete = async (
+  const deleteQuestion = async (
     row: Record<string, string | number>,
     rowIndex: number
   ) => {
@@ -143,10 +149,24 @@ const Questoes = () => {
       });
       const updatedRows = rows.filter((_, index) => index !== rowIndex);
       setRows(updatedRows);
+      setConfirmDelete(false);
+      setSelectedRow(null);
+      setSelectedRowIndex(null);
+      toast.success("Questão deletada com sucesso!");
     } catch (error: any) {
+      toast.error("Erro ao deletar a questão!");
       console.error(error.response?.message);
       throw error;
     }
+  };
+
+  const handleDelete = (
+    row: SetStateAction<Record<string, string | number> | null>,
+    rowIndex: number
+  ) => {
+    setSelectedRow(row);
+    setSelectedRowIndex(rowIndex);
+    setConfirmDelete(true);
   };
 
   const handleEdit = async (row: Record<string, string | number>) => {
@@ -234,6 +254,18 @@ const Questoes = () => {
           reloadQuestions={reloadQuestions}
         />
       )}
+      <ConfirmAction
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          if (selectedRow && selectedRowIndex !== null) {
+            deleteQuestion(selectedRow, selectedRowIndex);
+          }
+        }}
+        actionLabel="Deletar Seção"
+        description="Você tem certeza que deseja deletar esta seção?"
+      />
+      <ToastContainerWrapper />
     </div>
   );
 };

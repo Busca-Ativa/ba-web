@@ -7,7 +7,7 @@ import nookies from "nookies";
 import { Button } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import BATable from "@/components/BATable";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, ToastContainerWrapper } from "react-toastify";
 import NewUnitModal from "@/components/Modals/NewUnit";
 import "react-toastify/dist/ReactToastify.css";
 import SkeletonTable from "@/components/SkeletonTable";
@@ -220,7 +220,7 @@ const InstituicoesAdmin = () => {
         edit={isEditModalOpen}
         data={selectedUnit}
       />
-      <ToastContainer />
+      <ToastContainerWrapper />
     </>
   );
 };
