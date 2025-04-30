@@ -13,13 +13,14 @@ import { useRouter } from "next/navigation";
 import api from "@/services/api";
 import FitBoundsComponent from "../components/FitBoundsMap";
 import { Close } from "@mui/icons-material";
-import { toast, ToastContainerWrapper } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import nome from "../../../data/evento/nome.json";
 import disciplina1 from "../../../data/evento/disciplina1.json";
 import disciplina2 from "../../../data/evento/disciplina2.json";
 import frequencia from "../../../data/evento/frequencia.json";
 import explicacao from "../../../data/evento/explicacao.json";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
 
 // Importação dinâmica para evitar SSR no Leaflet
 const MapContainer = dynamic(

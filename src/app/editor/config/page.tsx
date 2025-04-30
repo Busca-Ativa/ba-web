@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { Button, TextField, Tabs, Tab } from "@mui/material";
 import api from "@/services/api";
-import { toast, ToastContainerWrapper } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useContextStore } from "@/stores/contextStore";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
 
 const ProfileSettings: React.FC = () => {
   const { ensureUserOrigin } = useContextStore();

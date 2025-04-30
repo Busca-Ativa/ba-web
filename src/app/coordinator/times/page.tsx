@@ -9,7 +9,7 @@ import { Button } from "@mui/material";
 import { Add, HowToReg } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 import NewInstitutionModal from "@/components/Modals/NewInstitution";
-import { toast, ToastContainerWrapper } from "react-toastify";
+import { toast } from "react-toastify";
 import { translateRole } from "@/utils/index";
 import CoordinatorEditUser from "@/components/Modals/CoordinatorEditUser";
 import { active } from "d3";
@@ -17,6 +17,7 @@ import NewTeamModal from "@/components/Modals/NewTeam";
 import "react-toastify/dist/ReactToastify.css";
 import SkeletonTable from "@/components/SkeletonTable";
 import PageTitle from "@/components/PageTitle";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
 
 interface Row {
   [key: string]: string | number;
