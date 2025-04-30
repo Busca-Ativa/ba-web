@@ -7,11 +7,12 @@ import nookies from "nookies";
 import { Button } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import BATable from "@/components/BATable";
-import { toast, ToastContainerWrapper } from "react-toastify";
+import { toast } from "react-toastify";
 import NewUnitModal from "@/components/Modals/NewUnit";
 import "react-toastify/dist/ReactToastify.css";
 import SkeletonTable from "@/components/SkeletonTable";
 import PageTitle from "@/components/PageTitle";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
 
 const InstituicoesAdmin = () => {
   const router = useRouter();
