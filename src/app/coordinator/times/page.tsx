@@ -134,15 +134,38 @@ const Times = () => {
 
   return (
     <>
-      <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-1">
+      <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
         <div className="flex justify-between">
           <h1>Times</h1>
           <Button
             onClick={() => setModalOpen(true)}
-            className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white"
+            sx={{
+              height: "41px",
+              px: 4,
+              py: 2,
+              backgroundColor: "#19b394",
+              "&:hover": {
+                backgroundColor: "var(--primary-dark)",
+              },
+              borderRadius: 1,
+              display: "inline-flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 1,
+              color: "white",
+              textTransform: "none",
+            }}
           >
             <Add />
-            <div className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
+            <div
+              style={{
+                color: "white",
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                fontFamily: "'Source Sans Pro', sans-serif",
+                lineHeight: "18px",
+              }}
+            >
               Adicionar Time
             </div>
           </Button>
