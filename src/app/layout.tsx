@@ -37,7 +37,8 @@ export default function RootLayout({
         <div className="flex h-screen">
           {pathname !== "/" &&
             pathname !== "/register" &&
-            !pathname.includes("/analise/") && (
+            !pathname.includes("/analise/") &&
+            !pathname.includes("/agente/") && (
               <SideBar user={""} activePage={activePage || "dashboard"} />
             )}
           <div className="flex flex-col flex-grow h-full overflow-auto">
