@@ -30,8 +30,8 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
       state.survey.surveyJson.pages[pageIndex]?.elements[elementIndex]
   );
 
-  const [question, setQuestion] = useState(element?.name || "");
-  const [required, setRequired] = useState(element?.required || false);
+  const [question, setQuestion] = useState(element?.title || "");
+  const [required, setRequired] = useState(element?.isRequired || false);
   const [labelYes, setLabelYes] = useState(element?.labelTrue || "Sim");
   const [labelNo, setLabelNo] = useState(element?.labelFalse || "Não");
 
@@ -42,15 +42,24 @@ const YesNotQuestion: React.FC<YesNotQuestionProps> = ({
         elementIndex,
         updatedElement: {
           ...element,
-          name: question,
+          title: question,
           labelTrue: labelYes,
           labelFalse: labelNo,
           type: "boolean",
+          isRequired: required,
         },
       })
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [question, labelYes, labelNo, dispatch, pageIndex, elementIndex]);
+  }, [
+    question,
+    labelYes,
+    labelNo,
+    required,
+    dispatch,
+    pageIndex,
+    elementIndex,
+  ]);
 
   const handleRequired = () => {
     setRequired(!required);

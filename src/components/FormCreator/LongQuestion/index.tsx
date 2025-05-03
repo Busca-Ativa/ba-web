@@ -51,13 +51,15 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
 
   const [question, setQuestion] = useState<string>(element?.title || "");
   const [type, setType] = useState<string>(element?.type || "text");
-  const [required, setRequired] = useState<boolean>(element?.required || false);
+  const [required, setRequired] = useState<boolean>(
+    element?.isRequired || false
+  );
 
   useEffect(() => {
     if (element) {
       setQuestion(element.title);
       setType(element.type);
-      setRequired(element.required);
+      setRequired(element.isRequired);
     }
   }, [element]);
   const handleRequired = () => {
@@ -67,7 +69,7 @@ const LongQuestion: React.FC<LongQuestionProps> = ({
       updateElement({
         pageIndex,
         elementIndex,
-        updatedElement: { ...element, required: newRequired },
+        updatedElement: { ...element, isRequired: newRequired },
       })
     );
   };

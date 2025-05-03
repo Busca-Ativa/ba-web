@@ -44,7 +44,9 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
 
   const [question, setQuestion] = useState<string>(element?.title || "");
   const [type, setType] = useState<string>("comment");
-  const [required, setRequired] = useState<boolean>(element?.required || false);
+  const [required, setRequired] = useState<boolean>(
+    element?.isRequired || false
+  );
   const [options, setOptions] = useState<EditableCheckbox[]>(
     element?.choices?.map((value: any, index: number) => ({
       id: index,
@@ -174,7 +176,7 @@ const UniqueSelection: React.FC<UniqueSelectionProps> = ({
       updateElement({
         pageIndex,
         elementIndex,
-        updatedElement: { ...element, required: !required },
+        updatedElement: { ...element, isRequired: !required },
       })
     );
   };

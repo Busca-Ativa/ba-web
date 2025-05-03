@@ -9,18 +9,22 @@ import { Button } from "@mui/material";
 import { Add, HowToReg } from "@mui/icons-material";
 import BATable from "@/components/BATable";
 import NewInstitutionModal from "@/components/Modals/NewInstitution";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { translateRole } from "@/utils/index";
 import CoordinatorEditUser from "@/components/Modals/CoordinatorEditUser";
 import { active } from "d3";
 import NewTeamModal from "@/components/Modals/NewTeam";
 import "react-toastify/dist/ReactToastify.css";
+import SkeletonTable from "@/components/SkeletonTable";
+import PageTitle from "@/components/PageTitle";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
 
 interface Row {
   [key: string]: string | number;
 }
 
 const Times = () => {
+  const [loading, setLoading] = useState(true);
   const [row, setRow] = useState<any[]>([]);
   const [selectedTeam, setSelectedTeam] = useState({});
   const [isEdit, setIsEdit] = useState(false);
@@ -33,7 +37,12 @@ const Times = () => {
   ];
 
   useEffect(() => {
+    document.title = "Times | Busca Ativa";
+  }, []);
+
+  useEffect(() => {
     const getData = async () => {
+      setLoading(true);
       try {
         const response = await api.get("/coordinator/institution/teams", {
           withCredentials: true,
@@ -78,6 +87,8 @@ const Times = () => {
         setRow(rows);
       } catch (error) {
         console.error("Erro ao buscar times:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -136,7 +147,7 @@ const Times = () => {
     <>
       <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
         <div className="flex justify-between">
-          <h1>Times</h1>
+          <PageTitle title="Times" />
           <Button
             onClick={() => setModalOpen(true)}
             sx={{
@@ -170,15 +181,21 @@ const Times = () => {
             </div>
           </Button>
         </div>
-        {/* <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-          {"Teste"}
-        </h2> */}
-        <BATable
-          columns={columns}
-          initialRows={row}
-          onEdit={handleEditTeam}
-          onDelete={handleDeleteTeam}
-        />
+        {loading && (
+          <SkeletonTable
+            columns={columns}
+            showActions={true}
+            showEdit={false}
+          />
+        )}
+        {!loading && (
+          <BATable
+            columns={columns}
+            initialRows={row}
+            onEdit={handleEditTeam}
+            onDelete={handleDeleteTeam}
+          />
+        )}
       </div>
       <NewTeamModal
         onClose={() => {
@@ -190,7 +207,7 @@ const Times = () => {
         data={selectedTeam}
         edit={isEdit}
       />
-      <ToastContainer />
+      <ToastContainerWrapper />
     </>
   );
 };

@@ -111,7 +111,7 @@ export default function NewInstitutionModal({
       const newInstitution = {
         ...data,
         estado: getEstadoById(data.code_state),
-        cidade: getCidadeById(data.code_state, data.code_city),
+        cidade: getCidadeById(data.code_city),
       };
       onSubmit(newInstitution);
       id_institution = newInstitution.id;

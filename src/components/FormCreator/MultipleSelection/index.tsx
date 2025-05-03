@@ -42,9 +42,11 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
       state.survey.surveyJson.pages[pageIndex]?.elements[elementIndex]
   );
 
-  const [question, setQuestion] = useState<string>(element?.name || "");
+  const [question, setQuestion] = useState<string>(element?.title || "");
   const [type, setType] = useState<string>(element?.type || "text");
-  const [required, setRequired] = useState<boolean>(element?.required || false);
+  const [required, setRequired] = useState<boolean>(
+    element?.isRequired || false
+  );
   const [options, setOptions] = useState<EditableCheckbox[]>(
     element?.choices?.map((value: any, index: number) => ({
       id: index,
@@ -185,7 +187,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
       updateElement({
         pageIndex,
         elementIndex,
-        updatedElement: { ...element, name: newQuestion },
+        updatedElement: { ...element, title: newQuestion },
       })
     );
   };
@@ -196,7 +198,7 @@ const MultipleSelection: React.FC<MultipleSelectionProps> = ({
       updateElement({
         pageIndex,
         elementIndex,
-        updatedElement: { ...element, required: !required },
+        updatedElement: { ...element, isRequired: !required },
       })
     );
   };

@@ -1,0 +1,70 @@
+{
+    "question": "Nome:",
+    "responses_by_segments": [
+        {
+            "id_segmento": "230440005130009P",
+            "type": "categorical",
+            "responses": [
+                "João Silva"
+            ],
+            "mode": "João Silva"
+        },
+        {
+            "id_segmento": "230440005130010P",
+            "type": "categorical",
+            "responses": [
+                "Maria Oliveira"
+            ],
+            "mode": "Maria Oliveira"
+        },
+        {
+            "id_segmento": "230440005130008P",
+            "type": "categorical",
+            "responses": [
+                "Pedro Santos"
+            ],
+            "mode": "Pedro Santos"
+        },
+        {
+            "id_segmento": "230440005130007P",
+            "type": "categorical",
+            "responses": [
+                "Ana Costa"
+            ],
+            "mode": "Ana Costa"
+        },
+        {
+            "id_segmento": "230440005130011P",
+            "type": "categorical",
+            "responses": [
+                "Lucas Lima"
+            ],
+            "mode": "Lucas Lima"
+        },
+        {
+            "id_segmento": "230440005130012P",
+            "type": "categorical",
+            "responses": [
+                "Carla Medeiros"
+            ],
+            "mode": "Carla Medeiros"
+        },
+        {
+            "id_segmento": "230440005130006P",
+            "type": "categorical",
+            "responses": [
+                "Fernanda Alves"
+            ],
+            "mode": "Fernanda Alves"
+        },
+        {
+            "id_segmento": "230440005130005P",
+            "type": "categorical",
+            "responses": [
+                "Gabriel Pereira"
+            ],
+            "mode": "Gabriel Pereira"
+        }
+    ],
+    "type": "text"
+}

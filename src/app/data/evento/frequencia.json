@@ -1,0 +1,86 @@
+{
+    "question": "Com que frequência costuma faltar aula?",
+    "responses_by_segments": [
+        {
+            "id_segmento": "230440005130009P",
+            "type": "categorical",
+            "responses": [
+                "Raramente"
+            ],
+            "mode": "Raramente"
+        },
+        {
+            "id_segmento": "230440005130010P",
+            "type": "categorical",
+            "responses": [
+                "Muito Frequentemente"
+            ],
+            "mode": "Muito Frequentemente"
+        },
+        {
+            "id_segmento": "230440005130008P",
+            "type": "categorical",
+            "responses": [
+                "Nunca"
+            ],
+            "mode": "Nunca"
+        },
+        {
+            "id_segmento": "230440005130007P",
+            "type": "categorical",
+            "responses": [
+                "Frequentemente"
+            ],
+            "mode": "Frequentemente"
+        },
+        {
+            "id_segmento": "230440005130011P",
+            "type": "categorical",
+            "responses": [
+                "Raramente"
+            ],
+            "mode": "Raramente"
+        },
+        {
+            "id_segmento": "230440005130012P",
+            "type": "categorical",
+            "responses": [
+                "Frequentemente"
+            ],
+            "mode": "Frequentemente"
+        },
+        {
+            "id_segmento": "230440005130006P",
+            "type": "categorical",
+            "responses": [
+                "Nunca"
+            ],
+            "mode": "Nunca"
+        },
+        {
+            "id_segmento": "230440005130005P",
+            "type": "categorical",
+            "responses": [
+                "Muito Frequentemente"
+            ],
+            "mode": "Muito Frequentemente"
+        },
+        {
+            "id_segmento": "230440005130004P",
+            "type": "categorical",
+            "responses": [
+                "Raramente"
+            ],
+            "mode": "Raramente"
+        },
+        {
+            "id_segmento": "230440005130003P",
+            "type": "categorical",
+            "responses": [
+                "Frequentemente"
+            ],
+            "mode": "Frequentemente"
+        }
+    ],
+    "type": "categorical"
+}

@@ -1,23 +1,28 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { SetStateAction, use, useEffect, useState } from "react";
-import { Add, PlusOne } from "@mui/icons-material";
 import BATable from "@/components/BATable";
+import { Add } from "@mui/icons-material";
+import { useRouter } from "next/navigation";
+import { SetStateAction, useEffect, useState } from "react";
 
-import api from "../../../services/api";
-import nookies from "nookies";
-import { GetServerSidePropsContext } from "next";
+import PageTitle from "@/components/PageTitle";
+import SkeletonTable from "@/components/SkeletonTable";
 import { AuthService } from "@/services/auth/auth";
 import { getStatus, StatusObject } from "@/utils";
+import api from "../../../services/api";
+import ConfirmAction from "@/components/Modals/ConfirmAction";
+import { toast } from "react-toastify";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
 
 const Formularios = () => {
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const columns = [
     { id: "title", label: "Título", numeric: false },
     { id: "creator", label: "Criador", numeric: false },
     { id: "status", label: "Status", numeric: false },
     { id: "origin", label: "Origem", numeric: false },
+    { id: "tags", label: "Categorias", numeric: false },
   ];
 
   const [forms, setForms] = useState<any[]>([]);
@@ -26,17 +31,28 @@ const Formularios = () => {
     title: any;
     creator: string;
     status: string;
+    tags?: any;
     config: { editable: boolean; deletable: boolean; duplicable: boolean };
     origin: any;
   }
 
   const [rows, setRows] = useState<Row[]>([]);
-  const [rowsConfig, setRowsConfig] = useState([]);
+  const [selectedRow, setSelectedRow] = useState<Record<
+    string,
+    string | number
+  > | null>(null);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   const user: any = AuthService.getUser();
-  const [origin, setOrigin] = useState<any>();
+
+  useEffect(() => {
+    document.title = "Formulários | Busca Ativa";
+  }, []);
 
   useEffect(() => {
     const getForms = async () => {
+      setLoading(true);
       let list_forms = [];
       try {
         let response = await api.get("/editor/institution/forms", {
@@ -45,17 +61,19 @@ const Formularios = () => {
         if (response.data.data) {
           list_forms.push(...response.data.data);
         }
-
-        // WARN: Pegar unidades pega alguns forms que ja vem no da instituição fazendo eles ficarem repetidos
-        response = await api.get('/editor/unit/forms')
-        if (response.data.data){
-          list_forms.push(...response.data.data)
+        response = await api.get("/editor/unit/forms");
+        if (response.data.data) {
+          list_forms.push(...response.data.data);
         }
       } catch (error: any) {
-        console.error(error.response?.message);
-        throw error;
+        if (error.response?.status === 404) {
+          console.warn("Nenhum formulário encontrado");
+        } else {
+          console.error(error.response?.message);
+        }
       } finally {
         setForms(list_forms);
+        setLoading(false);
       }
     };
     getForms();
@@ -72,6 +90,9 @@ const Formularios = () => {
           title: value.name,
           creator: name,
           status: status.name,
+          tags:
+            value.survey_schema.tags.slice(0, 3).join(", ") +
+            (value.survey_schema.tags.length > 3 ? ", [...]" : ""),
           // WARN: Apenas se for o mesmo criado pode deletar e editar.
           config:
             value.editor.id !== user.id
@@ -88,7 +109,7 @@ const Formularios = () => {
     router.push("/editor");
   };
 
-  const handleDelete = async (
+  const deleteForm = async (
     row: Record<string, string | number>,
     rowIndex: number
   ) => {
@@ -98,10 +119,27 @@ const Formularios = () => {
       });
       const updatedRows = rows.filter((_, index) => index !== rowIndex);
       setRows(updatedRows);
+      setConfirmDelete(false);
+      setSelectedRow(null);
+      setSelectedRowIndex(null);
+      toast.success("Formulário deletado com sucesso!");
     } catch (error: any) {
+      toast.error("Erro ao deletar o formulário!");
+      setConfirmDelete(false);
+      setSelectedRow(null);
+      setSelectedRowIndex(null);
       console.error(error.response?.message);
       throw error;
     }
+  };
+
+  const handleDelete = (
+    row: SetStateAction<Record<string, string | number> | null>,
+    rowIndex: number
+  ) => {
+    setSelectedRow(row);
+    setSelectedRowIndex(rowIndex);
+    setConfirmDelete(true);
   };
 
   const handleEdit = async (row: Record<string, string | number>) => {
@@ -146,17 +184,9 @@ const Formularios = () => {
   };
 
   return (
-    <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
+    <div className="w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
       <div className="flex justify-between">
-        <div className="flex flex-col gap-[5px]">
-          <h1>Formulários</h1>
-          <h2 className="text-[#575757] text-sm font-normal font-['Poppins'] leading-[21px]">
-            {/* Secretaria de Saúde - Fortaleza */}
-            {(forms[0] as any)?.origin?.name} -{" "}
-            {(forms[0] as any)?.origin?.institution?.code_state} -{" "}
-            {(forms[0] as any)?.origin?.institution?.code_city}
-          </h2>
-        </div>
+        <PageTitle title="Formulários" />
         <button className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white">
           <Add />
           <div
@@ -167,13 +197,28 @@ const Formularios = () => {
           </div>
         </button>
       </div>
-      <BATable
-        columns={columns}
-        initialRows={rows as any}
-        onDuplicate={handleDuplicate}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
+      {loading && <SkeletonTable columns={columns} showActions={true} />}
+      {!loading && (
+        <BATable
+          columns={columns}
+          initialRows={rows as any}
+          onDuplicate={handleDuplicate}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+        />
+      )}
+      <ConfirmAction
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          if (selectedRow && selectedRowIndex !== null) {
+            deleteForm(selectedRow, selectedRowIndex);
+          }
+        }}
+        actionLabel="Deletar Formulário"
+        description="Você tem certeza que deseja deletar este formulário?"
       />
+      <ToastContainerWrapper />
     </div>
   );
 };

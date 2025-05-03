@@ -2,20 +2,21 @@
 
 import { useRouter } from "next/navigation";
 import api from "@/services/api";
-import { getEstadoById, getCidadeById } from "@/services/ibge/api";
-import { act, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import nookies from "nookies";
 import { Button } from "@mui/material";
-import { Add, PlusOne } from "@mui/icons-material";
+import { Add } from "@mui/icons-material";
 import BATable from "@/components/BATable";
-import NewInstitutionModal from "@/components/Modals/NewInstitution";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import NewUnitModal from "@/components/Modals/NewUnit";
-import { on } from "events";
 import "react-toastify/dist/ReactToastify.css";
+import SkeletonTable from "@/components/SkeletonTable";
+import PageTitle from "@/components/PageTitle";
+import ToastContainerWrapper from "@/components/ToastContainerWrapper";
 
 const InstituicoesAdmin = () => {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [pass, setPass] = useState(false);
   const [rows, setData] = useState<Row[]>([]);
 
@@ -39,7 +40,12 @@ const InstituicoesAdmin = () => {
   }, [router]);
 
   useEffect(() => {
+    document.title = "Unidades | Busca Ativa";
+  }, []);
+
+  useEffect(() => {
     const getData = async () => {
+      setLoading(true);
       try {
         const response = await api.get("/coordinator/institution/units", {
           withCredentials: true,
@@ -59,6 +65,8 @@ const InstituicoesAdmin = () => {
         setData(rows);
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
     getData();
@@ -181,9 +189,9 @@ const InstituicoesAdmin = () => {
     <>
       {pass && (
         <>
-          <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
+          <div className="w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
             <div className="flex justify-between">
-              <h1>Unidades</h1>
+              <PageTitle title="Unidades" />
               <Button
                 onClick={handleOpen}
                 sx={{
@@ -217,12 +225,15 @@ const InstituicoesAdmin = () => {
                 </div>
               </Button>
             </div>
-            <BATable
-              columns={columns}
-              initialRows={rows}
-              onDelete={onDelete}
-              onEdit={handleEdit}
-            />
+            {loading && <SkeletonTable columns={columns} showActions={true} />}
+            {!loading && (
+              <BATable
+                columns={columns}
+                initialRows={rows}
+                onDelete={onDelete}
+                onEdit={handleEdit}
+              />
+            )}
           </div>
         </>
       )}
@@ -233,7 +244,7 @@ const InstituicoesAdmin = () => {
         edit={isEditModalOpen}
         data={selectedUnit}
       />
-      <ToastContainer />
+      <ToastContainerWrapper />
     </>
   );
 };

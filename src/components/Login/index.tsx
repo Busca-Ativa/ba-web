@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { AuthService } from "@/services/auth/auth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { jwtDecode } from "jwt-decode";
 
@@ -13,6 +13,10 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    document.title = "Login | Busca Ativa";
+  }, []);
 
   const handleLogin = async () => {
     setLoading(true);
@@ -34,8 +38,14 @@ const Login = () => {
 
       if (role == "editor") {
         router.push("/editor/formularios");
+        return;
+      }
+      if (role == "superuser") {
+        router.push("/admin/dashboard");
+        return;
       } else {
         router.push(`/${role}/dashboard`);
+        return;
       }
     } catch (err) {
       setError(
