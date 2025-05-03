@@ -1,19 +1,17 @@
 "use client";
 
-import SideBar from "@/components/Sidebar";
-import "./style.css";
 import Card from "@/components/Dashboard/Card";
-import Legend from "@/components/Dashboard/Legend";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import nookies from "nookies";
 import { useEffect, useState } from "react";
+import "./style.css";
 const MonthChart = dynamic(() => import("@/components/Dashboard/MonthChart"), {
   ssr: false,
 });
 const WeekChart = dynamic(() => import("@/components/Dashboard/WeekChart"), {
   ssr: false,
 });
-import nookies from "nookies";
-import { useRouter } from "next/navigation";
 
 const Dashboard = () => {
   const cards = [
@@ -89,17 +87,15 @@ const Dashboard = () => {
                   <h3 className="font-[poppins] text-lg 2xl:text-xl font-bold leading-[32px]">
                     Coletas do mês
                   </h3>
-                  <div>
-                    <MonthChart />
-                  </div>
+                  <div>{/* <MonthChart data={}/> */}</div>
                 </div>
                 <div className="chart flex-1 flex flex-col gap-1">
                   <h3 className="font-[poppins] text-lg 2xl:text-xl font-bold leading-[32px]">
                     Coletas da Semana
                   </h3>
                   <div>
-                    <WeekChart />
-                    <Legend
+                    {/* <WeekChart /> */}
+                    {/* <Legend
                       colors={[
                         "#B070F0",
                         "#EF4838",
@@ -110,7 +106,7 @@ const Dashboard = () => {
                         "#CDA6FF",
                       ]}
                       values={["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]}
-                    />
+                    /> */}
                   </div>
                 </div>
               </div>

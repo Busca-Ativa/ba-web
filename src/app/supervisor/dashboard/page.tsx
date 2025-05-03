@@ -1,15 +1,11 @@
 "use client";
 
-import SideBar from "@/components/Sidebar";
-import "./style.css";
 import Card from "@/components/Dashboard/Card";
-import WeekChart from "@/components/Dashboard/WeekChart";
-import Legend from "@/components/Dashboard/Legend";
-import MonthChart from "@/components/Dashboard/MonthChart";
-import { useEffect, useState } from "react";
-import nookies from "nookies";
-import { useRouter } from "next/navigation";
 import PageTitle from "@/components/PageTitle";
+import { useRouter } from "next/navigation";
+import nookies from "nookies";
+import { useEffect, useState } from "react";
+import "./style.css";
 
 const Dashboard = () => {
   const cards = [
@@ -85,16 +81,14 @@ const Dashboard = () => {
                   <h3 className="font-[poppins] text-lg 2xl:text-xl font-bold leading-[32px]">
                     Coletas do mês
                   </h3>
-                  <div>
-                    <MonthChart />
-                  </div>
+                  <div>{/* <MonthChart /> */}</div>
                 </div>
                 <div className="chart flex-1 flex flex-col gap-1">
                   <h3 className="font-[poppins] text-lg 2xl:text-xl font-bold leading-[32px]">
                     Coletas da Semana
                   </h3>
                   <div>
-                    <WeekChart />
+                    {/* <WeekChart />
                     <Legend
                       colors={[
                         "#B070F0",
@@ -106,7 +100,7 @@ const Dashboard = () => {
                         "#CDA6FF",
                       ]}
                       values={["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]}
-                    />
+                    /> */}
                   </div>
                 </div>
               </div>
