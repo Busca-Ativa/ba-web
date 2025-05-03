@@ -2,7 +2,11 @@
 import { LineChart } from "@mui/x-charts/LineChart";
 import { useEffect, useRef, useState } from "react";
 
-export default function MonthChart() {
+type MonthChartProps = {
+  data: Record<string, number>; // Exemplo: { "1": 3, "2": 6, ... }
+};
+
+export default function MonthChart({ data }: MonthChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
@@ -25,22 +29,29 @@ export default function MonthChart() {
     };
   }, []);
 
+  const days = Object.keys(data)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+  const sales = days.map((day) => data[String(day)]);
+
   return (
     <div ref={chartContainerRef} style={{ width: "100%" }}>
       <LineChart
-        xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
+        xAxis={[{ data: days, label: "Dia do Mês" }]}
         series={[
           {
-            data: [2, 5.5, 2, 8.5, 1.5, 5],
+            data: sales,
+            label: "Vendas",
             curve: "linear",
             showMark: true,
           },
         ]}
         colors={["#FFBC66"]}
-        sx={{ height: 300 }}
         width={containerWidth}
         height={(320 * containerWidth) / 582}
         grid={{ horizontal: true }}
+        legend={{ hidden: false }} // Mostra legenda
       />
     </div>
   );

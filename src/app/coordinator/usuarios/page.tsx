@@ -238,17 +238,34 @@ const UsuariosAdmin = () => {
     <>
       {!showApprovalPage && (
         <>
-          <div className="w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
+          <div className="w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
             <div className="flex justify-between">
               <PageTitle title="Usuários" />
               <Button
                 onClick={handleShowApproval}
-                className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white"
+                variant="contained"
+                startIcon={<HowToReg />}
+                sx={{
+                  height: 41,
+                  px: 2,
+                  py: 1,
+                  backgroundColor: "#19b394",
+                  "&:hover": {
+                    backgroundColor: "var(--primary-dark)",
+                  },
+                  borderRadius: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  color: "white",
+                  fontSize: "0.875rem",
+                  fontWeight: 600,
+                  fontFamily: "'Source Sans Pro', sans-serif",
+                  lineHeight: "18px",
+                  boxShadow: 0,
+                }}
               >
-                <HowToReg />
-                <div className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
-                  Aprovar Usuário
-                </div>
+                Aprovar Usuário
               </Button>
             </div>
             {loading && <SkeletonTable columns={columns} showActions={true} />}
@@ -316,11 +333,28 @@ const UsuariosAdmin = () => {
               <h1>Pedidos de Cadastro</h1>
               <Button
                 onClick={handleHideApproval}
-                className="h-[41px] px-4 py-2 bg-[#19b394] hover:bg-[--primary-dark] rounded justify-center items-center gap-3 inline-flex text-white"
+                variant="contained"
+                sx={{
+                  height: 41,
+                  px: 4,
+                  py: 2,
+                  backgroundColor: "#19b394",
+                  "&:hover": {
+                    backgroundColor: "var(--primary-dark)",
+                  },
+                  borderRadius: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  color: "white",
+                  fontSize: "0.875rem",
+                  fontWeight: 600,
+                  fontFamily: "'Source Sans Pro', sans-serif",
+                  lineHeight: "18px",
+                  boxShadow: 0,
+                }}
               >
-                <div className="text-white text-sm font-semibold font-['Source Sans Pro'] leading-[18px]">
-                  Voltar
-                </div>
+                Voltar
               </Button>
             </div>
             <BATable

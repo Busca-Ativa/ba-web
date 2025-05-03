@@ -2,7 +2,19 @@
 import { useState, useEffect, useRef } from "react";
 import { BarChart } from "@mui/x-charts/BarChart";
 
-export default function WeekChart() {
+type WeekChartProps = {
+  data: {
+    monday?: number;
+    tuesday?: number;
+    wednesday?: number;
+    thursday?: number;
+    friday?: number;
+    saturday?: number;
+    sunday?: number;
+  };
+};
+
+export default function WeekChart({ data }: WeekChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
@@ -14,7 +26,6 @@ export default function WeekChart() {
     };
 
     updateWidth();
-
     if (typeof window !== "undefined") {
       window.addEventListener("resize", updateWidth);
     }
@@ -25,32 +36,43 @@ export default function WeekChart() {
     };
   }, []);
 
+  const daysOrder: (keyof WeekChartProps["data"])[] = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+  ];
+
+  const labels = [
+    "Segunda",
+    "Terça",
+    "Quarta",
+    "Quinta",
+    "Sexta",
+    "Sábado",
+    "Domingo",
+  ];
+
+  const values = daysOrder.map((day) => data[day] || 0);
+
   return (
     <div ref={chartContainerRef} style={{ width: "100%" }}>
       <BarChart
-        xAxis={[{ scaleType: "band", data: ["Contagem"] }]}
+        xAxis={[{ scaleType: "band", data: labels, label: "Dia da semana" }]}
         series={[
-          { data: [40] },
-          { data: [30] },
-          { data: [50] },
-          { data: [20] },
-          { data: [60] },
-          { data: [10] },
-          { data: [100] },
+          {
+            data: values,
+            label: "Encontros",
+          },
         ]}
-        colors={[
-          "#B070F0",
-          "#EF4838",
-          "#62ACED",
-          "#F99C34",
-          "#B3E6F5",
-          "#40C156",
-          "#CDA6FF",
-        ]}
-        sx={{ height: 300 }}
+        colors={["#B070F0"]}
         width={containerWidth}
         height={(320 * containerWidth) / 582}
         grid={{ horizontal: true }}
+        legend={{ hidden: false }}
       />
     </div>
   );

@@ -1,54 +1,38 @@
 "use client";
 
-import SideBar from "@/components/Sidebar";
-import "./style.css";
 import Card from "@/components/Dashboard/Card";
-import WeekChart from "@/components/Dashboard/WeekChart";
-import Legend from "@/components/Dashboard/Legend";
 import MonthChart from "@/components/Dashboard/MonthChart";
-import { useEffect, useState } from "react";
-import nookies from "nookies";
+import WeekChart from "@/components/Dashboard/WeekChart";
+import api from "@/services/api";
 import { useRouter } from "next/navigation";
-import PageTitle from "@/components/PageTitle";
+import nookies from "nookies";
+import { useEffect, useState } from "react";
+import "./style.css";
 
 const Dashboard = () => {
-  const cards = [
-    {
-      key: 1,
-      title: "Quant. Unidades",
-      content: "1 Unidade",
-      bgColor: "--primary-lighter",
-      textColor: "--primary-dark",
-    },
-    {
-      key: 2,
-      title: "Quant. Agentes",
-      content: "50 Agentes",
-      bgColor: "--secondary-lighter",
-      textColor: "--secondary-dark",
-    },
-    {
-      key: 3,
-      title: "Quant. Eventos (Total)",
-      content: "6 Eventos",
-      bgColor: "--primary-lighter",
-      textColor: "--primary-dark",
-    },
-    {
-      key: 4,
-      title: "Quant. Coletas (Total)",
-      content: "232  Eventos",
-      bgColor: "--secondary-lighter",
-      textColor: "--secondary-dark",
-    },
-  ];
-
   const router = useRouter();
   const [pass, setPass] = useState(false);
+  interface DashboardData {
+    units_count: number;
+    agents_count: number;
+    events_count: number;
+    month_events_count: number;
+    month_gatherings_count: Record<string, number>;
+    week_gatherings_count: Record<string, number>;
+  }
 
-  useEffect(() => {
-    document.title = "Dashboard | Busca Ativa";
-  }, []);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
+  const [cards, setCards] = useState<
+    {
+      key: number;
+      title: string;
+      content: any;
+      bgColor: string;
+      textColor: string;
+    }[]
+  >([]);
 
   useEffect(() => {
     const token = nookies.get(null).access_token;
@@ -59,12 +43,56 @@ const Dashboard = () => {
     }
   }, [router]);
 
+  useEffect(() => {
+    api
+      .get("/coordinator/dashboard")
+      .then((response) => {
+        const data = response.data.data;
+        setDashboardData(data);
+
+        // Define cards based on dashboardData
+        setCards([
+          {
+            key: 1,
+            title: "Quant. Unidades",
+            content: data.units_count + " unidades",
+            bgColor: "--primary-lighter",
+            textColor: "--primary-dark",
+          },
+          {
+            key: 2,
+            title: "Quant. Agentes",
+            content: data.agents_count + " agentes",
+            bgColor: "--secondary-lighter",
+            textColor: "--secondary-dark",
+          },
+          {
+            key: 3,
+            title: "Quant. Eventos (Total)",
+            content: data.events_count + " eventos",
+            bgColor: "--primary-lighter",
+            textColor: "--primary-dark",
+          },
+          {
+            key: 4,
+            title: "Quant.Eventos (Julho)",
+            content: data.month_events_count + " eventos",
+            bgColor: "--secondary-lighter",
+            textColor: "--secondary-dark",
+          },
+        ]);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }, []);
+
   return (
     <>
       {pass && (
         <>
-          <div className="dashboard w-[100%] px-[45px] py-[60px] flex flex-col gap-8 2xl:gap-10">
-            <PageTitle title="Painel de Monitoramento" />
+          <div className="dashboard w-[100%] h-[100vh px-[45px] pt-[60px] flex flex-col gap-8 2xl:gap-10">
+            <h1 className="text-3xl 2xl:text-4xl">Painel de Monitoramento</h1>
             <div className="cards w-[100%] flex justify-stretch gap-[20px]">
               {cards.map((card) => (
                 <Card
@@ -86,7 +114,9 @@ const Dashboard = () => {
                     Coletas do mês
                   </h3>
                   <div>
-                    <MonthChart />
+                    <MonthChart
+                      data={dashboardData?.month_gatherings_count || {}}
+                    />
                   </div>
                 </div>
                 <div className="chart flex-1 flex flex-col gap-1">
@@ -94,18 +124,8 @@ const Dashboard = () => {
                     Coletas da Semana
                   </h3>
                   <div>
-                    <WeekChart />
-                    <Legend
-                      colors={[
-                        "#B070F0",
-                        "#EF4838",
-                        "#62ACED",
-                        "#F99C34",
-                        "#B3E6F5",
-                        "#40C156",
-                        "#CDA6FF",
-                      ]}
-                      values={["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]}
+                    <WeekChart
+                      data={dashboardData?.week_gatherings_count || {}}
                     />
                   </div>
                 </div>
