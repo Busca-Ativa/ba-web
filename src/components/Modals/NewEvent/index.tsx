@@ -330,7 +330,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
 
         try {
           const response = await api.get(
-            `/all/geojson?id_state=${stateString}&segment_type=sector&id_city=${cityString}&id_segment=${segmentID}&id_country=${countryString}`
+            `/all/geojson?id_state=${stateString}&segment_type=${segmentTypeString}&id_city=${cityString}&id_segment=${segmentID}&id_country=${countryString}`
           );
           if (response.status === 200) {
             if (segmentID) {
@@ -478,6 +478,9 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
     setModalState((prev) => prev - 1);
   };
 
+  useEffect(() => {
+    console.log("segments", segments);
+  }, [segments]);
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLSelectElement;
     if (target.scrollTop + target.clientHeight >= target.scrollHeight - 10) {
@@ -888,7 +891,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
               </Box>
 
               {/* Linha 2: Tipo de Segmento */}
-              {/* <Box mb={2}>
+              <Box mb={2}>
                 <FormControl fullWidth>
                   <Typography variant="body2" fontWeight="bold" mb={2}>
                     Tipo de Segmento
@@ -908,7 +911,7 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                     )}
                   </Select>
                 </FormControl>
-              </Box> */}
+              </Box>
 
               {/* Linha 3: Select de Bairros ou Setores */}
               {currentSegmentType && (
@@ -931,27 +934,25 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                         )
                       }
                     >
-                      {currentSegmentType === "sector" && (
-                        <MenuItem
-                          value="all"
-                          onClick={(e) => {
-                            e.stopPropagation(); // Prevenir o comportamento padrão de seleção
-                            const allIds = (
-                              segments[currentSegmentType] ?? []
-                            ).map((segment: any) => segment._id);
-                            const isAllSelected = allIds.every((id) =>
-                              (
-                                event.segments?.[currentSegmentType] || []
-                              ).includes(id)
-                            );
-                            if (!isAllSelected) {
-                              handleChange("segments sector", allIds);
-                            }
-                          }}
-                        >
-                          Todos os Setores
-                        </MenuItem>
-                      )}
+                      <MenuItem
+                        value="all"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevenir o comportamento padrão de seleção
+                          const allIds = (
+                            segments[currentSegmentType] ?? []
+                          ).map((segment: any) => segment._id);
+                          const isAllSelected = allIds.every((id) =>
+                            (
+                              event.segments?.[currentSegmentType] || []
+                            ).includes(id)
+                          );
+                        }}
+                      >
+                        Todos os{" "}
+                        {currentSegmentType === "sector"
+                          ? "setores"
+                          : "bairros"}
+                      </MenuItem>
                       {currentSegmentType === "sector"
                         ? (segments[currentSegmentType] || []).map(
                             (segment: any, index: number) => (
@@ -962,8 +963,8 @@ export default function NewEvent({ open, onClose, onSubmit }: ModalProps) {
                           )
                         : (segments[currentSegmentType] || []).map(
                             (segment: any, index: number) => (
-                              <MenuItem key={index} value={segment.id}>
-                                {segment.nome}
+                              <MenuItem key={index} value={segment._id}>
+                                {segment.features[0]?.properties?.NM_BAIRRO}
                               </MenuItem>
                             )
                           )}
