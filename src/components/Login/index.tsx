@@ -35,7 +35,10 @@ const Login = () => {
         localStorage.setItem("role", role);
         localStorage.setItem("user_id", userId);
       }
-
+      if (role == "agent") {
+        router.push("/agente/eventos");
+        return;
+      }
       if (role == "editor") {
         router.push("/editor/formularios");
         return;
