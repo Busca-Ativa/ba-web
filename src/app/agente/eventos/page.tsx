@@ -91,8 +91,8 @@ const Eventos = () => {
     <div className="bg-[#fafafa]">
       <Navbar />
       <WelcomeMessage
-        name={profile.name}
-        origin={profile.unit ? profile.unit.name : profile.name}
+        name={profile?.name}
+        origin={profile?.unit ? profile.unit.name : profile.name}
         city={city?.nome}
       />
       <Typography
