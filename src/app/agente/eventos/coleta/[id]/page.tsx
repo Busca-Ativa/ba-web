@@ -2,7 +2,7 @@
 
 import api from "@/services/api";
 import { ArrowBackIosNew } from "@mui/icons-material";
-import { Box, Typography } from "@mui/material";
+import { Box, LinearProgress, Typography } from "@mui/material";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useState } from "react";
 import "survey-core/defaultV2.min.css";
@@ -15,6 +15,31 @@ const ColetaEvent = ({ params }: { params: { id: string } }) => {
   const { id } = params;
   const [eventDetails, setEventDetails] = useState<any>(null);
   const [surveyModel, setSurveyModel] = useState<Model | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [enviadoComSucesso, setEnviadoComSucesso] = useState(false);
+
+  const localStorageKey = `pending_submission_${id}`;
+
+  const trySubmit = (submitForm: any, retryCallback: () => void) => {
+    api
+      .post("/agent/gathering", submitForm)
+      .then(() => {
+        toast.success("Formulário enviado com sucesso!");
+        localStorage.removeItem(localStorageKey);
+        setEnviando(false);
+        setEnviadoComSucesso(true);
+        setTimeout(() => {
+          location.href = "/agente/eventos/" + id;
+        }, 2000);
+      })
+      .catch((error) => {
+        console.error(
+          "Erro ao enviar formulário. Nova tentativa em 5s...",
+          error
+        );
+        retryCallback();
+      });
+  };
 
   useEffect(() => {
     api
@@ -23,14 +48,13 @@ const ColetaEvent = ({ params }: { params: { id: string } }) => {
         setEventDetails(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching event details:", error);
+        console.error("Erro ao buscar detalhes do evento:", error);
       });
   }, [id]);
 
   useEffect(() => {
     if (!eventDetails?.data?.event?.form?.survey_schema) return;
 
-    // Obtem localização atual
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const lat = position.coords.latitude;
@@ -49,6 +73,7 @@ const ColetaEvent = ({ params }: { params: { id: string } }) => {
             })) || [];
 
           const model = new Model(schema);
+          model.showCompletedPage = false;
 
           model.onComplete.add((sender) => {
             const formData = sender.data;
@@ -75,17 +100,12 @@ const ColetaEvent = ({ params }: { params: { id: string } }) => {
               survey_result: finalData,
             };
 
-            api
-              .post("/agent/gathering", submitForm)
-              .then((response) => {
-                toast.success("Formulário enviado com sucesso!");
-                setTimeout(() => {
-                  location.href = "/agente/eventos/" + id;
-                }, 2 * 1000);
-              })
-              .catch((error) => {
-                console.error("Erro ao enviar formulário:", error);
-              });
+            localStorage.setItem(localStorageKey, JSON.stringify(submitForm));
+            setEnviando(true);
+
+            const retry = () =>
+              setTimeout(() => trySubmit(submitForm, retry), 5000);
+            trySubmit(submitForm, retry);
           });
 
           setSurveyModel(model);
@@ -97,7 +117,7 @@ const ColetaEvent = ({ params }: { params: { id: string } }) => {
         console.error("Erro ao obter localização:", error);
       },
       {
-        enableHighAccuracy: true, // aumenta chance de obter altitude
+        enableHighAccuracy: true,
       }
     );
   }, [eventDetails]);
@@ -105,7 +125,13 @@ const ColetaEvent = ({ params }: { params: { id: string } }) => {
   return (
     <div className="bg-white">
       <Box padding={"17px 25px"} display="flex" alignItems="center" gap={2}>
-        <ArrowBackIosNew htmlColor="#13866F" fontSize="small" />
+        <ArrowBackIosNew
+          htmlColor="#13866F"
+          fontSize="small"
+          onClick={() => {
+            location.href = "/agente/eventos/" + id;
+          }}
+        />
         <Typography
           sx={{
             color: "#1C1B1F",
@@ -121,7 +147,41 @@ const ColetaEvent = ({ params }: { params: { id: string } }) => {
         </Typography>
       </Box>
 
-      {surveyModel && <Survey model={surveyModel} />}
+      {surveyModel && !enviadoComSucesso && (
+        <>
+          {enviando && (
+            <div
+              className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white bg-opacity-90"
+              style={{ minHeight: "100vh", minWidth: "100vw" }}
+            >
+              <span className="mb-4 w-3/4 max-w-lg px-4">
+                <LinearProgress
+                  className="w-full"
+                  sx={{
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: "#E0F2F1",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#13866F",
+                    },
+                  }}
+                />
+              </span>
+              <div className="text-3xl font-semibold text-center text-gray-700">
+                Formulário salvo. Tentando sincronizar com o servidor...
+              </div>
+            </div>
+          )}
+          <Survey model={surveyModel} />
+        </>
+      )}
+
+      {surveyModel && enviadoComSucesso && (
+        <div className="text-2xl text-center text-green-700 font-semibold">
+          Obrigado por sua resposta!
+        </div>
+      )}
+
       <ToastContainerWrapper />
     </div>
   );
