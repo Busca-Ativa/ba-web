@@ -6,6 +6,11 @@ import { useRouter } from "next/navigation";
 import nookies from "nookies";
 import { useEffect, useState } from "react";
 import "./style.css";
+import Legend from "@/components/Dashboard/Legend";
+import api from "@/services/api";
+import { toast } from "react-toastify";
+import { useMemo } from "react";
+import { DashboardAdmin } from "../types";
 const MonthChart = dynamic(() => import("@/components/Dashboard/MonthChart"), {
   ssr: false,
 });
@@ -14,39 +19,45 @@ const WeekChart = dynamic(() => import("@/components/Dashboard/WeekChart"), {
 });
 
 const Dashboard = () => {
-  const cards = [
-    {
-      key: 1,
-      title: "Quant. Instituições",
-      content: "4 Instituições",
-      bgColor: "--primary-lighter",
-      textColor: "--primary-dark",
-    },
-    {
-      key: 2,
-      title: "Quant. Usuários",
-      content: "124 Usuários",
-      bgColor: "--secondary-lighter",
-      textColor: "--secondary-dark",
-    },
-    {
-      key: 3,
-      title: "Quant. Eventos (Total)",
-      content: "26 Eventos",
-      bgColor: "--primary-lighter",
-      textColor: "--primary-dark",
-    },
-    {
-      key: 4,
-      title: "Quant.Eventos (Julho)",
-      content: "5 Eventos",
-      bgColor: "--secondary-lighter",
-      textColor: "--secondary-dark",
-    },
-  ];
-
-  const router = useRouter();
+  const [dashboardData, setDashboardData] = useState<DashboardAdmin | null>(
+    null
+  );
   const [pass, setPass] = useState(false);
+  const router = useRouter();
+
+  const cards = useMemo(
+    () => [
+      {
+        key: 1,
+        title: "Quant. Instituições",
+        content: `${dashboardData?.institutions_count ?? 0} Instituições`,
+        bgColor: "--primary-lighter",
+        textColor: "--primary-dark",
+      },
+      {
+        key: 2,
+        title: "Quant. Usuários",
+        content: `${dashboardData?.users_count ?? 0} Usuários`,
+        bgColor: "--secondary-lighter",
+        textColor: "--secondary-dark",
+      },
+      {
+        key: 3,
+        title: "Quant. Eventos (Total)",
+        content: `${dashboardData?.events_count ?? 0} Eventos`,
+        bgColor: "--primary-lighter",
+        textColor: "--primary-dark",
+      },
+      {
+        key: 4,
+        title: "Quant.Eventos (Julho)",
+        content: `${dashboardData?.month_events_count ?? 0} Eventos`,
+        bgColor: "--secondary-lighter",
+        textColor: "--secondary-dark",
+      },
+    ],
+    [dashboardData]
+  );
 
   useEffect(() => {
     document.title = "Dashboard | Busca Ativa";
@@ -60,6 +71,21 @@ const Dashboard = () => {
       setPass(true);
     }
   }, [router]);
+
+  useEffect(() => {
+    api
+      .get("admin/dashboard")
+      .then((response) => {
+        if (response.status === 200) {
+          setDashboardData(response.data);
+        } else {
+          toast.error("Failed to fetch dashboard data");
+        }
+      })
+      .catch((error) => {
+        toast.error("Error fetching dashboard data:", error);
+      });
+  }, []);
 
   return (
     <>
@@ -87,15 +113,21 @@ const Dashboard = () => {
                   <h3 className="font-[poppins] text-lg 2xl:text-xl font-bold leading-[32px]">
                     Coletas do mês
                   </h3>
-                  <div>{/* <MonthChart data={}/> */}</div>
+                  <div>
+                    <MonthChart
+                      data={dashboardData?.month_gatherings_count || {}}
+                    />
+                  </div>
                 </div>
                 <div className="chart flex-1 flex flex-col gap-1">
                   <h3 className="font-[poppins] text-lg 2xl:text-xl font-bold leading-[32px]">
                     Coletas da Semana
                   </h3>
                   <div>
-                    {/* <WeekChart /> */}
-                    {/* <Legend
+                    <WeekChart
+                      data={dashboardData?.week_gatherings_count || {}}
+                    />
+                    <Legend
                       colors={[
                         "#B070F0",
                         "#EF4838",
@@ -106,7 +138,7 @@ const Dashboard = () => {
                         "#CDA6FF",
                       ]}
                       values={["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]}
-                    /> */}
+                    />
                   </div>
                 </div>
               </div>
