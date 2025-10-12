@@ -22,18 +22,21 @@ import api from "@/services/api";
 import { useRouter } from "next/navigation";
 import { Polygon } from "react-leaflet";
 import { MapOutlined } from "@mui/icons-material";
+import Card from "@/components/Dashboard/Card";
+import QuestionChart from "./components/QuestionsChart";
+import FlowChart from "./components/FlowChart";
 
 // Componentes dinâmicos para evitar SSR no Leaflet
-const MapContainer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.MapContainer),
-  {
-    ssr: false,
-  }
-);
-const TileLayer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.TileLayer),
-  { ssr: false }
-);
+// const MapContainer = dynamic(
+//   () => import("react-leaflet").then((mod) => mod.MapContainer),
+//   {
+//     ssr: false,
+//   }
+// );
+// const TileLayer = dynamic(
+//   () => import("react-leaflet").then((mod) => mod.TileLayer),
+//   { ssr: false }
+// );
 
 export default function Event({
   params,
@@ -41,64 +44,97 @@ export default function Event({
   params: { id: string }; // Pass the param synchronously
 }) {
   const { id } = params; // Destructure `id` from params
-  const mapRef = useRef<any>(null); // Referência para o mapa
-  const [currentLocation, setCurrentLocation] = useState<[number, number]>([
-    0, 0,
-  ]);
+  // const mapRef = useRef<any>(null); // Referência para o mapa
+  // const [currentLocation, setCurrentLocation] = useState<[number, number]>([
+  //   0, 0,
+  // ]);
   const [event, setEvent] = useState<any>({});
   const [formattedDateRange, setFormattedDateRange] = useState<string>("");
   const router = useRouter();
-  const [geojsons, setGeojsons] = useState<any[]>([]);
+  // const [geojsons, setGeojsons] = useState<any[]>([]);
+  const [summary, setSummary] = useState<any>({});
+  const [cards, setCards] = useState<any[]>([]);
+  const [summaryPayloads, setSummaryPayloads] = useState<string>("");
   const [agents, setAgents] = useState<any[]>([]);
+  const [formReference, setFormReference] = useState<any>(null);
+
+  const handlePayload = (payload: {
+    city?: string;
+    unit?: string;
+    agent?: string;
+  }) => {
+    // Monta a string de query a partir do payload
+    const queryString = Object.entries(payload)
+      .filter(([_, value]) => value)
+      .map(([key, value]) => `&${key}=${encodeURIComponent(value as string)}`)
+      .join("");
+    setSummaryPayloads(queryString);
+  };
+
   // Handle geolocation asynchronously inside useEffect
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setCurrentLocation([latitude, longitude]);
-        },
-        (error) => {
-          console.error("Erro ao obter localização:", error);
-        }
-      );
-    } else {
-      console.error("Geolocalização não suportada pelo navegador.");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         setCurrentLocation([latitude, longitude]);
+  //       },
+  //       (error) => {
+  //         console.error("Erro ao obter localização:", error);
+  //       }
+  //     );
+  //   } else {
+  //     console.error("Geolocalização não suportada pelo navegador.");
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    if (geojsons.length > 0) {
-      const bounds = geojsons.reduce((acc: any, geo: any) => {
-        if (geo.features) {
-          geo.features.forEach((feature: any) => {
-            const polygonBounds = feature.geometry.coordinates.map(
-              (polygon: any) =>
-                polygon.map((coordinate: any) => [coordinate[1], coordinate[0]])
-            );
-            acc.extend(polygonBounds.flat());
-          });
-        } else {
-          const polygonBounds = geo.geometry.coordinates.map((polygon: any) =>
-            polygon.map((coordinate: any) => [coordinate[1], coordinate[0]])
-          );
-          acc.extend(polygonBounds.flat());
-        }
-        return acc;
-      }, new L.LatLngBounds([]));
+  // useEffect(() => {
+  //   if (geojsons.length > 0) {
+  //     const bounds = geojsons.reduce((acc: any, geo: any) => {
+  //       if (geo.features) {
+  //         geo.features.forEach((feature: any) => {
+  //           const polygonBounds = feature.geometry.coordinates.map(
+  //             (polygon: any) =>
+  //               polygon
+  //                 .filter(
+  //                   (coordinate: any) =>
+  //                     typeof coordinate[0] === "number" &&
+  //                     typeof coordinate[1] === "number"
+  //                 )
+  //                 .map((coordinate: any) => [coordinate[1], coordinate[0]])
+  //           );
+  //           acc?.extend(polygonBounds.flat());
+  //         });
+  //       } else {
+  //         const polygonBounds = geo.geometry.coordinates.map((polygon: any) =>
+  //           polygon.map((coordinate: any) => [coordinate[1], coordinate[0]])
+  //         );
+  //         acc?.extend(polygonBounds.flat());
+  //       }
+  //       return acc;
+  //     }, new L.LatLngBounds([]));
 
-      // Ajusta o mapa para que as geometrias estejam completamente visíveis
-      mapRef?.current?.fitBounds(bounds);
+  //     // Ajusta o mapa para que as geometrias estejam completamente visíveis
+  //     mapRef?.current?.fitBounds(bounds);
 
-      // Calcula o centro e atualiza o estado
-      const center = bounds.getCenter();
-      setCurrentLocation(center);
-    }
-  }, [geojsons]);
-
-  useEffect(() => {
-    console.log("goejsons:", geojsons);
-  }, [geojsons]);
+  //     // Calcula o centro e atualiza o estado
+  //     let center: L.LatLng | undefined;
+  //     if (
+  //       bounds &&
+  //       typeof bounds.getCenter === "function" &&
+  //       bounds.isValid()
+  //     ) {
+  //       center = bounds.getCenter();
+  //       if (
+  //         center &&
+  //         typeof center.lat === "number" &&
+  //         typeof center.lng === "number"
+  //       ) {
+  //         setCurrentLocation([center.lat, center.lng]);
+  //       }
+  //     }
+  //   }
+  // }, [geojsons]);
 
   useEffect(() => {
     api
@@ -108,6 +144,16 @@ export default function Event({
       })
       .catch((error) => {
         console.error(error);
+      });
+
+    api
+      .get(`/coordinator/event/summary${summaryPayloads}`, {
+        params: {
+          id: id,
+        },
+      })
+      .then((response) => {
+        setSummary(response.data);
       });
   }, [id]);
 
@@ -167,36 +213,82 @@ export default function Event({
         });
       });
     }
+
+    if (event.id_form) {
+      api
+        .get(`/coordinator/institution/form/${event.id_form}`)
+        .then((response) => {
+          setFormReference(response.data.data);
+        });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event]);
 
+  // useEffect(() => {
+  //   if (event && event.full_geometry_ref) {
+  //     const fetchGeojsons = async () => {
+  //       try {
+  //         const requests = event.full_geometry_ref.map((geometry: any) =>
+  //           api.get(
+  //             `/all/geojson?segment_type=${geometry.type}&id_segment=${geometry.ref}`
+  //           )
+  //         );
+
+  //         const responses = await Promise.all(requests);
+  //         const geojsonData = responses.map((res) => res.data);
+  //         setGeojsons(geojsonData);
+  //       } catch (error) {
+  //         console.error("Erro ao buscar geojsons:", error);
+  //       }
+  //     };
+
+  //     fetchGeojsons();
+  //   }
+  // }, [event]);
+
   useEffect(() => {
-    if (event && event.full_geometry_ref) {
-      const fetchGeojsons = async () => {
-        try {
-          const requests = event.full_geometry_ref.map((geometry: any) =>
-            api.get(
-              `/all/geojson?segment_type=${geometry.type}&id_segment=${geometry.ref}`
-            )
-          );
+    const unitCount = summary?.summary?.unit_count;
+    const agentCount = summary?.summary?.agent_count;
+    const bestUnit = summary?.summary?.unit_with_most_collections;
+    const bestAgent = summary?.summary?.agent_with_most_collections;
 
-          const responses = await Promise.all(requests);
-          const geojsonData = responses.map((res) => res.data);
-          setGeojsons(geojsonData);
-        } catch (error) {
-          console.error("Erro ao buscar geojsons:", error);
-        }
-      };
-
-      fetchGeojsons();
-    }
-  }, [event]);
+    setCards([
+      {
+        key: 1,
+        title: "Quant. Unidades",
+        content: unitCount === 1 ? "1 unidade" : `${unitCount} unidades`,
+        bgColor: "--primary-lighter",
+        textColor: "--primary-dark",
+      },
+      {
+        key: 2,
+        title: "Quant. Agentes",
+        content: agentCount === 1 ? "1 agente" : `${agentCount} agentes`,
+        bgColor: "--secondary-lighter",
+        textColor: "--secondary-dark",
+      },
+      {
+        key: 3,
+        title: "Unidade com mais Coletas",
+        content: bestUnit ? bestUnit.name : "-",
+        bgColor: "--primary-lighter",
+        textColor: "--primary-dark",
+      },
+      {
+        key: 4,
+        title: "Agente com mais Coletas",
+        content: bestAgent ? bestAgent.name : "-",
+        bgColor: "--secondary-lighter",
+        textColor: "--secondary-dark",
+      },
+    ]);
+  }, [summary]);
 
   return (
     <Box width={"100%"}>
       {/* Mapa */}
       <Box sx={{ width: "100%", height: 300 }}>
-        {currentLocation[0] !== 0 && geojsons.length > 0 && (
+        {/*{currentLocation[0] !== 0 && geojsons.length > 0 && (
           <MapContainer
             center={currentLocation}
             zoom={12}
@@ -238,7 +330,7 @@ export default function Event({
               )
             )}
           </MapContainer>
-        )}
+        )}*/}
       </Box>
       <Box sx={{ padding: "40px" }}>
         {/* Breadcrumbs */}
@@ -266,7 +358,7 @@ export default function Event({
                 <Typography
                   sx={{
                     color: "black",
-                    fontSize: "0.875rem", // equivalente a text-sm
+                    fontSize: "0.875rem",
                     fontWeight: "normal",
                     fontFamily: "Poppins",
                     lineHeight: "21px",
@@ -278,7 +370,7 @@ export default function Event({
               <Typography
                 sx={{
                   color: "black",
-                  fontSize: "0.875rem", // equivalente a text-sm
+                  fontSize: "0.875rem",
                   fontWeight: "normal",
                   fontFamily: "Poppins",
                   lineHeight: "21px",
@@ -339,7 +431,7 @@ export default function Event({
           <Typography
             sx={{
               color: "#575757",
-              fontSize: "0.875rem", // equivalente a text-sm
+              fontSize: "0.875rem",
               fontWeight: "normal",
               fontFamily: "Poppins",
             }}
@@ -349,7 +441,7 @@ export default function Event({
           <Typography
             sx={{
               color: "#0e1113",
-              fontSize: "0.75rem", // equivalente a text-xs
+              fontSize: "0.75rem",
               fontWeight: "normal",
               fontFamily: "Poppins",
             }}
@@ -357,6 +449,19 @@ export default function Event({
             {formattedDateRange}
           </Typography>
         </Box>
+        {/* Resumo */}
+        <div className="cards w-[100%] flex justify-stretch gap-[20px] p-4">
+          {cards.map((card) => (
+            <Card
+              key={card.key}
+              title={card.title}
+              content={card.content}
+              bgColor={card.bgColor}
+              textColor={card.textColor}
+            />
+          ))}
+        </div>
+
         {/* Meta */}
         <Box
           sx={{
@@ -364,6 +469,7 @@ export default function Event({
             width: "100%",
             display: "flex",
             flexDirection: "column",
+            justifyContent: "space-between",
             gap: "8px",
           }}
         >
@@ -420,6 +526,11 @@ export default function Event({
           </Box>
         </Box>
 
+        <Box sx={{ display: "flex", padding: 2, gap: 2 }}>
+          <QuestionChart summary={summary} formReference={formReference} />
+          <FlowChart summary={summary} setPayload={handlePayload} />
+        </Box>
+
         {/* Tabela */}
         <Box sx={{ padding: 2 }}>
           <Typography
@@ -437,7 +548,7 @@ export default function Event({
           <TableContainer
             component={Paper}
             sx={{
-              borderRadius: 0, // Remove bordas arredondadas
+              borderRadius: 0,
               boxShadow: "none",
             }}
           >
@@ -445,7 +556,7 @@ export default function Event({
               <TableHead>
                 <TableRow
                   sx={{
-                    backgroundColor: "#f0f3f8", // Cor de fundo para o cabeçalho
+                    backgroundColor: "#f0f3f8",
                   }}
                 >
                   <TableCell>

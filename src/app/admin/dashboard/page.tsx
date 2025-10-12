@@ -50,7 +50,7 @@ const Dashboard = () => {
       },
       {
         key: 4,
-        title: "Quant.Eventos (Julho)",
+        title: "Quant.Eventos (Mês)",
         content: `${dashboardData?.month_events_count ?? 0} Eventos`,
         bgColor: "--secondary-lighter",
         textColor: "--secondary-dark",
