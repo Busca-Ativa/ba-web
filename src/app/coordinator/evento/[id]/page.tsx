@@ -27,16 +27,16 @@ import QuestionChart from "./components/QuestionsChart";
 import FlowChart from "./components/FlowChart";
 
 // Componentes dinâmicos para evitar SSR no Leaflet
-// const MapContainer = dynamic(
-//   () => import("react-leaflet").then((mod) => mod.MapContainer),
-//   {
-//     ssr: false,
-//   }
-// );
-// const TileLayer = dynamic(
-//   () => import("react-leaflet").then((mod) => mod.TileLayer),
-//   { ssr: false }
-// );
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  {
+    ssr: false,
+  }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
 
 export default function Event({
   params,
@@ -44,14 +44,14 @@ export default function Event({
   params: { id: string }; // Pass the param synchronously
 }) {
   const { id } = params; // Destructure `id` from params
-  // const mapRef = useRef<any>(null); // Referência para o mapa
-  // const [currentLocation, setCurrentLocation] = useState<[number, number]>([
-  //   0, 0,
-  // ]);
+  const mapRef = useRef<any>(null); // Referência para o mapa
+  const [currentLocation, setCurrentLocation] = useState<[number, number]>([
+    0, 0,
+  ]);
   const [event, setEvent] = useState<any>({});
   const [formattedDateRange, setFormattedDateRange] = useState<string>("");
   const router = useRouter();
-  // const [geojsons, setGeojsons] = useState<any[]>([]);
+  const [geojsons, setGeojsons] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>({});
   const [cards, setCards] = useState<any[]>([]);
   const [summaryPayloads, setSummaryPayloads] = useState<string>("");
@@ -71,70 +71,104 @@ export default function Event({
     setSummaryPayloads(queryString);
   };
 
-  // Handle geolocation asynchronously inside useEffect
-  // useEffect(() => {
-  //   if (navigator.geolocation) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       (position) => {
-  //         const { latitude, longitude } = position.coords;
-  //         setCurrentLocation([latitude, longitude]);
-  //       },
-  //       (error) => {
-  //         console.error("Erro ao obter localização:", error);
-  //       }
-  //     );
-  //   } else {
-  //     console.error("Geolocalização não suportada pelo navegador.");
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCurrentLocation([latitude, longitude]);
+        },
+        (error) => {
+          console.error("Erro ao obter localização:", error);
+        }
+      );
+    } else {
+      console.error("Geolocalização não suportada pelo navegador.");
+    }
+  }, []);
 
-  // useEffect(() => {
-  //   if (geojsons.length > 0) {
-  //     const bounds = geojsons.reduce((acc: any, geo: any) => {
-  //       if (geo.features) {
-  //         geo.features.forEach((feature: any) => {
-  //           const polygonBounds = feature.geometry.coordinates.map(
-  //             (polygon: any) =>
-  //               polygon
-  //                 .filter(
-  //                   (coordinate: any) =>
-  //                     typeof coordinate[0] === "number" &&
-  //                     typeof coordinate[1] === "number"
-  //                 )
-  //                 .map((coordinate: any) => [coordinate[1], coordinate[0]])
-  //           );
-  //           acc?.extend(polygonBounds.flat());
-  //         });
-  //       } else {
-  //         const polygonBounds = geo.geometry.coordinates.map((polygon: any) =>
-  //           polygon.map((coordinate: any) => [coordinate[1], coordinate[0]])
-  //         );
-  //         acc?.extend(polygonBounds.flat());
-  //       }
-  //       return acc;
-  //     }, new L.LatLngBounds([]));
+  useEffect(() => {
+    if (geojsons.length > 0) {
+      try {
+        const bounds = geojsons.reduce((acc: any, geo: any) => {
+          if (!geo) return acc;
 
-  //     // Ajusta o mapa para que as geometrias estejam completamente visíveis
-  //     mapRef?.current?.fitBounds(bounds);
+          const processCoordinates = (coordinates: any) => {
+            if (!Array.isArray(coordinates)) return [];
+            return coordinates
+              .map((coord: any) => {
+                // Verifica se é um par válido [lng, lat]
+                if (
+                  Array.isArray(coord) &&
+                  typeof coord[0] === "number" &&
+                  typeof coord[1] === "number"
+                ) {
+                  return [coord[1], coord[0]]; // Leaflet usa [lat, lng]
+                }
+                return null;
+              })
+              .filter(Boolean); // remove nulls
+          };
 
-  //     // Calcula o centro e atualiza o estado
-  //     let center: L.LatLng | undefined;
-  //     if (
-  //       bounds &&
-  //       typeof bounds.getCenter === "function" &&
-  //       bounds.isValid()
-  //     ) {
-  //       center = bounds.getCenter();
-  //       if (
-  //         center &&
-  //         typeof center.lat === "number" &&
-  //         typeof center.lng === "number"
-  //       ) {
-  //         setCurrentLocation([center.lat, center.lng]);
-  //       }
-  //     }
-  //   }
-  // }, [geojsons]);
+          if (geo.features) {
+            geo.features.forEach((feature: any) => {
+              const geom = feature.geometry;
+              if (!geom || !geom.coordinates) return;
+
+              if (geom.type === "Polygon") {
+                const polygonBounds =
+                  geom.coordinates.flatMap(processCoordinates);
+                acc.extend(polygonBounds);
+              } else if (geom.type === "MultiPolygon") {
+                geom.coordinates.forEach((polygon: any) => {
+                  const polygonBounds = polygon.flatMap(processCoordinates);
+                  acc.extend(polygonBounds);
+                });
+              }
+            });
+          } else if (geo.geometry) {
+            const geom = geo.geometry;
+            if (!geom.coordinates) return acc;
+
+            if (geom.type === "Polygon") {
+              const polygonBounds =
+                geom.coordinates.flatMap(processCoordinates);
+              acc.extend(polygonBounds);
+            } else if (geom.type === "MultiPolygon") {
+              geom.coordinates.forEach((polygon: any) => {
+                const polygonBounds = polygon.flatMap(processCoordinates);
+                acc.extend(polygonBounds);
+              });
+            }
+          }
+
+          return acc;
+        }, new L.LatLngBounds([]));
+
+        if (!bounds.isValid()) {
+          console.warn("⚠️ Nenhum limite válido encontrado para os GeoJSONs.");
+          return;
+        }
+
+        // Ajusta o mapa para mostrar todas as geometrias
+        mapRef?.current?.fitBounds(bounds);
+
+        // Calcula o centro e atualiza o estado
+        const center = bounds.getCenter();
+        if (
+          center &&
+          typeof center.lat === "number" &&
+          typeof center.lng === "number"
+        ) {
+          setCurrentLocation([center.lat, center.lng]);
+        } else {
+          console.warn("⚠️ Centro inválido calculado para os GeoJSONs.");
+        }
+      } catch (err) {
+        console.error("Erro ao ajustar o mapa:", err);
+      }
+    }
+  }, [geojsons]);
 
   useEffect(() => {
     api
@@ -224,27 +258,27 @@ export default function Event({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event]);
 
-  // useEffect(() => {
-  //   if (event && event.full_geometry_ref) {
-  //     const fetchGeojsons = async () => {
-  //       try {
-  //         const requests = event.full_geometry_ref.map((geometry: any) =>
-  //           api.get(
-  //             `/all/geojson?segment_type=${geometry.type}&id_segment=${geometry.ref}`
-  //           )
-  //         );
+  useEffect(() => {
+    if (event && event.full_geometry_ref) {
+      const fetchGeojsons = async () => {
+        try {
+          const requests = event.full_geometry_ref.map((geometry: any) =>
+            api.get(
+              `/all/geojson?segment_type=${geometry.type}&id_segment=${geometry.ref}`
+            )
+          );
 
-  //         const responses = await Promise.all(requests);
-  //         const geojsonData = responses.map((res) => res.data);
-  //         setGeojsons(geojsonData);
-  //       } catch (error) {
-  //         console.error("Erro ao buscar geojsons:", error);
-  //       }
-  //     };
+          const responses = await Promise.all(requests);
+          const geojsonData = responses.map((res) => res.data);
+          setGeojsons(geojsonData);
+        } catch (error) {
+          console.error("Erro ao buscar geojsons:", error);
+        }
+      };
 
-  //     fetchGeojsons();
-  //   }
-  // }, [event]);
+      fetchGeojsons();
+    }
+  }, [event]);
 
   useEffect(() => {
     const unitCount = summary?.summary?.unit_count;
@@ -288,7 +322,7 @@ export default function Event({
     <Box width={"100%"}>
       {/* Mapa */}
       <Box sx={{ width: "100%", height: 300 }}>
-        {/*{currentLocation[0] !== 0 && geojsons.length > 0 && (
+        {currentLocation[0] !== 0 && geojsons.length > 0 && (
           <MapContainer
             center={currentLocation}
             zoom={12}
@@ -300,37 +334,104 @@ export default function Event({
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
             {geojsons.map((geo, geoIndex) =>
-              geo.features ? (
-                geo.features.map(
-                  (
-                    feature: { geometry: { coordinates: any[] } },
-                    featureIndex: any
-                  ) => (
-                    <Polygon
-                      key={`${geoIndex}-${featureIndex}`}
-                      positions={feature.geometry.coordinates.map((polygon) =>
-                        polygon.map((coordinate: any[]) => [
-                          coordinate[1],
-                          coordinate[0],
-                        ])
-                      )}
-                    />
-                  )
-                )
-              ) : (
-                <Polygon
-                  key={geoIndex}
-                  positions={geo.geometry.coordinates.map((polygon: any[]) =>
-                    polygon.map((coordinate: any[]) => [
-                      coordinate[1],
-                      coordinate[0],
-                    ])
-                  )}
-                />
-              )
+              geo?.features
+                ? geo.features.map((feature: any, featureIndex: number) => {
+                    const geom = feature.geometry;
+                    if (!geom || !geom.coordinates) return null;
+
+                    // Trata tipos diferentes de geometria
+                    if (geom.type === "Polygon") {
+                      const polygonCoords = geom.coordinates
+                        .map((polygon: any) =>
+                          Array.isArray(polygon)
+                            ? polygon
+                                .map((coord: any) =>
+                                  Array.isArray(coord) &&
+                                  coord.length >= 2 &&
+                                  typeof coord[0] === "number" &&
+                                  typeof coord[1] === "number"
+                                    ? [coord[1], coord[0]] // Leaflet usa [lat, lng]
+                                    : null
+                                )
+                                .filter(Boolean)
+                            : []
+                        )
+                        .filter((p: string | any[]) => p.length > 0);
+
+                      if (polygonCoords.length === 0) return null;
+
+                      return (
+                        <Polygon
+                          key={`${geoIndex}-${featureIndex}`}
+                          positions={polygonCoords}
+                        />
+                      );
+                    }
+
+                    if (geom.type === "MultiPolygon") {
+                      return geom.coordinates.map((polygon: any, i: number) => {
+                        const polygonCoords = Array.isArray(polygon)
+                          ? polygon
+                              .map((coord: any) =>
+                                Array.isArray(coord) &&
+                                coord.length >= 2 &&
+                                typeof coord[1] === "number" &&
+                                typeof coord[0] === "number"
+                                  ? [coord[1], coord[0]]
+                                  : null
+                              )
+                              .filter(Boolean)
+                          : [];
+
+                        if (polygonCoords.length === 0) return null;
+
+                        return (
+                          <Polygon
+                            key={`${geoIndex}-${featureIndex}-${i}`}
+                            positions={polygonCoords.filter(
+                              (coord): coord is [number, number] =>
+                                Array.isArray(coord) &&
+                                coord.length === 2 &&
+                                typeof coord[1] === "number" &&
+                                typeof coord[0] === "number"
+                            )}
+                          />
+                        );
+                      });
+                    }
+
+                    return null;
+                  })
+                : (() => {
+                    const geom = geo?.geometry;
+                    if (!geom || !geom.coordinates) return null;
+
+                    const polygonCoords = Array.isArray(geom.coordinates)
+                      ? geom.coordinates
+                          .map((polygon: any) =>
+                            Array.isArray(polygon)
+                              ? polygon
+                                  .map((coord: any) =>
+                                    Array.isArray(coord) &&
+                                    coord.length >= 2 &&
+                                    typeof coord[1] === "number" &&
+                                    typeof coord[0] === "number"
+                                      ? [coord[1], coord[0]]
+                                      : null
+                                  )
+                                  .filter(Boolean)
+                              : []
+                          )
+                          .filter((p: string | any[]) => p.length > 0)
+                      : [];
+
+                    if (polygonCoords.length === 0) return null;
+
+                    return <Polygon key={geoIndex} positions={polygonCoords} />;
+                  })()
             )}
           </MapContainer>
-        )}*/}
+        )}
       </Box>
       <Box sx={{ padding: "40px" }}>
         {/* Breadcrumbs */}

@@ -13,14 +13,18 @@ const FitBoundsComponent = ({ geojson }: { geojson: any }) => {
         const coordinates = feature.geometry.coordinates[0];
         coordinates.forEach((latlng: [number, number]) => {
           const [lng, lat] = latlng;
-          bounds.extend([lat, lng]);
+          if (typeof lat === "number" && typeof lng === "number") {
+            bounds.extend([lat, lng]);
+          }
         });
       });
 
-      map.fitBounds(bounds, {
-        padding: [20, 20],
-        maxZoom: 16,
-      });
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, {
+          padding: [20, 20],
+          maxZoom: 16,
+        });
+      }
     }
   }, [geojson, map]);
 
